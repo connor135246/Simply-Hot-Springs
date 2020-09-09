@@ -1,0 +1,16 @@
+[
+{
+  "modid": "simplyhotsprings",
+  "name": "Simply Hot Springs",
+  "description": "Adds Hot Spring Water.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["connor135246"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

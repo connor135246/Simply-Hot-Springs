@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
+  <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="forge-1.12.2-14.23.5.2854-mdk"/>
+  <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="net.minecraftforge.legacydev.MainServer"/>
+  <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dforge.logging.console.level=debug -Dforge.logging.markers=SCAN,REGISTRIES,REGISTRYDUMP"/>
+  <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value=""/>
+  <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="C:\DOCUMENT STORE\New folder\stuff\minecraft\modding\forge-1.12.2-14.23.5.2854-mdk\run"/>
+  <mapAttribute key="org.eclipse.debug.core.environmentVariables">
+    <mapEntry key="MCP_TO_SRG" value="C:\DOCUMENT STORE\New folder\stuff\minecraft\modding\forge-1.12.2-14.23.5.2854-mdk\build\createSrgToMcp\output.srg"/>
+    <mapEntry key="MOD_CLASSES" value="C:\DOCUMENT STORE\New folder\stuff\minecraft\modding\forge-1.12.2-14.23.5.2854-mdk\bin\main;C:\DOCUMENT STORE\New folder\stuff\minecraft\modding\forge-1.12.2-14.23.5.2854-mdk\bin\main"/>
+    <mapEntry key="mainClass" value="net.minecraft.launchwrapper.Launch"/>
+    <mapEntry key="MCP_MAPPINGS" value="snapshot_20171003-1.12"/>
+    <mapEntry key="FORGE_VERSION" value="14.23.5.2854"/>
+    <mapEntry key="FORGE_GROUP" value="net.minecraftforge"/>
+    <mapEntry key="tweakClass" value="net.minecraftforge.fml.common.launcher.FMLServerTweaker"/>
+    <mapEntry key="MC_VERSION" value="1.12.2"/>
+  </mapAttribute>
+</launchConfiguration>
