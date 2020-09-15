@@ -35,13 +35,13 @@ public class ParticleSteam extends Particle
     {
         super(world, xCoord, yCoord, zCoord);
 
-        this.particleScale = 3.0F * (rand.nextFloat() * 0.5F + 0.5F) * 2.0F;
+        this.multipleParticleScaleBy(2.5F + rand.nextFloat() * 1.0F);
         this.setSize(0.25F, 0.25F);
-        this.motionX = (double) (this.rand.nextFloat() / 500.0F * (float) (this.rand.nextBoolean() ? 1 : -1));
-        this.motionZ = (double) (this.rand.nextFloat() / 500.0F * (float) (this.rand.nextBoolean() ? 1 : -1));
-        this.motionY = 0.025 + (double) (this.rand.nextFloat() / 500.0F);
-        this.particleGravity = 0.0005F;
-        this.particleMaxAge = rand.nextInt(20) + 50;
+        this.motionX = (double) (this.rand.nextFloat() / 250.0F * (float) (this.rand.nextBoolean() ? 1 : -1));
+        this.motionZ = (double) (this.rand.nextFloat() / 250.0F * (float) (this.rand.nextBoolean() ? 1 : -1));
+        this.motionY = 0.025 + (double) (this.rand.nextFloat() / 250.0F);
+        this.particleGravity = 0.0005F; 
+        this.particleMaxAge = 100;
     }
 
     @Override
@@ -51,20 +51,22 @@ public class ParticleSteam extends Particle
         this.prevPosY = this.posY;
         this.prevPosZ = this.posZ;
 
-        if (this.particleAge++ < this.particleMaxAge && this.particleAlpha > 0.0F)
+        if (this.particleAge++ < this.particleMaxAge && this.particleAlpha > 0.02F)
         {
-            this.motionX += (double) (this.rand.nextFloat() / 5000.0F * (float) (this.rand.nextBoolean() ? 1 : -1));
-            this.motionZ += (double) (this.rand.nextFloat() / 5000.0F * (float) (this.rand.nextBoolean() ? 1 : -1));
+            this.motionX += (double) (this.rand.nextFloat() / 1000.0F * (float) (this.rand.nextBoolean() ? 1 : -1));
+            this.motionZ += (double) (this.rand.nextFloat() / 1000.0F * (float) (this.rand.nextBoolean() ? 1 : -1));
             this.motionY -= (double) this.particleGravity;
             this.move(this.motionX, this.motionY, this.motionZ);
 
-            if (this.particleAlpha > 0.02F)
-                this.particleAlpha -= 0.015F + rand.nextFloat() * 0.005F;
+            this.particleAlpha -= 0.01F + rand.nextFloat() * 0.01F;
         }
         else
             this.setExpired();
     }
 
+    /**
+     * Saves rendering variables and queues a particle for rendering later.
+     */
     @Override
     public void renderParticle(BufferBuilder buffer, Entity entity, float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY,
             float rotationXZ)
@@ -78,28 +80,32 @@ public class ParticleSteam extends Particle
         queuedRenders[this.texIndex].add(this);
     }
 
+    /**
+     * Goes through each queue of particles, setting the texture and rendering them.
+     */
     public static void dispatchQueuedRenders(Tessellator tess)
     {
         ClientProxy.steamCount = 0;
 
         for (int i = 0; i < queuedRenders.length; ++i)
         {
+            Minecraft.getMinecraft().renderEngine.bindTexture(getThisTexture(i));
+            
             ParticleSteam steam;
             while (ClientProxy.steamCount < 100 && (steam = queuedRenders[i].poll()) != null)
             {
-                Minecraft.getMinecraft().renderEngine.bindTexture(getThisTexture(i));
                 steam.renderQueued(tess);
             }
         }
     }
 
+    /**
+     * Actually renders the particle.
+     */
     public void renderQueued(Tessellator tess)
     {
         ++ClientProxy.steamCount;
-
-        BufferBuilder buffer = tess.getBuffer();
-        buffer.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
-
+        
         float f4 = 0.2F * this.particleScale;
         float f5 = (float) (this.prevPosX + (this.posX - this.prevPosX) * (double) partialTicks - interpPosX);
         float f6 = (float) (this.prevPosY + (this.posY - this.prevPosY) * (double) partialTicks - interpPosY);
@@ -115,6 +121,9 @@ public class ParticleSteam extends Particle
                 new Vec3d((double) (rotationX * f4 + rotationXY * f4), (double) (rotationZ * f4), (double) (rotationYZ * f4 + rotationXZ * f4)),
                 new Vec3d((double) (rotationX * f4 - rotationXY * f4), (double) (-rotationZ * f4), (double) (rotationYZ * f4 - rotationXZ * f4)) };
 
+        BufferBuilder buffer = tess.getBuffer();
+        buffer.begin(7, DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP);
+
         buffer.pos((double) f5 + avec3d[0].x, (double) f6 + avec3d[0].y, (double) f7 + avec3d[0].z).tex(1, 1)
                 .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
         buffer.pos((double) f5 + avec3d[1].x, (double) f6 + avec3d[1].y, (double) f7 + avec3d[1].z).tex(1, 0)
@@ -127,6 +136,9 @@ public class ParticleSteam extends Particle
         tess.draw();
     }
 
+    /**
+     * Gets the particle texture. index should be from 0 to 11.
+     */
     public static ResourceLocation getThisTexture(int index)
     {
         return new ResourceLocation(Reference.MODID, "textures/particles/steam" + index + ".png");

@@ -3,6 +3,7 @@ package connor135246.simplyhotsprings.common.blocks;
 import java.util.Random;
 
 import connor135246.simplyhotsprings.client.particles.ParticleSteam;
+import connor135246.simplyhotsprings.common.CommonProxy;
 import connor135246.simplyhotsprings.common.fluids.FluidHotSpringWater;
 import connor135246.simplyhotsprings.util.Reference;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
@@ -37,15 +38,17 @@ public class BlockHotSpringWater extends BlockFluidClassic
     public static final Block BLOCK_INSTANCE = new BlockHotSpringWater();
     public static final ItemBlock ITEMBLOCK_INSTANCE = (ItemBlock) new ItemBlock(BLOCK_INSTANCE).setRegistryName(BLOCK_INSTANCE.getRegistryName());
 
+    /** The potion effect that hot spring water applies. */
+    public static Potion potionEffect = null;
+
     public BlockHotSpringWater()
     {
-        super(FluidHotSpringWater.FLUID_INSTANCE, Material.WATER, MapColor.LIGHT_BLUE);
+        super(CommonProxy.fluidToUse, Material.WATER, MapColor.LIGHT_BLUE);
         this.setUnlocalizedName(FluidHotSpringWater.FLUID_NAME);
         this.setRegistryName(Reference.MODID, FluidHotSpringWater.FLUID_NAME);
 
         this.setHardness(100.0F);
         this.setLightOpacity(1);
-        this.canCreateSources = SimplyHotSpringsConfig.createsSources;
     }
 
     @Override
@@ -53,18 +56,13 @@ public class BlockHotSpringWater extends BlockFluidClassic
     {
         super.onEntityCollidedWithBlock(world, pos, state, entity);
 
-        if (!world.isRemote && !SimplyHotSpringsConfig.potionEffect.isEmpty() && entity instanceof EntityLivingBase)
+        if (!world.isRemote && potionEffect != null && entity instanceof EntityLivingBase && !((EntityLivingBase) entity).isPotionActive(potionEffect))
         {
-            Potion potion = ForgeRegistries.POTIONS.getValue(new ResourceLocation(SimplyHotSpringsConfig.potionEffect));
-            if (potion != null && !((EntityLivingBase) entity).isPotionActive(potion))
-            {
-                int timer = SimplyHotSpringsConfig.potionEffectSettings.length > 0 ? Math.max(SimplyHotSpringsConfig.potionEffectSettings[0], 1) : 50;
-                int amplifier = SimplyHotSpringsConfig.potionEffectSettings.length > 1
-                        ? MathHelper.clamp(SimplyHotSpringsConfig.potionEffectSettings[1], 0, 255)
-                        : 0;
+            int timer = SimplyHotSpringsConfig.potionEffectSettings.length > 0 ? Math.max(SimplyHotSpringsConfig.potionEffectSettings[0], 1) : 50;
+            int amplifier = SimplyHotSpringsConfig.potionEffectSettings.length > 1 ? MathHelper.clamp(SimplyHotSpringsConfig.potionEffectSettings[1], 0, 255)
+                    : 0;
 
-                ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(potion, timer, amplifier, true, true));
-            }
+            ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(potionEffect, timer, amplifier, true, true));
         }
     }
 
@@ -122,11 +120,12 @@ public class BlockHotSpringWater extends BlockFluidClassic
     }
 
     /**
-     * Updates {@link #canCreateSources} to the config setting. Called when the config changes.
+     * Updates {@link #canCreateSources} and {@link #potionEffect} to the config setting. Called on loading the world or when the config changes.
      */
-    public static void updateCanCreateSources()
+    public static void updateConfigSettings()
     {
         ((BlockHotSpringWater) BLOCK_INSTANCE).canCreateSources = SimplyHotSpringsConfig.createsSources;
+        potionEffect = ForgeRegistries.POTIONS.getValue(new ResourceLocation(SimplyHotSpringsConfig.potionEffect));
     }
 
 }

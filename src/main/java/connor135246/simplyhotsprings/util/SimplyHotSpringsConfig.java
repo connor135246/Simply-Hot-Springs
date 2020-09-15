@@ -41,7 +41,7 @@ public class SimplyHotSpringsConfig
         {
             ConfigManager.sync(Reference.MODID, Config.Type.INSTANCE);
 
-            BlockHotSpringWater.updateCanCreateSources();
+            BlockHotSpringWater.updateConfigSettings();
         }
     }
 
