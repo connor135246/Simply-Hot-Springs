@@ -26,8 +26,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class ClientProxy extends CommonProxy
 {
 
-    public static int steamCount = 0;
-
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event)
     {
@@ -48,9 +46,11 @@ public class ClientProxy extends CommonProxy
     {
         // thanks again vazkii...
 
+        GlStateManager.pushMatrix();
+
         Profiler profiler = Minecraft.getMinecraft().mcProfiler;
 
-        GlStateManager.depthMask(true);
+        GlStateManager.depthMask(false);
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
         GlStateManager.alphaFunc(GL11.GL_GREATER, 0.003921569F);
@@ -59,8 +59,10 @@ public class ClientProxy extends CommonProxy
         ParticleSteam.dispatchQueuedRenders(Tessellator.getInstance());
         profiler.endSection();
 
+        GlStateManager.disableBlend();
+        GlStateManager.depthMask(true);
+
         GlStateManager.popMatrix();
-        GlStateManager.pushMatrix();
     }
 
 }
