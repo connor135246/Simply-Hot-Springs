@@ -2,7 +2,7 @@
 {
   "modid": "simplyhotsprings",
   "name": "Simply Hot Springs",
-  "description": "Adds Hot Spring Water.",
+  "description": "Adds Hot Springs.",
   "version": "${version}",
   "mcversion": "1.12.2-14.23.5.2854",
   "url": "https://github.com/connor135246/Simply-Hot-Springs",

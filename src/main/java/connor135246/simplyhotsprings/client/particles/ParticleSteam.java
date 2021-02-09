@@ -22,16 +22,22 @@ public class ParticleSteam extends Particle
 {
     // thanks again vazkii...
 
-    private int texIndex = rand.nextInt(12);
-    private float partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ;
-
     public static int steamCount = 0;
+    public static final int TEXTURE_COUNT = 12;
+    public static final ResourceLocation[] TEXTURES = new ResourceLocation[TEXTURE_COUNT];
     @SuppressWarnings("unchecked")
-    public static ArrayDeque<ParticleSteam>[] queuedRenders = new ArrayDeque[] {
-            new ArrayDeque<ParticleSteam>(), new ArrayDeque<ParticleSteam>(), new ArrayDeque<ParticleSteam>(),
-            new ArrayDeque<ParticleSteam>(), new ArrayDeque<ParticleSteam>(), new ArrayDeque<ParticleSteam>(),
-            new ArrayDeque<ParticleSteam>(), new ArrayDeque<ParticleSteam>(), new ArrayDeque<ParticleSteam>(),
-            new ArrayDeque<ParticleSteam>(), new ArrayDeque<ParticleSteam>(), new ArrayDeque<ParticleSteam>() };
+    private static final ArrayDeque<ParticleSteam>[] queuedRenders = new ArrayDeque[TEXTURE_COUNT];
+    static
+    {
+        for (int i = 0; i < TEXTURE_COUNT; ++i)
+        {
+            TEXTURES[i] = new ResourceLocation(Reference.MODID + ":" + "textures/particles/steam" + i + ".png");
+            queuedRenders[i] = new ArrayDeque<ParticleSteam>();
+        }
+    }
+    
+    protected float partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ;
+    protected int texIndex = rand.nextInt(12);
 
     public ParticleSteam(World world, double xCoord, double yCoord, double zCoord)
     {
@@ -89,15 +95,13 @@ public class ParticleSteam extends Particle
     {
         steamCount = 0;
 
-        for (int i = 0; i < queuedRenders.length; ++i)
+        for (int i = 0; i < TEXTURE_COUNT; ++i)
         {
-            Minecraft.getMinecraft().renderEngine.bindTexture(getThisTexture(i));
+            Minecraft.getMinecraft().renderEngine.bindTexture(TEXTURES[i]);
 
             ParticleSteam steam;
-            while (steamCount < 100 && (steam = queuedRenders[i].poll()) != null)
-            {
+            while (steamCount < 250 && (steam = queuedRenders[i].poll()) != null)
                 steam.renderQueued(tess);
-            }
         }
     }
 
@@ -136,14 +140,6 @@ public class ParticleSteam extends Particle
                 .color(this.particleRed, this.particleGreen, this.particleBlue, this.particleAlpha).lightmap(j, k).endVertex();
 
         tess.draw();
-    }
-
-    /**
-     * Gets the particle texture. index should be from 0 to 11.
-     */
-    public static ResourceLocation getThisTexture(int index)
-    {
-        return new ResourceLocation(Reference.MODID, "textures/particles/steam" + index + ".png");
     }
 
 }

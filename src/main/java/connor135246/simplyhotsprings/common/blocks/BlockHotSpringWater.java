@@ -72,7 +72,6 @@ public class BlockHotSpringWater extends BlockFluidClassic
         return false;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     @SideOnly(Side.CLIENT)
     public void randomDisplayTick(IBlockState state, World world, BlockPos pos, Random rand)
@@ -107,7 +106,7 @@ public class BlockHotSpringWater extends BlockFluidClassic
             suspended.multiplyVelocity(0.0F); // makes them float up
         }
 
-        if (rand.nextInt(10) == 0 && world.getBlockState(pos.down()).isTopSolid())
+        if (rand.nextInt(10) == 0 && world.getBlockState(pos.down()).isSideSolid(world, pos, EnumFacing.UP))
         {
             Material material = world.getBlockState(pos.down(2)).getMaterial();
 
