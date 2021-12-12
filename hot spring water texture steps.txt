@@ -1,0 +1,23 @@
+in paint.net
+
+start with regular minecraft water textures
+-set layer opacity to 128/255
+  -save and reopen the file
+-brightness/contrast:
+  -contrast to 30
+-curves:
+  -go to rgb
+  -uncheck red
+  -click 0,255
+  -check red
+  -click 129,255
+-hue/saturation:
+  -saturation to 120
+-magic wand:
+  -tolerance to 25%
+  -click the parts that have an rgb of 0,255,255
+  -invert the selection
+-brightness/contrast:
+  -contrast to 30
+
+done!
