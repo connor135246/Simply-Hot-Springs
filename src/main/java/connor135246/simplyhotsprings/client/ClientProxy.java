@@ -11,7 +11,11 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.MobEffects;
 import net.minecraft.profiler.Profiler;
+import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.model.ModelLoader;
@@ -47,6 +51,28 @@ public class ClientProxy extends CommonProxy
         profiler.startSection("simply_hot_springs_steam_particles");
         ParticleSteam.dispatchQueuedRenders(Tessellator.getInstance());
         profiler.endSection();
+    }
+
+    @SubscribeEvent
+    public static void onSetFogDensity(EntityViewRenderEvent.FogDensity event)
+    {
+        if (event.getState().getBlock() == BlockHotSpringWater.BLOCK_INSTANCE)
+        {
+            GlStateManager.setFog(GlStateManager.FogMode.EXP);
+
+            if (event.getEntity() instanceof EntityLivingBase)
+            {
+                EntityLivingBase entityLivingBase = (EntityLivingBase) event.getEntity();
+                if (entityLivingBase.isPotionActive(MobEffects.WATER_BREATHING))
+                    event.setDensity(0.025F);
+                else
+                    event.setDensity(0.04F - EnchantmentHelper.getRespirationModifier(entityLivingBase) * 0.005F);
+            }
+            else
+                event.setDensity(0.04F);
+
+            event.setCanceled(true);
+        }
     }
 
 }

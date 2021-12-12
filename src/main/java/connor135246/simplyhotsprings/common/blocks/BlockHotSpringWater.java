@@ -13,6 +13,8 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
+import net.minecraft.client.renderer.ActiveRenderInfo;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.init.MobEffects;
@@ -26,6 +28,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.BlockFluidClassic;
@@ -46,7 +49,7 @@ public class BlockHotSpringWater extends BlockFluidClassic
 
     public BlockHotSpringWater()
     {
-        super(CommonProxy.fluidToUse, Material.WATER, MapColor.LIGHT_BLUE);
+        super(CommonProxy.fluidToUse, Material.WATER, MapColor.DIAMOND);
         this.setUnlocalizedName(FluidHotSpringWater.FLUID_NAME);
         this.setRegistryName(Reference.MODID, FluidHotSpringWater.FLUID_NAME);
 
@@ -113,6 +116,40 @@ public class BlockHotSpringWater extends BlockFluidClassic
                 // can't change the colour of this :(
             }
         }
+    }
+
+    @Override
+    @SideOnly(Side.CLIENT)
+    public Vec3d getFogColor(World world, BlockPos pos, IBlockState state, Entity entity, Vec3d originalColor, float partialTicks)
+    {
+        if (!isWithinFluid(world, pos, ActiveRenderInfo.projectViewFromEntity(entity, partialTicks)))
+        {
+            BlockPos otherPos = pos.down(densityDir);
+            IBlockState otherState = world.getBlockState(otherPos);
+            return otherState.getBlock().getFogColor(world, otherPos, otherState, entity, originalColor, partialTicks);
+        }
+
+        if (getFluid() != null)
+        {
+            float fogModifier = 0.0F;
+            if (entity instanceof EntityLivingBase)
+            {
+                EntityLivingBase entityLivingBase = (EntityLivingBase) entity;
+                fogModifier = EnchantmentHelper.getRespirationModifier(entityLivingBase) * 0.1F;
+
+                if (entityLivingBase.isPotionActive(MobEffects.WATER_BREATHING))
+                    fogModifier = fogModifier * 0.3F + 0.3F;
+            }
+            return new Vec3d(0.01F + fogModifier, 0.3F + fogModifier, 0.3F + fogModifier);
+        }
+
+        return super.getFogColor(world, pos, state, entity, originalColor, partialTicks);
+    }
+
+    protected boolean isWithinFluid(IBlockAccess world, BlockPos pos, Vec3d vec)
+    {
+        float filled = getFilledPercentage(world, pos);
+        return filled < 0 ? vec.y > pos.getY() + filled + 1 : vec.y < pos.getY() + filled;
     }
 
     /**
