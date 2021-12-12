@@ -60,6 +60,10 @@ public class SimplyHotSpringsConfig
         @Comment({ "If the world type is Biomes O' Plenty, these hot springs won't generate. Set this to true to make them generate anyway." })
         public static boolean worldGenIfBOP = false;
 
+        @Name("Generate in Superflat World Type")
+        @Comment({ "If the world type is Superflat, these hot springs won't generate. Set this to true to make them generate anyway." })
+        public static boolean worldGenIfSuperflat = false;
+
         @Name("Generation Chance")
         @Comment({ "The chance for a Hot Spring to generate. Lower values are more likely." })
         @RangeInt(min = 1)
@@ -97,7 +101,9 @@ public class SimplyHotSpringsConfig
 
         public static boolean canGenerateInGeneral(World world)
         {
-            return worldGen && (world.getWorldType().getName().equals("BIOMESOP") ? worldGenIfBOP : true) && world.getWorldType() != WorldType.FLAT
+            return worldGen
+                    && (world.getWorldType().getName().equals("BIOMESOP") ? worldGenIfBOP : true)
+                    && (world.getWorldType() == WorldType.FLAT ? worldGenIfSuperflat : true)
                     && !arrayContains(dimBlacklist, world.provider.getDimension())
                     && (dimWhitelist.length == 0 || arrayContains(dimWhitelist, world.provider.getDimension()));
         }
@@ -134,8 +140,8 @@ public class SimplyHotSpringsConfig
                 return TextFormatting.DARK_RED + "\"World Generation\" is false.";
             if (world.getWorldType().getName().equals("BIOMESOP") && !worldGenIfBOP)
                 return TextFormatting.DARK_RED + "This world type is Biomes O' Plenty, and \"Generate in Biomes O' Plenty World Type\" is false.";
-            if (world.getWorldType() == WorldType.FLAT)
-                return TextFormatting.DARK_RED + "Hot Springs don't generate in Superflat worlds.";
+            if (world.getWorldType() == WorldType.FLAT && !worldGenIfSuperflat)
+                return TextFormatting.DARK_RED + "This world type is Superflat, and \"Generate in Superflat World Type\" is false.";
             if (arrayContains(dimBlacklist, world.provider.getDimension()))
                 return TextFormatting.DARK_RED + "This dimension is in the \"Dimension Blacklist\".";
             if (dimWhitelist.length != 0 && !arrayContains(dimWhitelist, world.provider.getDimension()))
