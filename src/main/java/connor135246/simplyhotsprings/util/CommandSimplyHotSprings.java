@@ -86,18 +86,16 @@ public class CommandSimplyHotSprings implements ICommand
 
                 String reason = SimplyHotSpringsConfig.WorldGen.generateReason(world, pos);
                 TextComponentString canGenerate = new TextComponentString(TextFormatting.AQUA + "Hot Springs: "
-                        + (SimplyHotSpringsConfig.WorldGen.generateReason(world, pos).startsWith(TextFormatting.GREEN + "") ? TextFormatting.GREEN + "Yes"
-                                : TextFormatting.DARK_RED + "No"));
+                        + (reason.startsWith(TextFormatting.GREEN + "") ? TextFormatting.GREEN + "Yes" : TextFormatting.DARK_RED + "No"));
                 canGenerate.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                         new TextComponentString("Reason:\n" + reason)));
                 sender.sendMessage(canGenerate);
-
-                return;
             }
             else
                 throw new CommandException("Cannot check block outside of world", new Object[0]);
         }
-        throw new WrongUsageException(getUsage(null), new Object[0]);
+        else
+            throw new WrongUsageException(getUsage(null), new Object[0]);
     }
 
     private static final HoverEvent clickMe = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString("Click to put in chat box"));
@@ -105,8 +103,7 @@ public class CommandSimplyHotSprings implements ICommand
     private ITextComponent makeHoverAndClickComponent(String in, String toCopy)
     {
         TextComponentString component = new TextComponentString(in + toCopy);
-        component.getStyle().setHoverEvent(clickMe);
-        component.getStyle().setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, toCopy));
+        component.getStyle().setHoverEvent(clickMe).setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, toCopy));
         return component;
     }
 
@@ -137,7 +134,7 @@ public class CommandSimplyHotSprings implements ICommand
     @Override
     public boolean isUsernameIndex(String[] args, int index)
     {
-        return index == 1;
+        return index == 1 && args.length == 2;
     }
 
 }

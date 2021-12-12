@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.potion.Potion;
@@ -39,7 +40,9 @@ public class BlockHotSpringWater extends BlockFluidClassic
     public static final ItemBlock ITEMBLOCK_INSTANCE = (ItemBlock) new ItemBlock(BLOCK_INSTANCE).setRegistryName(BLOCK_INSTANCE.getRegistryName());
 
     /** The potion effect that hot spring water applies. */
-    public static Potion potionEffect = null;
+    public static Potion potionEffect = MobEffects.REGENERATION;
+    public static int timer = 50;
+    public static int amplifier = 0;
 
     public BlockHotSpringWater()
     {
@@ -57,13 +60,7 @@ public class BlockHotSpringWater extends BlockFluidClassic
         super.onEntityCollidedWithBlock(world, pos, state, entity);
 
         if (!world.isRemote && potionEffect != null && entity instanceof EntityLivingBase && !((EntityLivingBase) entity).isPotionActive(potionEffect))
-        {
-            int timer = SimplyHotSpringsConfig.potionEffectSettings.length > 0 ? Math.max(SimplyHotSpringsConfig.potionEffectSettings[0], 1) : 50;
-            int amplifier = SimplyHotSpringsConfig.potionEffectSettings.length > 1 ? MathHelper.clamp(SimplyHotSpringsConfig.potionEffectSettings[1], 0, 255)
-                    : 0;
-
             ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(potionEffect, timer, amplifier, true, true));
-        }
     }
 
     @Override
@@ -125,6 +122,8 @@ public class BlockHotSpringWater extends BlockFluidClassic
     {
         ((BlockHotSpringWater) BLOCK_INSTANCE).canCreateSources = SimplyHotSpringsConfig.createsSources;
         potionEffect = ForgeRegistries.POTIONS.getValue(new ResourceLocation(SimplyHotSpringsConfig.potionEffect));
+        timer = SimplyHotSpringsConfig.potionEffectSettings.length > 0 ? Math.max(SimplyHotSpringsConfig.potionEffectSettings[0], 1) : 50;
+        amplifier = SimplyHotSpringsConfig.potionEffectSettings.length > 1 ? MathHelper.clamp(SimplyHotSpringsConfig.potionEffectSettings[1], 0, 255) : 0;
     }
 
 }

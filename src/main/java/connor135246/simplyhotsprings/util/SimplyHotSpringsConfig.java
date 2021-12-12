@@ -45,11 +45,12 @@ public class SimplyHotSpringsConfig
         @Name("#How to fill Whitelists and Blacklists")
         @Comment({ "The command \"/simplyhotsprings locationinfo\" will tell you your current dimension ID as well as "
                 + "the name and types of the biome you're currently in. Use those results to fill in your whitelists and blacklists. "
-                + "It will also tell you whether or not a hot spring can generate there, so you can use it for testing your whitelists and blacklists. "
-                + "(By the way, this config setting does nothing, so put whatever you want in here.)",
-                "Full list of biome types: HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, NETHER, END, MUSHROOM, "
-                        + "MAGICAL, RARE, OCEAN, RIVER, WATER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, SNOWY, WASTELAND, BEACH, VOID" })
-        public static String[] info = {};
+                + "It will also tell you whether or not a hot spring can generate there, so you can use it for testing your whitelists and blacklists. ",
+                "(This config setting does nothing other than list all biome types for your convenience, so put whatever you want in here.)" })
+        public static String[] info = { "HOT", "COLD", "SPARSE", "DENSE", "WET", "DRY", "SAVANNA", "CONIFEROUS", "JUNGLE", "SPOOKY", "DEAD", "LUSH", "NETHER",
+                "END", "MUSHROOM", "MAGICAL", "RARE", "OCEAN", "RIVER", "WATER", "MESA", "FOREST", "PLAINS", "MOUNTAIN", "HILLS", "SWAMP", "SANDY", "SNOWY",
+                "WASTELAND", "BEACH", "VOID", "HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, NETHER, END, MUSHROOM, "
+                        + "MAGICAL, RARE, OCEAN, RIVER, WATER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, SNOWY, WASTELAND, BEACH, VOID" };
 
         @Name("World Generation")
         @Comment({ "Set to false to stop hot springs from generating." })
