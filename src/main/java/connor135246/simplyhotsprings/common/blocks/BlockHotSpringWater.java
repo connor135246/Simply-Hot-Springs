@@ -83,7 +83,7 @@ public class BlockHotSpringWater extends BlockFluidClassic
         // steam particles
         if (world.getBlockLightOpacity(pos.up()) == 0 && rand.nextInt(24) == 0 && rand.nextInt(Minecraft.getMinecraft().gameSettings.particleSetting + 1) == 0)
         {
-            Particle steam = new ParticleSteam(world, x + rand.nextFloat(), y + 0.875, z + rand.nextFloat());
+            Particle steam = new ParticleSteam(world, x + 0.1F + rand.nextFloat() * 0.8F, y + 1, z + 0.1F + rand.nextFloat() * 0.8F);
             Minecraft.getMinecraft().effectRenderer.addEffect(steam);
         }
 

@@ -1,7 +1,5 @@
 package connor135246.simplyhotsprings.client;
 
-import org.lwjgl.opengl.GL11;
-
 import connor135246.simplyhotsprings.client.particles.ParticleSteam;
 import connor135246.simplyhotsprings.common.CommonProxy;
 import connor135246.simplyhotsprings.common.blocks.BlockHotSpringWater;
@@ -10,8 +8,6 @@ import connor135246.simplyhotsprings.util.Reference;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.DestFactor;
-import net.minecraft.client.renderer.GlStateManager.SourceFactor;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.client.renderer.block.statemap.StateMapperBase;
@@ -47,23 +43,10 @@ public class ClientProxy extends CommonProxy
     {
         // thanks again vazkii...
 
-        GlStateManager.pushMatrix();
-
         Profiler profiler = Minecraft.getMinecraft().mcProfiler;
-
-        GlStateManager.depthMask(false);
-        GlStateManager.enableBlend();
-        GlStateManager.blendFunc(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA);
-        GlStateManager.alphaFunc(GL11.GL_GREATER, 0.003921569F);
-
-        profiler.startSection("simply_steam_particles");
+        profiler.startSection("simply_hot_springs_steam_particles");
         ParticleSteam.dispatchQueuedRenders(Tessellator.getInstance());
         profiler.endSection();
-
-        GlStateManager.disableBlend();
-        GlStateManager.depthMask(true);
-
-        GlStateManager.popMatrix();
     }
 
 }
