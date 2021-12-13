@@ -239,7 +239,7 @@ public class SimplyHotSpringsConfig
                         {
                             boolean generateHotSprings = JsonUtils.getBoolean(parsed.getAsJsonObject(), "generateHotSprings");
                             if (parsedBOPWorlds.size() > 50)
-                                parsedBOPWorlds = new Object2BooleanArrayMap<World>();
+                                parsedBOPWorlds.clear();
                             parsedBOPWorlds.put(world, generateHotSprings);
                             return generateHotSprings;
                         }
@@ -262,6 +262,8 @@ public class SimplyHotSpringsConfig
             ConfigManager.sync(Reference.MODID, Config.Type.INSTANCE);
 
             BlockHotSpringWater.updateConfigSettings();
+            
+            WorldGen.parsedBOPWorlds.clear();
         }
     }
 
