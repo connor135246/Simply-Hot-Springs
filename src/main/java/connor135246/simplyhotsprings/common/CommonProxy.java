@@ -9,6 +9,7 @@ import connor135246.simplyhotsprings.util.Reference;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fluids.Fluid;
 import net.minecraftforge.fluids.FluidRegistry;
@@ -32,8 +33,7 @@ public class CommonProxy
     {
         if (!FluidRegistry.registerFluid(FluidHotSpringWater.FLUID_INSTANCE))
         {
-            SimplyHotSprings.modlog.warn("Another mod has already registered the fluid \"hot_spring_water\". Their fluid will take priority over this one. "
-                    + "FML will show you an warning message now.");
+            SimplyHotSprings.modlog.warn(I18n.translateToLocalFormatted(Reference.MODID + ".build.fluid_already_registered"));
             fluidToUse = FluidRegistry.getFluid(FluidHotSpringWater.FLUID_NAME);
         }
 
@@ -42,8 +42,7 @@ public class CommonProxy
         // dependencies = "before:biomesoplenty;"
         if (Loader.isModLoaded("biomesoplenty"))
         {
-            SimplyHotSprings.modlog.info("Biomes O' Plenty detected. "
-                    + "Reflecting and registering their Hot Spring Water, so that it doesn't cause a crash later.");
+            SimplyHotSprings.modlog.info(I18n.translateToLocalFormatted(Reference.MODID + ".build.bop"));
 
             try
             {
@@ -55,7 +54,7 @@ public class CommonProxy
             }
             catch (Exception excep)
             {
-                SimplyHotSprings.modlog.error("An error occured while performing Biomes O' Plenty integration. Report this bug!");
+                SimplyHotSprings.modlog.error(I18n.translateToLocalFormatted(Reference.MODID + ".build.bop_error"));
                 SimplyHotSprings.modlog.catching(excep);
             }
         }

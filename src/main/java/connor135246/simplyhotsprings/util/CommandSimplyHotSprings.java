@@ -12,7 +12,9 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
@@ -26,6 +28,8 @@ public class CommandSimplyHotSprings implements ICommand
     public static final CommandSimplyHotSprings INSTANCE = new CommandSimplyHotSprings();
 
     public static final String LOCATIONINFO = "locationinfo";
+
+    protected static final String LANG_COMMAND = Reference.MODID + ".command.";
 
     @Override
     public int compareTo(ICommand ico)
@@ -75,36 +79,39 @@ public class CommandSimplyHotSprings implements ICommand
             {
                 Biome biome = world.getBiomeForCoordsBody(pos);
 
-                sender.sendMessage(makeHoverAndClickComponent(TextFormatting.AQUA + "Dimension ID: " + TextFormatting.WHITE,
+                sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "dim_id",
                         world.provider.getDimension() + ""));
 
-                sender.sendMessage(makeHoverAndClickComponent(TextFormatting.AQUA + "Biome Name: " + TextFormatting.WHITE,
+                sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "biome_name",
                         biome.getRegistryName().toString()));
 
-                sender.sendMessage(makeHoverAndClickComponent(TextFormatting.AQUA + "Biome Types: " + TextFormatting.WHITE,
+                sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "biome_types",
                         CommandBase.joinNiceString(BiomeDictionary.getTypes(biome).toArray())));
 
                 String reason = SimplyHotSpringsConfig.WorldGen.generateReason(world, pos);
-                TextComponentString canGenerate = new TextComponentString(TextFormatting.AQUA + "Hot Springs: "
-                        + (reason.startsWith(TextFormatting.GREEN + "") ? TextFormatting.GREEN + "Yes" : TextFormatting.DARK_RED + "No"));
-                canGenerate.getStyle().setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new TextComponentString("Reason:\n" + reason)));
-                sender.sendMessage(canGenerate);
+                boolean canGenerate = reason.startsWith(TextFormatting.GREEN.toString());
+                ITextComponent hotSpringMessage = new TextComponentTranslation(LANG_COMMAND + "hot_springs")
+                        .setStyle(new Style().setColor(TextFormatting.AQUA).setHoverEvent(
+                                new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_COMMAND + "reason").appendText("\n" + reason))))
+                        .appendSibling(new TextComponentTranslation(LANG_COMMAND + (canGenerate ? "yes" : "no"))
+                                .setStyle(new Style().setColor(canGenerate ? TextFormatting.GREEN : TextFormatting.DARK_RED)));
+                sender.sendMessage(hotSpringMessage);
             }
             else
-                throw new CommandException("Cannot check block outside of world", new Object[0]);
+                throw new CommandException(LANG_COMMAND + "block_out_of_world", new Object[0]);
         }
         else
             throw new WrongUsageException(getUsage(null), new Object[0]);
     }
 
-    private static final HoverEvent clickMe = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentString("Click to put in chat box"));
+    private static final HoverEvent clickMe = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_COMMAND + "click"));
 
-    private ITextComponent makeHoverAndClickComponent(String in, String toCopy)
+    private ITextComponent makeHoverAndClickComponent(String key, String toCopy)
     {
-        TextComponentString component = new TextComponentString(in + toCopy);
-        component.getStyle().setHoverEvent(clickMe).setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, toCopy));
-        return component;
+        return new TextComponentTranslation(key)
+                .setStyle(new Style().setColor(TextFormatting.AQUA).setHoverEvent(clickMe)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, toCopy)))
+                .appendSibling(new TextComponentString(toCopy).setStyle(new Style().setColor(TextFormatting.WHITE)));
     }
 
     @Override

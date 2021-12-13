@@ -14,13 +14,14 @@ import net.minecraft.util.JsonUtils;
 import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.Ignore;
+import net.minecraftforge.common.config.Config.LangKey;
 import net.minecraftforge.common.config.Config.Name;
 import net.minecraftforge.common.config.Config.RangeInt;
 import net.minecraftforge.common.config.Config.RequiresWorldRestart;
@@ -35,86 +36,87 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class SimplyHotSpringsConfig
 {
 
+    @Ignore
+    public static final String LANG_CONFIG = Reference.MODID + ".config.";
+
     @Name("Creates Source Blocks")
-    @Comment({ "If true, Hot Spring Water makes infinite water sources, like vanilla water does." })
+    @LangKey(LANG_CONFIG + "createsSources")
     public static boolean createsSources = true;
 
     @Name("Potion Effect")
-    @Comment({ "The namespaced effect that Hot Spring Water applies to entities. If the given effect isn't found (or left blank), no effect is applied." })
+    @LangKey(LANG_CONFIG + "potionEffect")
     public static String potionEffect = "minecraft:regeneration";
 
     @Name("Potion Effect Settings")
-    @Comment({ "The first value is the duration of the effect (in ticks). The second value is the amplifier of the effect (0 is level 1)." })
     @RangeInt(min = 0)
+    @LangKey(LANG_CONFIG + "potionEffectSettings")
     public static int[] potionEffectSettings = { 50, 0 };
 
     @RequiresWorldRestart
+    @LangKey(LANG_CONFIG + "worldgen")
     public static WorldGen worldgen;
 
     public static class WorldGen
     {
+        @Ignore
+        public static final String LANG_CONFIG_WORLDGEN = LANG_CONFIG + "worldgen.";
+
         @Name("#How to fill Whitelists and Blacklists")
-        @Comment({ "The command \"/simplyhotsprings locationinfo\" will tell you your current dimension ID as well as "
-                + "the name and types of the biome you're currently in. Use those results to fill in your whitelists and blacklists. "
-                + "It will also tell you whether or not a hot spring can generate there, so you can use it for testing your whitelists and blacklists. ",
-                "(This config setting does nothing other than list all biome types for your convenience, so put whatever you want in here.)" })
+        @LangKey(LANG_CONFIG_WORLDGEN + "info")
         public static String[] info = { "HOT", "COLD", "SPARSE", "DENSE", "WET", "DRY", "SAVANNA", "CONIFEROUS", "JUNGLE", "SPOOKY", "DEAD", "LUSH", "NETHER",
                 "END", "MUSHROOM", "MAGICAL", "RARE", "OCEAN", "RIVER", "WATER", "MESA", "FOREST", "PLAINS", "MOUNTAIN", "HILLS", "SWAMP", "SANDY", "SNOWY",
                 "WASTELAND", "BEACH", "VOID", "HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, NETHER, END, MUSHROOM, "
                         + "MAGICAL, RARE, OCEAN, RIVER, WATER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, SNOWY, WASTELAND, BEACH, VOID" };
 
         @Name("World Generation")
-        @Comment({ "Set to false to stop hot springs from generating." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "worldGen")
         public static boolean worldGen = true;
 
-        // changed config option name
+        // changed config option
         @Ignore
         public static final String oldBOPGenConfigName = "Generate in Biomes O' Plenty World Type";
         @Ignore
         public static final String newBOPGenConfigName = "Generate Alongside Biomes O' Plenty Hot Springs";
 
         @Name(newBOPGenConfigName)
-        @Comment({ "If a world has Biomes O' Plenty hot springs enabled, the hot springs from this mod won't generate. "
-                + "Set this to true to make them generate anyway." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "worldGenIfBOPSprings")
         public static boolean worldGenIfBOPSprings = false;
 
         @Name("Generate in Superflat World Type")
-        @Comment({ "If the world type is Superflat, the hot springs from this mod won't generate. Set this to true to make them generate anyway." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "worldGenIfSuperflat")
         public static boolean worldGenIfSuperflat = false;
 
         @Name("Generation Chance")
-        @Comment({ "The chance for a Hot Spring to generate. Lower values are more likely." })
         @RangeInt(min = 1)
+        @LangKey(LANG_CONFIG_WORLDGEN + "chance")
         public static int chance = 275;
 
         @Name("Generation Debug")
-        @Comment({ "When a hot spring generates, prints the location to console." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "debug")
         public static boolean debug = false;
 
         @Name("Dimension Whitelist")
-        @Comment({ "The dimension IDs where Hot Springs are allowed to generate. If empty, all dimensions are allowed." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "dimWhitelist")
         public static int[] dimWhitelist = { 0 };
 
         @Name("Dimension Blacklist")
-        @Comment({ "The dimension IDs where Hot Springs are NOT allowed to generate." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "dimBlacklist")
         public static int[] dimBlacklist = {};
 
         @Name("Biome Type Whitelist")
-        @Comment({ "The biome types where Hot Springs are allowed to generate. If empty, all biome types are allowed. ",
-                "The Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "biomeTypeWhitelist")
         public static String[] biomeTypeWhitelist = {};
 
         @Name("Biome Type Blacklist")
-        @Comment({ "The biome types where Hot Springs are NOT allowed to generate." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "biomeTypeBlacklist")
         public static String[] biomeTypeBlacklist = { "DRY", "SAVANNA", "NETHER", "END", "OCEAN", "RIVER", "SANDY", "BEACH", "VOID" };
 
         @Name("Biome Name Whitelist")
-        @Comment({ "The biome names where Hot Springs are allowed to generate. If empty, all biomes are allowed. ",
-                "The Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied." })
+        @LangKey(LANG_CONFIG_WORLDGEN + "biomeNameWhitelist")
         public static String[] biomeNameWhitelist = {};
 
         @Name("Biome Name Blacklist")
-        @Comment({ "The biome names where Hot Springs are NOT allowed to generate. " })
+        @LangKey(LANG_CONFIG_WORLDGEN + "biomeNameBlacklist")
         public static String[] biomeNameBlacklist = {};
 
         public static boolean canGenerateInGeneral(World world)
@@ -155,33 +157,37 @@ public class SimplyHotSpringsConfig
         public static String generateReason(World world, BlockPos pos)
         {
             if (!worldGen)
-                return TextFormatting.DARK_RED + "\"World Generation\" is false.";
+                return translateGenReason("no_world_gen", false);
             if (!worldGenIfBOPSprings && areBOPHotSpringsEnabled(world))
-                return TextFormatting.DARK_RED + "This world has Biomes O' Plenty hot springs enabled, "
-                        + "and \"Generate Alongside Biomes O' Plenty Hot Springs\" is false.";
+                return translateGenReason("bop_springs", false);
             if (!worldGenIfSuperflat && world.getWorldType() == WorldType.FLAT)
-                return TextFormatting.DARK_RED + "This world type is Superflat, and \"Generate in Superflat World Type\" is false.";
+                return translateGenReason("superflat", false);
             if (arrayContains(dimBlacklist, world.provider.getDimension()))
-                return TextFormatting.DARK_RED + "This dimension is in the \"Dimension Blacklist\".";
+                return translateGenReason("dim_blacklist", false);
             if (dimWhitelist.length != 0 && !arrayContains(dimWhitelist, world.provider.getDimension()))
-                return TextFormatting.DARK_RED + "This dimension isn't in the \"Dimension Whitelist\".";
+                return translateGenReason("dim_whitelist", false);
 
             Biome biome = world.getBiomeForCoordsBody(pos);
 
             if (arrayContains(biomeNameWhitelist, biome.getRegistryName().toString()))
-                return TextFormatting.GREEN + "This biome is in the \"Biome Name Whitelist\".";
+                return translateGenReason("biome_name_whitelist", true);
             if (arrayContains(biomeNameBlacklist, biome.getRegistryName().toString()))
-                return TextFormatting.DARK_RED + "This biome is in the \"Biome Name Blacklist\".";
+                return translateGenReason("biome_name_blacklist", false);
 
             if (arrayContains(biomeTypeBlacklist, BiomeDictionary.getTypes(biome)))
-                return TextFormatting.DARK_RED + "This biome has a type in the \"Biome Type Blacklist\".";
+                return translateGenReason("biome_type_blacklist", false);
             if (arrayContains(biomeTypeWhitelist, BiomeDictionary.getTypes(biome)))
-                return TextFormatting.GREEN + "This biome has a type in the \"Biome Type Whitelist\".";
+                return translateGenReason("biome_type_whitelist", true);
 
             if (biomeNameWhitelist.length == 0 || biomeTypeWhitelist.length == 0)
-                return TextFormatting.GREEN + "This biome wasn't excluded by any blacklists.";
+                return translateGenReason("not_blacklisted", true);
 
-            return TextFormatting.DARK_RED + "This biome was excluded by whitelists.";
+            return translateGenReason("not_whitelisted", false);
+        }
+
+        private static String translateGenReason(String key, boolean yes)
+        {
+            return (yes ? TextFormatting.GREEN : TextFormatting.DARK_RED) + I18n.translateToLocal(Reference.MODID + ".gen.reason." + key);
         }
 
         private static boolean arrayContains(int[] array, int value)
