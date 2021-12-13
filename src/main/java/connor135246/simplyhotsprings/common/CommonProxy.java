@@ -6,6 +6,7 @@ import connor135246.simplyhotsprings.common.fluids.FluidHotSpringWater;
 import connor135246.simplyhotsprings.common.world.HotSpringsWorldGen;
 import connor135246.simplyhotsprings.util.CommandSimplyHotSprings;
 import connor135246.simplyhotsprings.util.Reference;
+import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.event.RegistryEvent;
@@ -60,6 +61,8 @@ public class CommonProxy
         }
 
         GameRegistry.registerWorldGenerator(HotSpringsWorldGen.INSTANCE, 5);
+
+        SimplyHotSpringsConfig.removeOldOptions();
     }
 
     @SubscribeEvent

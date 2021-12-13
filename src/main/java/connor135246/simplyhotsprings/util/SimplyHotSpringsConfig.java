@@ -1,8 +1,17 @@
 package connor135246.simplyhotsprings.util;
 
+import java.lang.reflect.Method;
 import java.util.Set;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
+
 import connor135246.simplyhotsprings.common.blocks.BlockHotSpringWater;
+import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
+import net.minecraft.util.JsonUtils;
+import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -11,10 +20,12 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Comment;
+import net.minecraftforge.common.config.Config.Ignore;
 import net.minecraftforge.common.config.Config.Name;
 import net.minecraftforge.common.config.Config.RangeInt;
 import net.minecraftforge.common.config.Config.RequiresWorldRestart;
 import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -56,12 +67,19 @@ public class SimplyHotSpringsConfig
         @Comment({ "Set to false to stop hot springs from generating." })
         public static boolean worldGen = true;
 
-        @Name("Generate in Biomes O' Plenty World Type")
-        @Comment({ "If the world type is Biomes O' Plenty, these hot springs won't generate. Set this to true to make them generate anyway." })
-        public static boolean worldGenIfBOP = false;
+        // changed config option name
+        @Ignore
+        public static final String oldBOPGenConfigName = "Generate in Biomes O' Plenty World Type";
+        @Ignore
+        public static final String newBOPGenConfigName = "Generate Alongside Biomes O' Plenty Hot Springs";
+
+        @Name(newBOPGenConfigName)
+        @Comment({ "If a world has Biomes O' Plenty hot springs enabled, the hot springs from this mod won't generate. "
+                + "Set this to true to make them generate anyway." })
+        public static boolean worldGenIfBOPSprings = false;
 
         @Name("Generate in Superflat World Type")
-        @Comment({ "If the world type is Superflat, these hot springs won't generate. Set this to true to make them generate anyway." })
+        @Comment({ "If the world type is Superflat, the hot springs from this mod won't generate. Set this to true to make them generate anyway." })
         public static boolean worldGenIfSuperflat = false;
 
         @Name("Generation Chance")
@@ -102,8 +120,8 @@ public class SimplyHotSpringsConfig
         public static boolean canGenerateInGeneral(World world)
         {
             return worldGen
-                    && (world.getWorldType().getName().equals("BIOMESOP") ? worldGenIfBOP : true)
-                    && (world.getWorldType() == WorldType.FLAT ? worldGenIfSuperflat : true)
+                    && (worldGenIfBOPSprings ? true : !areBOPHotSpringsEnabled(world))
+                    && (worldGenIfSuperflat ? true : world.getWorldType() != WorldType.FLAT)
                     && !arrayContains(dimBlacklist, world.provider.getDimension())
                     && (dimWhitelist.length == 0 || arrayContains(dimWhitelist, world.provider.getDimension()));
         }
@@ -138,9 +156,10 @@ public class SimplyHotSpringsConfig
         {
             if (!worldGen)
                 return TextFormatting.DARK_RED + "\"World Generation\" is false.";
-            if (world.getWorldType().getName().equals("BIOMESOP") && !worldGenIfBOP)
-                return TextFormatting.DARK_RED + "This world type is Biomes O' Plenty, and \"Generate in Biomes O' Plenty World Type\" is false.";
-            if (world.getWorldType() == WorldType.FLAT && !worldGenIfSuperflat)
+            if (!worldGenIfBOPSprings && areBOPHotSpringsEnabled(world))
+                return TextFormatting.DARK_RED + "This world has Biomes O' Plenty hot springs enabled, "
+                        + "and \"Generate Alongside Biomes O' Plenty Hot Springs\" is false.";
+            if (!worldGenIfSuperflat && world.getWorldType() == WorldType.FLAT)
                 return TextFormatting.DARK_RED + "This world type is Superflat, and \"Generate in Superflat World Type\" is false.";
             if (arrayContains(dimBlacklist, world.provider.getDimension()))
                 return TextFormatting.DARK_RED + "This dimension is in the \"Dimension Blacklist\".";
@@ -189,6 +208,44 @@ public class SimplyHotSpringsConfig
                         return true;
             return false;
         }
+
+        /* parser for BOP world generator options */
+        private static final JsonParser jsonParser = new JsonParser();
+
+        /* cache the result of parsing a world's generator options so that we don't have to parse json every time a hot spring tries to generate */
+        private static Object2BooleanMap<World> parsedBOPWorlds = new Object2BooleanArrayMap<World>();
+
+        private static boolean areBOPHotSpringsEnabled(World world)
+        {
+            if (world.getWorldType().getName().equals("BIOMESOP"))
+            {
+                String genOptions = world.getWorldInfo().getGeneratorOptions();
+                if (StringUtils.isNullOrEmpty(genOptions))
+                    return true;
+                else if (parsedBOPWorlds.containsKey(world))
+                    return parsedBOPWorlds.getBoolean(world);
+                else
+                {
+                    try
+                    {
+                        JsonElement parsed = jsonParser.parse(genOptions);
+                        if (parsed.isJsonObject())
+                        {
+                            boolean generateHotSprings = JsonUtils.getBoolean(parsed.getAsJsonObject(), "generateHotSprings");
+                            if (parsedBOPWorlds.size() > 50)
+                                parsedBOPWorlds = new Object2BooleanArrayMap<World>();
+                            parsedBOPWorlds.put(world, generateHotSprings);
+                            return generateHotSprings;
+                        }
+                    }
+                    catch (JsonParseException excep)
+                    {
+                        ;
+                    }
+                }
+            }
+            return false;
+        }
     }
 
     @SubscribeEvent
@@ -199,6 +256,29 @@ public class SimplyHotSpringsConfig
             ConfigManager.sync(Reference.MODID, Config.Type.INSTANCE);
 
             BlockHotSpringWater.updateConfigSettings();
+        }
+    }
+
+    /**
+     * Removes old config options from previous versions.
+     */
+    public static void removeOldOptions()
+    {
+        // why do i have to use reflection to access my own config???? annotation configs were a mistake
+        try
+        {
+            Method getMethod = ConfigManager.class.getDeclaredMethod("getConfiguration", String.class, String.class);
+            getMethod.setAccessible(true);
+            Configuration config = (Configuration) getMethod.invoke(null, Reference.MODID, "");
+            if (config.renameProperty(Configuration.CATEGORY_GENERAL + Configuration.CATEGORY_SPLITTER + "worldgen",
+                    WorldGen.oldBOPGenConfigName, WorldGen.newBOPGenConfigName))
+            {
+                ConfigManager.sync(Reference.MODID, Config.Type.INSTANCE);
+            }
+        }
+        catch (Exception excep)
+        {
+            ;
         }
     }
 
