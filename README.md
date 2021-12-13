@@ -1,5 +1,7 @@
 # Simply Hot Springs
  A mod that adds Hot Springs.
+ 
+ [CurseForge](https://www.curseforge.com/minecraft/mc-mods/simply-hot-springs)
 
 ***
 
