@@ -52,7 +52,6 @@ public class SimplyHotSpringsConfig
     @LangKey(LANG_CONFIG + "potionEffectSettings")
     public static int[] potionEffectSettings = { 50, 0 };
 
-    @RequiresWorldRestart
     @LangKey(LANG_CONFIG + "worldgen")
     public static WorldGen worldgen;
 
@@ -68,6 +67,7 @@ public class SimplyHotSpringsConfig
                 "WASTELAND", "BEACH", "VOID", "HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, NETHER, END, MUSHROOM, "
                         + "MAGICAL, RARE, OCEAN, RIVER, WATER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, SNOWY, WASTELAND, BEACH, VOID" };
 
+        @RequiresWorldRestart
         @Name("World Generation")
         @LangKey(LANG_CONFIG_WORLDGEN + "worldGen")
         public static boolean worldGen = true;
@@ -78,14 +78,17 @@ public class SimplyHotSpringsConfig
         @Ignore
         public static final String newBOPGenConfigName = "Generate Alongside Biomes O' Plenty Hot Springs";
 
+        @RequiresWorldRestart
         @Name(newBOPGenConfigName)
         @LangKey(LANG_CONFIG_WORLDGEN + "worldGenIfBOPSprings")
         public static boolean worldGenIfBOPSprings = false;
 
+        @RequiresWorldRestart
         @Name("Generate in Superflat World Type")
         @LangKey(LANG_CONFIG_WORLDGEN + "worldGenIfSuperflat")
         public static boolean worldGenIfSuperflat = false;
 
+        @RequiresWorldRestart
         @Name("Generation Chance")
         @RangeInt(min = 1)
         @LangKey(LANG_CONFIG_WORLDGEN + "chance")
@@ -95,26 +98,32 @@ public class SimplyHotSpringsConfig
         @LangKey(LANG_CONFIG_WORLDGEN + "debug")
         public static boolean debug = false;
 
+        @RequiresWorldRestart
         @Name("Dimension Whitelist")
         @LangKey(LANG_CONFIG_WORLDGEN + "dimWhitelist")
         public static int[] dimWhitelist = { 0 };
 
+        @RequiresWorldRestart
         @Name("Dimension Blacklist")
         @LangKey(LANG_CONFIG_WORLDGEN + "dimBlacklist")
         public static int[] dimBlacklist = {};
 
+        @RequiresWorldRestart
         @Name("Biome Type Whitelist")
         @LangKey(LANG_CONFIG_WORLDGEN + "biomeTypeWhitelist")
         public static String[] biomeTypeWhitelist = {};
 
+        @RequiresWorldRestart
         @Name("Biome Type Blacklist")
         @LangKey(LANG_CONFIG_WORLDGEN + "biomeTypeBlacklist")
         public static String[] biomeTypeBlacklist = { "DRY", "SAVANNA", "NETHER", "END", "OCEAN", "RIVER", "SANDY", "BEACH", "VOID" };
 
+        @RequiresWorldRestart
         @Name("Biome Name Whitelist")
         @LangKey(LANG_CONFIG_WORLDGEN + "biomeNameWhitelist")
         public static String[] biomeNameWhitelist = {};
 
+        @RequiresWorldRestart
         @Name("Biome Name Blacklist")
         @LangKey(LANG_CONFIG_WORLDGEN + "biomeNameBlacklist")
         public static String[] biomeNameBlacklist = {};
@@ -262,7 +271,7 @@ public class SimplyHotSpringsConfig
             ConfigManager.sync(Reference.MODID, Config.Type.INSTANCE);
 
             BlockHotSpringWater.updateConfigSettings();
-            
+
             WorldGen.parsedBOPWorlds.clear();
         }
     }

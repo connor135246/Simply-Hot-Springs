@@ -104,6 +104,7 @@ public class BlockHotSpringWater extends BlockFluidClassic
             Particle suspended = Minecraft.getMinecraft().effectRenderer.spawnEffectParticle(EnumParticleTypes.SUSPENDED.getParticleID(),
                     x + (double) rand.nextFloat(), y + (double) rand.nextFloat(), z + (double) rand.nextFloat(), 0.0, 0.0, 0.0);
             suspended.multiplyVelocity(0.0F); // makes them float up
+            suspended.setRBGColorF(0.1F, 0.7F, 0.7F);
         }
 
         if (rand.nextInt(10) == 0 && world.getBlockState(pos.down()).isSideSolid(world, pos, EnumFacing.UP))
