@@ -89,10 +89,13 @@ public class CommandSimplyHotSprings implements ICommand
                         CommandBase.joinNiceString(BiomeDictionary.getTypes(biome).toArray())));
 
                 String reason = SimplyHotSpringsConfig.WorldGen.generateReason(world, pos);
-                boolean canGenerate = reason.startsWith(TextFormatting.GREEN.toString());
+                boolean canGenerate = reason.startsWith("Y");
                 ITextComponent hotSpringMessage = new TextComponentTranslation(LANG_COMMAND + "hot_springs")
                         .setStyle(new Style().setColor(TextFormatting.AQUA).setHoverEvent(
-                                new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_COMMAND + "reason").appendText("\n" + reason))))
+                                new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                        new TextComponentTranslation(LANG_COMMAND + "reason").appendText("\n")
+                                                .appendSibling(new TextComponentTranslation(reason.substring(1))
+                                                        .setStyle(new Style().setColor(canGenerate ? TextFormatting.GREEN : TextFormatting.DARK_RED))))))
                         .appendSibling(new TextComponentTranslation(LANG_COMMAND + (canGenerate ? "yes" : "no"))
                                 .setStyle(new Style().setColor(canGenerate ? TextFormatting.GREEN : TextFormatting.DARK_RED)));
                 sender.sendMessage(hotSpringMessage);

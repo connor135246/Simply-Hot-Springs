@@ -13,8 +13,6 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.StringUtils;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
@@ -166,37 +164,37 @@ public class SimplyHotSpringsConfig
         public static String generateReason(World world, BlockPos pos)
         {
             if (!worldGen)
-                return translateGenReason("no_world_gen", false);
+                return generateReasonKey("no_world_gen", false);
             if (!worldGenIfBOPSprings && areBOPHotSpringsEnabled(world))
-                return translateGenReason("bop_springs", false);
+                return generateReasonKey("bop_springs", false);
             if (!worldGenIfSuperflat && world.getWorldType() == WorldType.FLAT)
-                return translateGenReason("superflat", false);
+                return generateReasonKey("superflat", false);
             if (arrayContains(dimBlacklist, world.provider.getDimension()))
-                return translateGenReason("dim_blacklist", false);
+                return generateReasonKey("dim_blacklist", false);
             if (dimWhitelist.length != 0 && !arrayContains(dimWhitelist, world.provider.getDimension()))
-                return translateGenReason("dim_whitelist", false);
+                return generateReasonKey("dim_whitelist", false);
 
             Biome biome = world.getBiomeForCoordsBody(pos);
 
             if (arrayContains(biomeNameWhitelist, biome.getRegistryName().toString()))
-                return translateGenReason("biome_name_whitelist", true);
+                return generateReasonKey("biome_name_whitelist", true);
             if (arrayContains(biomeNameBlacklist, biome.getRegistryName().toString()))
-                return translateGenReason("biome_name_blacklist", false);
+                return generateReasonKey("biome_name_blacklist", false);
 
             if (arrayContains(biomeTypeBlacklist, BiomeDictionary.getTypes(biome)))
-                return translateGenReason("biome_type_blacklist", false);
+                return generateReasonKey("biome_type_blacklist", false);
             if (arrayContains(biomeTypeWhitelist, BiomeDictionary.getTypes(biome)))
-                return translateGenReason("biome_type_whitelist", true);
+                return generateReasonKey("biome_type_whitelist", true);
 
             if (biomeNameWhitelist.length == 0 || biomeTypeWhitelist.length == 0)
-                return translateGenReason("not_blacklisted", true);
+                return generateReasonKey("not_blacklisted", true);
 
-            return translateGenReason("not_whitelisted", false);
+            return generateReasonKey("not_whitelisted", false);
         }
 
-        private static String translateGenReason(String key, boolean yes)
+        private static String generateReasonKey(String key, boolean yes)
         {
-            return (yes ? TextFormatting.GREEN : TextFormatting.DARK_RED) + I18n.translateToLocal(Reference.MODID + ".gen.reason." + key);
+            return (yes ? "Y" : "N") + Reference.MODID + ".gen.reason." + key;
         }
 
         private static boolean arrayContains(int[] array, int value)

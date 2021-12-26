@@ -4,12 +4,10 @@ import java.util.Random;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.blocks.BlockHotSpringWater;
-import connor135246.simplyhotsprings.util.Reference;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.translation.I18n;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -90,7 +88,7 @@ public class HotSpringsWorldGen implements IWorldGenerator
             }
 
             if (SimplyHotSpringsConfig.WorldGen.debug)
-                SimplyHotSprings.modlog.info(I18n.translateToLocalFormatted(Reference.MODID + ".gen.debug", pos.getX() + 8, pos.getY() + 4, pos.getZ() + 8));
+                SimplyHotSprings.modlog.info("Generated a hot spring around {} {} {}", pos.getX() + 8, pos.getY() + 4, pos.getZ() + 8);
 
             for (int l1 = 0; l1 < 16; ++l1)
             {
