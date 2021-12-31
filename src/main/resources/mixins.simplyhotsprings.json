@@ -1,0 +1,17 @@
+{
+    "required": false,
+    "minVersion": "0.8",
+    "package": "connor135246.simplyhotsprings.mixin",
+    "refmap": "mixins.simplyhotsprings.refmap.json",
+    "compatibilityLevel": "JAVA_8",
+    "target": "@env(DEFAULT)",
+    "mixins": [
+        "SeaGrassBlockMixin",
+        "TallSeaGrassBlockMixin",
+        "KelpTopBlockMixin",
+        "AbstractCoralPlantBlockMixin",
+        "ConduitBlockMixin",
+        "WorldEntitySpawnerMixin",
+        "FishingBobberEntityMixin"
+    ]
+}

@@ -1,300 +1,414 @@
 package connor135246.simplyhotsprings.util;
 
-import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
+import javax.annotation.Nullable;
 
-import connor135246.simplyhotsprings.common.blocks.BlockHotSpringWater;
-import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
-import net.minecraft.util.JsonUtils;
-import net.minecraft.util.StringUtils;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldType;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.electronwill.nightconfig.core.Config;
+
+import connor135246.simplyhotsprings.SimplyHotSprings;
+import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
+import connor135246.simplyhotsprings.common.world.gen.placement.ConfigChancePlacement;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.potion.Effect;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.util.RegistryKey;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Util;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.gen.GenerationStage;
 import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.Config.Ignore;
-import net.minecraftforge.common.config.Config.LangKey;
-import net.minecraftforge.common.config.Config.Name;
-import net.minecraftforge.common.config.Config.RangeInt;
-import net.minecraftforge.common.config.Config.RequiresWorldRestart;
-import net.minecraftforge.common.config.ConfigManager;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
+import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
+import net.minecraftforge.common.ForgeConfigSpec.IntValue;
+import net.minecraftforge.event.world.BiomeLoadingEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 
-@Config(modid = Reference.MODID)
-@EventBusSubscriber
+@EventBusSubscriber(modid = SimplyHotSprings.MODID, bus = Bus.MOD)
 public class SimplyHotSpringsConfig
 {
 
-    @Ignore
-    public static final String LANG_CONFIG = Reference.MODID + ".config.";
+    // i keep having issues where changing the config file while the game is open sometimes makes forge read the entire config as null values and resets the whole thing.
+    // am i the only one? at least configured works.
 
-    @Name("Creates Source Blocks")
-    @LangKey(LANG_CONFIG + "createsSources")
-    public static boolean createsSources = true;
-
-    @Name("Potion Effect")
-    @LangKey(LANG_CONFIG + "potionEffect")
-    public static String potionEffect = "minecraft:regeneration";
-
-    @Name("Potion Effect Settings")
-    @RangeInt(min = 0)
-    @LangKey(LANG_CONFIG + "potionEffectSettings")
-    public static int[] potionEffectSettings = { 50, 0 };
-
-    @LangKey(LANG_CONFIG + "worldgen")
-    public static WorldGen worldgen;
-
-    public static class WorldGen
+    public static class Common
     {
-        @Ignore
+
+        // default
+        public static final String LANG_CONFIG = SimplyHotSprings.MODID + ".config.";
+
+        public final BooleanValue createsSources;
+
+        public final ConfigValue<String> potionEffect;
+        public final IntValue potionEffectTimer;
+        public final IntValue potionEffectAmplifier;
+
+        // worldgen
         public static final String LANG_CONFIG_WORLDGEN = LANG_CONFIG + "worldgen.";
 
-        @Name("#How to fill Whitelists and Blacklists")
-        @LangKey(LANG_CONFIG_WORLDGEN + "info")
-        public static String[] info = { "HOT", "COLD", "SPARSE", "DENSE", "WET", "DRY", "SAVANNA", "CONIFEROUS", "JUNGLE", "SPOOKY", "DEAD", "LUSH", "NETHER",
-                "END", "MUSHROOM", "MAGICAL", "RARE", "OCEAN", "RIVER", "WATER", "MESA", "FOREST", "PLAINS", "MOUNTAIN", "HILLS", "SWAMP", "SANDY", "SNOWY",
-                "WASTELAND", "BEACH", "VOID", "HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, NETHER, END, MUSHROOM, "
-                        + "MAGICAL, RARE, OCEAN, RIVER, WATER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, SNOWY, WASTELAND, BEACH, VOID" };
+        public final ConfigValue<List<? extends String>> info;
 
-        @RequiresWorldRestart
-        @Name("World Generation")
-        @LangKey(LANG_CONFIG_WORLDGEN + "worldGen")
-        public static boolean worldGen = true;
+        public final BooleanValue worldGen;
+        public final IntValue chance;
+        public final BooleanValue debug;
 
-        // changed config option
-        @Ignore
-        public static final String oldBOPGenConfigName = "Generate in Biomes O' Plenty World Type";
-        @Ignore
-        public static final String newBOPGenConfigName = "Generate Alongside Biomes O' Plenty Hot Springs";
+        public final ConfigValue<List<? extends String>> biomeTypeWhitelist;
+        public final ConfigValue<List<? extends String>> biomeTypeBlacklist;
+        public final ConfigValue<List<? extends String>> biomeNameWhitelist;
+        public final ConfigValue<List<? extends String>> biomeNameBlacklist;
 
-        @RequiresWorldRestart
-        @Name(newBOPGenConfigName)
-        @LangKey(LANG_CONFIG_WORLDGEN + "worldGenIfBOPSprings")
-        public static boolean worldGenIfBOPSprings = false;
-
-        @RequiresWorldRestart
-        @Name("Generate in Superflat World Type")
-        @LangKey(LANG_CONFIG_WORLDGEN + "worldGenIfSuperflat")
-        public static boolean worldGenIfSuperflat = false;
-
-        @RequiresWorldRestart
-        @Name("Generation Chance")
-        @RangeInt(min = 1)
-        @LangKey(LANG_CONFIG_WORLDGEN + "chance")
-        public static int chance = 275;
-
-        @Name("Generation Debug")
-        @LangKey(LANG_CONFIG_WORLDGEN + "debug")
-        public static boolean debug = false;
-
-        @RequiresWorldRestart
-        @Name("Dimension Whitelist")
-        @LangKey(LANG_CONFIG_WORLDGEN + "dimWhitelist")
-        public static int[] dimWhitelist = { 0 };
-
-        @RequiresWorldRestart
-        @Name("Dimension Blacklist")
-        @LangKey(LANG_CONFIG_WORLDGEN + "dimBlacklist")
-        public static int[] dimBlacklist = {};
-
-        @RequiresWorldRestart
-        @Name("Biome Type Whitelist")
-        @LangKey(LANG_CONFIG_WORLDGEN + "biomeTypeWhitelist")
-        public static String[] biomeTypeWhitelist = {};
-
-        @RequiresWorldRestart
-        @Name("Biome Type Blacklist")
-        @LangKey(LANG_CONFIG_WORLDGEN + "biomeTypeBlacklist")
-        public static String[] biomeTypeBlacklist = { "DRY", "SAVANNA", "NETHER", "END", "OCEAN", "RIVER", "SANDY", "BEACH", "VOID" };
-
-        @RequiresWorldRestart
-        @Name("Biome Name Whitelist")
-        @LangKey(LANG_CONFIG_WORLDGEN + "biomeNameWhitelist")
-        public static String[] biomeNameWhitelist = {};
-
-        @RequiresWorldRestart
-        @Name("Biome Name Blacklist")
-        @LangKey(LANG_CONFIG_WORLDGEN + "biomeNameBlacklist")
-        public static String[] biomeNameBlacklist = {};
-
-        public static boolean canGenerateInGeneral(World world)
+        Common(ForgeConfigSpec.Builder builder)
         {
-            return worldGen
-                    && (worldGenIfBOPSprings ? true : !areBOPHotSpringsEnabled(world))
-                    && (worldGenIfSuperflat ? true : world.getWorldType() != WorldType.FLAT)
-                    && !arrayContains(dimBlacklist, world.provider.getDimension())
-                    && (dimWhitelist.length == 0 || arrayContains(dimWhitelist, world.provider.getDimension()));
+            Config.setInsertionOrderPreserved(true);
+
+            createsSources = builder
+                    .translation(LANG_CONFIG + "createsSources")
+                    .comment("If true, Hot Spring Water makes infinite water sources, like vanilla water does.")
+                    .define("Creates Source Blocks", true);
+
+            potionEffect = builder
+                    .translation(LANG_CONFIG + "potionEffect")
+                    .comment("The namespaced effect that Hot Spring Water applies to entities. "
+                            + "If the given effect isn't found (or left blank), no effect is applied.")
+                    .define("Potion Effect", "minecraft:regeneration");
+
+            potionEffectTimer = builder
+                    .translation(LANG_CONFIG + "potionEffectTimer")
+                    .comment("The duration of the effect, in ticks. 20 ticks = 1 second.")
+                    .defineInRange("Potion Effect Timer", 50, 1, Integer.MAX_VALUE);
+
+            potionEffectAmplifier = builder
+                    .translation(LANG_CONFIG + "potionEffectAmplifier")
+                    .comment("The amplifier of the effect. 0 is level 1.")
+                    .defineInRange("Potion Effect Amplifier", 0, 0, 255);
+
+            builder.comment("Most of these settings require any open world to be closed and reopened.")
+                    .push("worldgen");
+
+            // for the string lists, the default supplier apparently can't be an empty list or else configured thinks it's a boolean list instead of a string list and turns all
+            // your inputs into "false". very strange.
+
+            // there are 3 new biome dictionary types since 1.12: PLATEAU, MODIFIED, and OVERWORLD
+            info = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "info")
+                    .comment("The command \"/simplyhotsprings locationinfo\" will tell you the name and types of the biome you're currently in. "
+                            + "Use those results to fill in your whitelists and blacklists. "
+                            + "It will also tell you whether or not a Hot Spring can generate there, so you can use it for testing your whitelists and blacklists. ",
+                            "(This config setting does nothing other than list all default biome types for your convenience, so put whatever you want in here.)")
+                    .defineListAllowEmpty(Arrays.asList("#HOW TO FILL WHITELISTS AND BLACKLISTS"),
+                            () -> Arrays.asList("HOT", "COLD", "SPARSE", "DENSE", "WET", "DRY", "SAVANNA", "CONIFEROUS", "JUNGLE", "SPOOKY", "DEAD", "LUSH",
+                                    "MUSHROOM", "MAGICAL", "RARE", "PLATEAU", "MODIFIED", "OCEAN", "RIVER", "WATER", "MESA", "FOREST", "PLAINS", "MOUNTAIN",
+                                    "HILLS", "SWAMP", "SANDY", "SNOWY", "WASTELAND", "BEACH", "VOID", "OVERWORLD", "NETHER", "END",
+                                    "HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, MUSHROOM, MAGICAL, RARE, PLATEAU, "
+                                            + "MODIFIED, OCEAN, RIVER, WATER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, SNOWY, WASTELAND, BEACH, VOID, "
+                                            + "OVERWORLD, NETHER, END"),
+                            input -> true);
+
+            worldGen = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "worldGen")
+                    .comment("Set to false to stop Hot Springs from generating.",
+                            "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
+                    .worldRestart()
+                    .define("World Generation", true);
+
+            chance = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "chance")
+                    .comment("The chance for a Hot Spring to generate is 1 over this value. So lower values are more likely.",
+                            "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
+                    .worldRestart()
+                    .defineInRange("Generation Chance", 275, 1, Integer.MAX_VALUE);
+
+            debug = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "debug")
+                    .comment("When a Hot Spring generates in the world, prints the location to console.")
+                    .define("Generation Debug", false);
+
+            biomeTypeWhitelist = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "biomeTypeWhitelist")
+                    .comment("The biome types where Hot Springs are allowed to generate. If empty, all biome types are allowed. ",
+                            "The Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied.",
+                            "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
+                    .worldRestart()
+                    .defineListAllowEmpty(Arrays.asList("Biome Type Whitelist"),
+                            () -> Arrays.asList(""),
+                            Common::nonBlankString);
+
+            biomeTypeBlacklist = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "biomeTypeBlacklist")
+                    .comment("The biome types where Hot Springs are NOT allowed to generate.",
+                            "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
+                    .worldRestart()
+                    .defineListAllowEmpty(Arrays.asList("Biome Type Blacklist"),
+                            () -> Arrays.asList("DRY", "SAVANNA", "NETHER", "END", "OCEAN", "RIVER", "SANDY", "BEACH", "VOID"),
+                            Common::nonBlankString);
+
+            biomeNameWhitelist = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "biomeNameWhitelist")
+                    .comment("The individual biomes where Hot Springs are allowed to generate. If empty, all biomes are allowed. ",
+                            "The Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied.",
+                            "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
+                    .worldRestart()
+                    .defineListAllowEmpty(Arrays.asList("Biome Name Whitelist"),
+                            () -> Arrays.asList(""),
+                            Common::nonBlankString);
+
+            biomeNameBlacklist = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "biomeNameBlacklist")
+                    .comment("The individual biomes where Hot Springs are NOT allowed to generate.",
+                            "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
+                    .worldRestart()
+                    .defineListAllowEmpty(Arrays.asList("Biome Name Blacklist"),
+                            () -> Arrays.asList("biomesoplenty:origin_valley"),
+                            Common::nonBlankString);
+
+            builder.pop();
         }
 
-        /**
-         * doesn't check if it {@link #canGenerateInGeneral(World)}
-         */
-        public static boolean canGenerateAtPosition(World world, BlockPos pos)
+        private static boolean nonBlankString(Object object)
         {
-            Biome biome = world.getBiomeForCoordsBody(pos);
-
-            if (arrayContains(biomeNameWhitelist, biome.getRegistryName().toString()))
-                return true;
-            if (arrayContains(biomeNameBlacklist, biome.getRegistryName().toString()))
-                return false;
-
-            if (arrayContains(biomeTypeBlacklist, BiomeDictionary.getTypes(biome)))
-                return false;
-            if (arrayContains(biomeTypeWhitelist, BiomeDictionary.getTypes(biome)))
-                return true;
-
-            if (biomeNameWhitelist.length == 0 || biomeTypeWhitelist.length == 0)
-                return true;
-
-            return false;
+            return object instanceof String ? !StringUtils.isBlank(object.toString()) : false;
         }
 
-        /**
-         * @return an explanation of why the hot spring did or did not generate.
-         */
-        public static String generateReason(World world, BlockPos pos)
+    }
+
+    //
+
+    private static @Nullable Effect potionEffect = null;
+
+    private static void updateEffect()
+    {
+        String input = COMMON.potionEffect.get();
+        if (StringUtils.isBlank(input))
+            potionEffect = null;
+        else
         {
-            if (!worldGen)
-                return generateReasonKey("no_world_gen", false);
-            if (!worldGenIfBOPSprings && areBOPHotSpringsEnabled(world))
-                return generateReasonKey("bop_springs", false);
-            if (!worldGenIfSuperflat && world.getWorldType() == WorldType.FLAT)
-                return generateReasonKey("superflat", false);
-            if (arrayContains(dimBlacklist, world.provider.getDimension()))
-                return generateReasonKey("dim_blacklist", false);
-            if (dimWhitelist.length != 0 && !arrayContains(dimWhitelist, world.provider.getDimension()))
-                return generateReasonKey("dim_whitelist", false);
-
-            Biome biome = world.getBiomeForCoordsBody(pos);
-
-            if (arrayContains(biomeNameWhitelist, biome.getRegistryName().toString()))
-                return generateReasonKey("biome_name_whitelist", true);
-            if (arrayContains(biomeNameBlacklist, biome.getRegistryName().toString()))
-                return generateReasonKey("biome_name_blacklist", false);
-
-            if (arrayContains(biomeTypeBlacklist, BiomeDictionary.getTypes(biome)))
-                return generateReasonKey("biome_type_blacklist", false);
-            if (arrayContains(biomeTypeWhitelist, BiomeDictionary.getTypes(biome)))
-                return generateReasonKey("biome_type_whitelist", true);
-
-            if (biomeNameWhitelist.length == 0 || biomeTypeWhitelist.length == 0)
-                return generateReasonKey("not_blacklisted", true);
-
-            return generateReasonKey("not_whitelisted", false);
-        }
-
-        private static String generateReasonKey(String key, boolean yes)
-        {
-            return (yes ? "Y" : "N") + Reference.MODID + ".gen.reason." + key;
-        }
-
-        private static boolean arrayContains(int[] array, int value)
-        {
-            for (int element : array)
-                if (element == value)
-                    return true;
-            return false;
-        }
-
-        private static boolean arrayContains(String[] array, String value)
-        {
-            for (String element : array)
-                if (element.equalsIgnoreCase(value))
-                    return true;
-            return false;
-        }
-
-        private static boolean arrayContains(String[] array, Set<BiomeDictionary.Type> values)
-        {
-            for (String element : array)
-                for (BiomeDictionary.Type value : values)
-                    if (element.equalsIgnoreCase(value.getName()))
-                        return true;
-            return false;
-        }
-
-        /* parser for BOP world generator options */
-        private static final JsonParser jsonParser = new JsonParser();
-
-        /* cache the result of parsing a world's generator options so that we don't have to parse json every time a hot spring tries to generate */
-        private static Object2BooleanMap<World> parsedBOPWorlds = new Object2BooleanArrayMap<World>();
-
-        private static boolean areBOPHotSpringsEnabled(World world)
-        {
-            if (world.getWorldType().getName().equals("BIOMESOP"))
-            {
-                String genOptions = world.getWorldInfo().getGeneratorOptions();
-                if (StringUtils.isNullOrEmpty(genOptions))
-                    return true;
-                else if (parsedBOPWorlds.containsKey(world))
-                    return parsedBOPWorlds.getBoolean(world);
-                else
-                {
-                    try
-                    {
-                        JsonElement parsed = jsonParser.parse(genOptions);
-                        if (parsed.isJsonObject())
-                        {
-                            boolean generateHotSprings = JsonUtils.getBoolean(parsed.getAsJsonObject(), "generateHotSprings");
-                            if (parsedBOPWorlds.size() > 50)
-                                parsedBOPWorlds.clear();
-                            parsedBOPWorlds.put(world, generateHotSprings);
-                            return generateHotSprings;
-                        }
-                    }
-                    catch (JsonParseException excep)
-                    {
-                        ;
-                    }
-                }
-            }
-            return false;
+            potionEffect = ForgeRegistries.POTIONS.getValue(new ResourceLocation(input));
+            if (potionEffect == null)
+                warnInvalidEntry("Potion Effect", input);
         }
     }
 
-    @SubscribeEvent
-    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event)
+    public static @Nullable EffectInstance getNewHotSpringsEffect()
     {
-        if (event.getModID().equals(Reference.MODID))
+        return potionEffect == null ? null : new EffectInstance(potionEffect, COMMON.potionEffectTimer.get(), COMMON.potionEffectAmplifier.get(), true, true);
+    }
+
+    /**
+     * adds the hot springs effect to the entity, if it's not null and the entity doesn't already have the hot springs effect
+     */
+    public static boolean addHotSpringsEffect(LivingEntity livingEntity)
+    {
+        if (potionEffect != null && !livingEntity.isPotionActive(potionEffect))
+            return livingEntity.addPotionEffect(getNewHotSpringsEffect());
+        return false;
+    }
+
+    private static void warnInvalidEntry(String config, String input)
+    {
+        SimplyHotSprings.log.warn("\"" + config + "\" config entry \"" + input + "\" was not found");
+    }
+
+    //
+
+    private static final Set<BiomeDictionary.Type> biomeTypeWhitelist = new HashSet<BiomeDictionary.Type>();
+    private static final Set<BiomeDictionary.Type> biomeTypeBlacklist = new HashSet<BiomeDictionary.Type>();
+
+    private static final Set<RegistryKey<Biome>> biomeNameWhitelist = new HashSet<RegistryKey<Biome>>();
+    private static final Set<RegistryKey<Biome>> biomeNameBlacklist = new HashSet<RegistryKey<Biome>>();
+
+    /**
+     * parses user input whitelists & blacklists into actual whitelists & blacklists
+     */
+    protected static void fillBiomeSets()
+    {
+        if (!COMMON.worldGen.get())
+            return;
+
+        biomeTypeWhitelist.clear();
+        boolean invalidEntries = false;
+        inputLoop: for (String input : COMMON.biomeTypeWhitelist.get())
         {
-            ConfigManager.sync(Reference.MODID, Config.Type.INSTANCE);
+            if (!StringUtils.isBlank(input))
+            {
+                for (BiomeDictionary.Type type : BiomeDictionary.Type.getAll())
+                    if (type.getName().equalsIgnoreCase(input))
+                    {
+                        biomeTypeWhitelist.add(type);
+                        continue inputLoop;
+                    }
+                warnInvalidEntry("Biome Type Whitelist", input);
+                invalidEntries = true;
+            }
+        }
 
-            BlockHotSpringWater.updateConfigSettings();
+        // whitelists have a specific behaviour if they're empty - they'll match everything.
+        // i'm assuming that if the whitelist contains only invalid entries,
+        // a user probably just made a mistake and doesn't want me to treat it like it was empty.
+        // so i add a dummy entry here.
+        if (biomeTypeWhitelist.isEmpty() && invalidEntries)
+            biomeTypeWhitelist.add(null);
 
-            WorldGen.parsedBOPWorlds.clear();
+        biomeTypeBlacklist.clear();
+        inputLoop: for (String input : COMMON.biomeTypeBlacklist.get())
+        {
+            if (!StringUtils.isBlank(input))
+            {
+                for (BiomeDictionary.Type type : BiomeDictionary.Type.getAll())
+                    if (type.getName().equalsIgnoreCase(input))
+                    {
+                        biomeTypeBlacklist.add(type);
+                        continue inputLoop;
+                    }
+                warnInvalidEntry("Biome Type Blacklist", input);
+            }
+        }
+
+        biomeNameWhitelist.clear();
+        invalidEntries = false;
+        for (String input : COMMON.biomeNameWhitelist.get())
+        {
+            if (!StringUtils.isBlank(input))
+            {
+                ResourceLocation name = new ResourceLocation(input);
+                if (ForgeRegistries.BIOMES.containsKey(name))
+                    biomeNameWhitelist.add(RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, name));
+                else
+                {
+                    warnInvalidEntry("Biome Name Whitelist", input);
+                    invalidEntries = true;
+                }
+            }
+        }
+
+        // see above.
+        if (biomeNameWhitelist.isEmpty() && invalidEntries)
+            biomeNameWhitelist.add(null);
+
+        biomeNameBlacklist.clear();
+        for (String input : COMMON.biomeNameBlacklist.get())
+        {
+            if (!StringUtils.isBlank(input))
+            {
+                ResourceLocation name = new ResourceLocation(input);
+                if (ForgeRegistries.BIOMES.containsKey(name))
+                    biomeNameBlacklist.add(RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, name));
+                else
+                    warnInvalidEntry("Biome Name Blacklist", input);
+            }
         }
     }
 
     /**
-     * Removes old config options from previous versions.
+     * the map of biomes to reasons they can or cannot generate. emptied and recreated when loading a world. <br>
+     * this field is only used from the logical server side, from {@link SimplyHotSpringsCommand}.
      */
-    public static void removeOldOptions()
+    public static final Object2ObjectOpenHashMap<RegistryKey<Biome>, GenerationReason> biomeReasons = Util.make(
+            new Object2ObjectOpenHashMap<RegistryKey<Biome>, GenerationReason>(), map -> map.defaultReturnValue(GenerationReason.UNKNOWN_BIOME));
+
+    /**
+     * Called from {@link SimplyHotSpringsEventHandler#onBiomeLoading} <br>
+     * note: the client's biome features may not be accurate to the dedicated server's biome features, since the Common config is not synced.
+     */
+    public static void addSpringsGeneration(BiomeLoadingEvent event)
     {
-        // why do i have to use reflection to access my own config???? annotation configs were a mistake
-        try
+        if (event.getName() != null)
         {
-            Method getMethod = ConfigManager.class.getDeclaredMethod("getConfiguration", String.class, String.class);
-            getMethod.setAccessible(true);
-            Configuration config = (Configuration) getMethod.invoke(null, Reference.MODID, "");
-            if (config.renameProperty(Configuration.CATEGORY_GENERAL + Configuration.CATEGORY_SPLITTER + "worldgen",
-                    WorldGen.oldBOPGenConfigName, WorldGen.newBOPGenConfigName))
+            RegistryKey<Biome> biomeLoading = RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, event.getName());
+            if (SimplyHotSpringsCommon.CONFIGURED_HOT_SPRINGS_FEATURE == null)
+                biomeReasons.put(biomeLoading, GenerationReason.CONFIGURED_ERROR);
+            else
             {
-                ConfigManager.sync(Reference.MODID, Config.Type.INSTANCE);
+                GenerationReason reason = SimplyHotSpringsConfig.getGenerationReason(biomeLoading);
+                if (reason.allowsGeneration())
+                    event.getGeneration().withFeature(GenerationStage.Decoration.LAKES, SimplyHotSpringsCommon.CONFIGURED_HOT_SPRINGS_FEATURE);
+                biomeReasons.put(biomeLoading, reason);
             }
         }
-        catch (Exception excep)
-        {
-            ;
-        }
+    }
+
+    /**
+     * Called from {@link SimplyHotSpringsEventHandler#onServerAboutToStart}
+     */
+    public static void finalizeSpringsGeneration(FMLServerAboutToStartEvent event)
+    {
+        biomeReasons.trim();
+        ConfigChancePlacement.updateChance(COMMON.chance.get());
+    }
+
+    /**
+     * Called from {@link SimplyHotSpringsEventHandler#onServerStopped}
+     */
+    public static void resetSpringsGeneration(FMLServerStoppedEvent event)
+    {
+        biomeReasons.clear();
+    }
+
+    /**
+     * @return a GenerationReason of why the hot spring can or cannot generate.
+     */
+    public static GenerationReason getGenerationReason(RegistryKey<Biome> biomeKey)
+    {
+        if (!COMMON.worldGen.get())
+            return GenerationReason.NO_WORLD_GEN;
+
+        if (biomeNameWhitelist.contains(biomeKey))
+            return GenerationReason.IN_NAME_WHITELIST;
+        if (biomeNameBlacklist.contains(biomeKey))
+            return GenerationReason.IN_NAME_BLACKLIST;
+
+        Set<BiomeDictionary.Type> biomeTypes = BiomeDictionary.getTypes(biomeKey);
+        if (biomeTypeBlacklist.stream().anyMatch(biomeTypes::contains))
+            return GenerationReason.IN_TYPE_BLACKLIST;
+        if (biomeTypeWhitelist.stream().anyMatch(biomeTypes::contains))
+            return GenerationReason.IN_TYPE_WHITELIST;
+
+        if (biomeNameWhitelist.isEmpty() || biomeTypeWhitelist.isEmpty())
+            return GenerationReason.NOT_BLACKLISTED;
+
+        return GenerationReason.NOT_WHITELISTED;
+    }
+
+    //
+
+    public static final ForgeConfigSpec commonSpec;
+    public static final Common COMMON;
+    static
+    {
+        final Pair<Common, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Common::new);
+        commonSpec = specPair.getRight();
+        COMMON = specPair.getLeft();
+    }
+
+    @SubscribeEvent
+    public static void onLoad(ModConfig.Loading event)
+    {
+        onReOrLoad();
+    }
+
+    @SubscribeEvent
+    public static void onReload(ModConfig.Reloading event)
+    {
+        onReOrLoad();
+    }
+
+    private static void onReOrLoad()
+    {
+        updateEffect();
+        fillBiomeSets();
     }
 
 }

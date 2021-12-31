@@ -1,59 +1,44 @@
 package connor135246.simplyhotsprings;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import connor135246.simplyhotsprings.common.CommonProxy;
-import connor135246.simplyhotsprings.util.Reference;
-import net.minecraftforge.fluids.FluidRegistry;
+import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
+import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
+import net.minecraft.fluid.Fluid;
+import net.minecraft.fluid.FluidState;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ITag;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-@Mod(modid = Reference.MODID, name = Reference.NAME, version = Reference.VERSION, dependencies = "before:biomesoplenty;")
+@Mod(SimplyHotSprings.MODID)
 public class SimplyHotSprings
 {
 
-    @Instance
-    public static SimplyHotSprings instance = new SimplyHotSprings();
-    @SidedProxy(clientSide = "connor135246.simplyhotsprings.client.ClientProxy", serverSide = "connor135246.simplyhotsprings.common.CommonProxy")
-    public static CommonProxy proxy;
+    public static final String MODID = "simplyhotsprings";
 
-    public static Logger modlog;
+    public static Logger log = LogManager.getLogger();
 
-    static
+    public SimplyHotSprings()
     {
-        FluidRegistry.enableUniversalBucket();
+        SimplyHotSpringsCommon.register(FMLJavaModLoadingContext.get().getModEventBus());
+
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SimplyHotSpringsConfig.commonSpec);
     }
 
-    @EventHandler
-    public static void preInit(FMLPreInitializationEvent event)
+    /**
+     * The method our mixins redirect <b>FluidState.isTagged(FluidTags.WATER)</b> to instead
+     */
+    public static boolean redirectWaterTag(FluidState fluidstate, ITag<Fluid> fluidTag)
     {
-        modlog = event.getModLog();
-
-        proxy.preInit(event);
+        return fluidstate.isTagged(fluidTag) && (fluidTag == FluidTags.WATER ? !fluidstate.isTagged(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER) : true);
     }
 
-    @EventHandler
-    public static void init(FMLInitializationEvent event)
-    {
-        proxy.init(event);
-    }
-
-    @EventHandler
-    public static void postInit(FMLPostInitializationEvent event)
-    {
-        proxy.postInit(event);
-    }
-
-    @EventHandler
-    public void serverLoad(FMLServerStartingEvent event)
-    {
-        proxy.serverLoad(event);
-    }
+    // TODO things to fix due to using FluidTags.WATER
+    // - glass bottles fill with water (also from dispenser) 
+    //   - i guess it still makes enough sense to leave it the way it is, but... what if there was a hot spring water bottle?
 
 }
