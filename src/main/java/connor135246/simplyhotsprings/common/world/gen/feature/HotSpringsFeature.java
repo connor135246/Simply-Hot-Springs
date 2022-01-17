@@ -12,15 +12,16 @@ import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.ISeedReader;
 import net.minecraft.world.LightType;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
 import net.minecraft.world.gen.feature.structure.Structure;
+import net.minecraftforge.common.Tags;
 
 /**
  * pretty much copy-pasted from {@link net.minecraft.world.gen.feature.LakesFeature}
@@ -142,32 +143,34 @@ public class HotSpringsFeature extends Feature<NoFeatureConfig>
                     {
                         for (int y = 0; y < 8; ++y)
                         {
-                            if (bls[(x * 16 + z) * 8 + y])
+                            if (bls[(x * 16 + z) * 8 + y] && (y > 0 ? !bls[(x * 16 + z) * 8 + (y - 1)] : true))
                             {
                                 BlockPos belowPos = pos.add(x, y - 1, z);
-                                boolean isDirt = isDirtAt(reader, belowPos);
+                                BlockState belowState = reader.getBlockState(belowPos);
+                                boolean isDirt = isDirt(belowState.getBlock());
 
                                 if (y < 4)
                                 {
-                                    if (reader.getBlockState(belowPos).isSolid() && reader.getFluidState(belowPos.up()).isTagged(TAG_HOT_SPRING_WATER))
-                                    {
-                                        if (isDirt || reader.hasBlockState(belowPos, state -> state.matchesBlock(Blocks.SNOW_BLOCK)))
-                                            reader.setBlockState(belowPos, Blocks.STONE.getDefaultState(), 2);
-                                        else if (reader.hasBlockState(belowPos, state -> state.matchesBlock(Blocks.SAND)))
-                                            reader.setBlockState(belowPos, Blocks.SANDSTONE.getDefaultState(), 2);
-                                        else if (reader.hasBlockState(belowPos, state -> state.matchesBlock(Blocks.RED_SAND)))
-                                            reader.setBlockState(belowPos, Blocks.RED_SANDSTONE.getDefaultState(), 2);
-                                    }
+                                    if (isDirt || belowState.matchesBlock(Blocks.SNOW_BLOCK))
+                                        reader.setBlockState(belowPos, Blocks.STONE.getDefaultState(), 2);
+                                    else if (belowState.matchesBlock(Blocks.SAND))
+                                        reader.setBlockState(belowPos, Blocks.SANDSTONE.getDefaultState(), 2);
+                                    else if (belowState.matchesBlock(Blocks.RED_SAND))
+                                        reader.setBlockState(belowPos, Blocks.RED_SANDSTONE.getDefaultState(), 2);
                                 }
                                 else if (y >= 4)
                                 {
-                                    if (isDirt && reader.getLightFor(LightType.SKY, belowPos.up()) > 0)
+                                    BlockState topBlock = reader.getBiome(belowPos).getGenerationSettings().getSurfaceBuilderConfig().getTop();
+
+                                    if (isDirt)
                                     {
-                                        Biome biome = reader.getBiome(belowPos);
-                                        if (biome.getGenerationSettings().getSurfaceBuilderConfig().getTop().matchesBlock(Blocks.MYCELIUM))
-                                            reader.setBlockState(belowPos, Blocks.MYCELIUM.getDefaultState(), 2);
-                                        else
-                                            reader.setBlockState(belowPos, Blocks.GRASS_BLOCK.getDefaultState(), 2);
+                                        if (reader.getLightFor(LightType.SKY, belowPos.up()) > 0 && isDirt(topBlock.getBlock()))
+                                            reader.setBlockState(belowPos, topBlock, 2);
+                                    }
+                                    else if (Tags.Blocks.NETHERRACK.contains(belowState.getBlock()))
+                                    {
+                                        if (reader.isAirBlock(belowPos.up()) && BlockTags.NYLIUM.contains(topBlock.getBlock()))
+                                            reader.setBlockState(belowPos, topBlock, 2);
                                     }
                                 }
                             }
