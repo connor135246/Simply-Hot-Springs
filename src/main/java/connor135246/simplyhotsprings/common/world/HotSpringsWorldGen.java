@@ -23,7 +23,7 @@ public class HotSpringsWorldGen implements IWorldGenerator
     @Override
     public void generate(Random rand, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider)
     {
-        if (!SimplyHotSpringsConfig.WorldGen.canGenerateInGeneral(world))
+        if (!SimplyHotSpringsConfig.WorldGen.generationReasonWorld(world).allowsGeneration())
             return;
 
         // pretty much copy-pasted from net.minecraft.world.gen.feature.WorldGenLakes
@@ -31,7 +31,7 @@ public class HotSpringsWorldGen implements IWorldGenerator
         BlockPos pos = world.getTopSolidOrLiquidBlock(new BlockPos(chunkX * 16 + rand.nextInt(16), 255, chunkZ * 16 + rand.nextInt(16))).down(rand.nextInt(3));
 
         if (pos.getY() > 4 && rand.nextInt(Math.max(SimplyHotSpringsConfig.WorldGen.chance, 1)) == 0
-                && SimplyHotSpringsConfig.WorldGen.canGenerateAtPosition(world, pos))
+                && SimplyHotSpringsConfig.WorldGen.generationReasonBiome(world.getBiomeForCoordsBody(pos)).allowsGeneration())
         {
             pos = pos.down(4);
             boolean[] aboolean = new boolean[2048];

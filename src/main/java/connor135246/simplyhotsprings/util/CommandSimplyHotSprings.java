@@ -1,7 +1,11 @@
 package connor135246.simplyhotsprings.util;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
@@ -10,6 +14,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
@@ -21,6 +26,8 @@ import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.DimensionManager;
+import scala.actors.threadpool.Arrays;
 
 public class CommandSimplyHotSprings implements ICommand
 {
@@ -46,7 +53,9 @@ public class CommandSimplyHotSprings implements ICommand
     @Override
     public String getUsage(ICommandSender sender)
     {
-        return "/" + Reference.MODID + " " + LOCATIONINFO + " [player] OR /" + Reference.MODID + " " + LOCATIONINFO + " [<x> <y> <z>]";
+        return "/" + Reference.MODID + " " + LOCATIONINFO + " [player]"
+                + " OR /" + Reference.MODID + " " + LOCATIONINFO + " <x> <y> <z> [<dimension_id>]"
+                + " OR /" + Reference.MODID + " " + LOCATIONINFO + " <biome> [<dimension_id>]";
     }
 
     @Override
@@ -62,49 +71,86 @@ public class CommandSimplyHotSprings implements ICommand
         {
             World world;
             BlockPos pos;
+            Biome biome = null;
 
             if (args.length < 4)
             {
-                EntityPlayerMP player = args.length > 1 ? CommandBase.getPlayer(server, sender, args[1]) : CommandBase.getCommandSenderAsPlayer(sender);
-                world = player.world;
-                pos = player.getPosition();
+                if (args.length > 1)
+                {
+                    ResourceLocation id = new ResourceLocation(args[1]);
+                    if (Biome.REGISTRY.containsKey(id))
+                    {
+                        pos = sender.getPosition();
+                        biome = Biome.REGISTRY.getObject(id);
+
+                        if (args.length > 2)
+                            world = getDimWorld(args[2]);
+                        else
+                            world = sender.getEntityWorld();
+                    }
+                    else if (args[1].contains(":"))
+                        throw new CommandException(LANG_COMMAND + "biome_not_found", args[1]);
+                    else
+                    {
+                        EntityPlayerMP player = CommandBase.getPlayer(server, sender, args[1]);
+                        world = player.world;
+                        pos = player.getPosition();
+                    }
+                }
+                else
+                {
+                    EntityPlayerMP player = CommandBase.getCommandSenderAsPlayer(sender);
+                    world = player.world;
+                    pos = player.getPosition();
+                }
             }
             else
             {
-                world = sender.getEntityWorld();
                 pos = CommandBase.parseBlockPos(sender, args, 1, true);
+
+                if (args.length > 4)
+                    world = getDimWorld(args[4]);
+                else
+                    world = sender.getEntityWorld();
             }
 
-            if (world.isBlockLoaded(pos))
+            if (biome == null)
             {
-                Biome biome = world.getBiomeForCoordsBody(pos);
-
-                sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "dim_id",
-                        world.provider.getDimension() + ""));
-
-                sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "biome_name",
-                        biome.getRegistryName().toString()));
-
-                sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "biome_types",
-                        CommandBase.joinNiceString(BiomeDictionary.getTypes(biome).toArray())));
-
-                String reason = SimplyHotSpringsConfig.WorldGen.generateReason(world, pos);
-                boolean canGenerate = reason.startsWith("Y");
-                ITextComponent hotSpringMessage = new TextComponentTranslation(LANG_COMMAND + "hot_springs")
-                        .setStyle(new Style().setColor(TextFormatting.AQUA).setHoverEvent(
-                                new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                        new TextComponentTranslation(LANG_COMMAND + "reason").appendText("\n")
-                                                .appendSibling(new TextComponentTranslation(reason.substring(1))
-                                                        .setStyle(new Style().setColor(canGenerate ? TextFormatting.GREEN : TextFormatting.DARK_RED))))))
-                        .appendSibling(new TextComponentTranslation(LANG_COMMAND + (canGenerate ? "yes" : "no"))
-                                .setStyle(new Style().setColor(canGenerate ? TextFormatting.GREEN : TextFormatting.DARK_RED)));
-                sender.sendMessage(hotSpringMessage);
+                if (!world.isBlockLoaded(pos))
+                    throw new CommandException(LANG_COMMAND + "block_out_of_world");
+                biome = world.getBiomeForCoordsBody(pos);
             }
-            else
-                throw new CommandException(LANG_COMMAND + "block_out_of_world", new Object[0]);
+
+            sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "dim_id",
+                    world.provider.getDimension() + ""));
+
+            sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "biome_name",
+                    biome.getRegistryName().toString()));
+
+            sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "biome_types",
+                    CommandBase.joinNiceString(BiomeDictionary.getTypes(biome).toArray())));
+
+            GenerationReason reason = SimplyHotSpringsConfig.WorldGen.getGenerationReason(world, biome);
+            ITextComponent hotSpringMessage = new TextComponentTranslation(LANG_COMMAND + "hot_springs")
+                    .setStyle(new Style().setColor(TextFormatting.AQUA).setHoverEvent(
+                            new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                    new TextComponentTranslation(LANG_COMMAND + "reason").appendText("\n")
+                                            .appendSibling(new TextComponentTranslation(reason.getKey())
+                                                    .setStyle(new Style().setColor(reason.getTextFormatting()))))))
+                    .appendSibling(new TextComponentTranslation(reason.getYN())
+                            .setStyle(new Style().setColor(reason.getTextFormatting())));
+            sender.sendMessage(hotSpringMessage);
         }
         else
-            throw new WrongUsageException(getUsage(null), new Object[0]);
+            throw new WrongUsageException(getUsage(null));
+    }
+
+    private static final World getDimWorld(String dimId) throws CommandException
+    {
+        World dimWorld = DimensionManager.getWorld(CommandBase.parseInt(dimId));
+        if (dimWorld == null)
+            throw new CommandException(LANG_COMMAND + "invalid_dim_id", dimId);
+        return dimWorld;
     }
 
     private static final HoverEvent clickMe = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_COMMAND + "click"));
@@ -134,7 +180,12 @@ public class CommandSimplyHotSprings implements ICommand
         if (args.length == 1)
             return CommandBase.getListOfStringsMatchingLastWord(args, new String[] { LOCATIONINFO });
         else if (args.length == 2)
-            return CommandBase.getListOfStringsMatchingLastWord(args, server.getOnlinePlayerNames());
+            return CommandBase.getListOfStringsMatchingLastWord(args,
+                    ArrayUtils.addAll(server.getOnlinePlayerNames(), Biome.REGISTRY.getKeys().stream()
+                            .<ArrayList<String>> collect(ArrayList<String>::new, (list, id) -> list.add(id.toString()), (left, right) -> left.addAll(right))
+                            .toArray(new String[0])));
+        else if (args.length == 5 || (args.length == 3 && !(args[1].startsWith("~") || StringUtils.isNumeric(args[1]))))
+            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(DimensionManager.getIDs()));
         else if (args.length >= 2 && args.length <= 4)
             return CommandBase.getTabCompletionCoordinate(args, 1, targetPos);
         else
@@ -144,7 +195,7 @@ public class CommandSimplyHotSprings implements ICommand
     @Override
     public boolean isUsernameIndex(String[] args, int index)
     {
-        return index == 1 && args.length == 2;
+        return index == 1 && args.length == 2 && !args[1].contains(":");
     }
 
 }

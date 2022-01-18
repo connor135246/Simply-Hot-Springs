@@ -12,7 +12,6 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.StringUtils;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
@@ -150,75 +149,56 @@ public class SimplyHotSpringsConfig
         @LangKey(LANG_CONFIG_WORLDGEN + "biomeNameBlacklist")
         public static String[] biomeNameBlacklist = {};
 
-        public static boolean canGenerateInGeneral(World world)
-        {
-            return worldGen
-                    && (worldGenIfBOPSprings ? true : !areBOPHotSpringsEnabled(world))
-                    && (worldGenIfSuperflat ? true : world.getWorldType() != WorldType.FLAT)
-                    && !arrayContains(dimBlacklist, world.provider.getDimension())
-                    && (dimWhitelist.length == 0 || arrayContains(dimWhitelist, world.provider.getDimension()));
-        }
-
         /**
-         * doesn't check if it {@link #canGenerateInGeneral(World)}
+         * @return a real GenerationReason if not allowed, or {@link GenerationReason#ALLOW_WORLD} if you can pass on to checking {@link #generationReasonBiome(Biome)}
          */
-        public static boolean canGenerateAtPosition(World world, BlockPos pos)
-        {
-            Biome biome = world.getBiomeForCoordsBody(pos);
-
-            if (arrayContains(biomeNameWhitelist, biome.getRegistryName().toString()))
-                return true;
-            if (arrayContains(biomeNameBlacklist, biome.getRegistryName().toString()))
-                return false;
-
-            if (arrayContains(biomeTypeBlacklist, BiomeDictionary.getTypes(biome)))
-                return false;
-            if (arrayContains(biomeTypeWhitelist, BiomeDictionary.getTypes(biome)))
-                return true;
-
-            if (biomeNameWhitelist.length == 0 || biomeTypeWhitelist.length == 0)
-                return true;
-
-            return false;
-        }
-
-        /**
-         * @return an explanation of why the hot spring did or did not generate.
-         */
-        public static String generateReason(World world, BlockPos pos)
+        public static GenerationReason generationReasonWorld(World world)
         {
             if (!worldGen)
-                return generateReasonKey("no_world_gen", false);
+                return GenerationReason.NO_WORLD_GEN;
             if (!worldGenIfBOPSprings && areBOPHotSpringsEnabled(world))
-                return generateReasonKey("bop_springs", false);
+                return GenerationReason.BOP_SPRINGS;
             if (!worldGenIfSuperflat && world.getWorldType() == WorldType.FLAT)
-                return generateReasonKey("superflat", false);
+                return GenerationReason.SUPERFLAT;
+
+            if (arrayContains(dimWhitelist, world.provider.getDimension()))
+                return GenerationReason.ALLOW_WORLD;
             if (arrayContains(dimBlacklist, world.provider.getDimension()))
-                return generateReasonKey("dim_blacklist", false);
-            if (dimWhitelist.length != 0 && !arrayContains(dimWhitelist, world.provider.getDimension()))
-                return generateReasonKey("dim_whitelist", false);
+                return GenerationReason.IN_DIM_BLACKLIST;
+            if (dimWhitelist.length != 0)
+                return GenerationReason.NOT_DIM_WHITELISTED;
 
-            Biome biome = world.getBiomeForCoordsBody(pos);
-
-            if (arrayContains(biomeNameWhitelist, biome.getRegistryName().toString()))
-                return generateReasonKey("biome_name_whitelist", true);
-            if (arrayContains(biomeNameBlacklist, biome.getRegistryName().toString()))
-                return generateReasonKey("biome_name_blacklist", false);
-
-            if (arrayContains(biomeTypeBlacklist, BiomeDictionary.getTypes(biome)))
-                return generateReasonKey("biome_type_blacklist", false);
-            if (arrayContains(biomeTypeWhitelist, BiomeDictionary.getTypes(biome)))
-                return generateReasonKey("biome_type_whitelist", true);
-
-            if (biomeNameWhitelist.length == 0 || biomeTypeWhitelist.length == 0)
-                return generateReasonKey("not_blacklisted", true);
-
-            return generateReasonKey("not_whitelisted", false);
+            return GenerationReason.ALLOW_WORLD;
         }
 
-        private static String generateReasonKey(String key, boolean yes)
+        public static GenerationReason generationReasonBiome(Biome biome)
         {
-            return (yes ? "Y" : "N") + Reference.MODID + ".gen.reason." + key;
+            if (arrayContains(biomeNameWhitelist, biome.getRegistryName().toString()))
+                return GenerationReason.IN_BIOME_NAME_WHITELIST;
+            if (arrayContains(biomeNameBlacklist, biome.getRegistryName().toString()))
+                return GenerationReason.IN_BIOME_NAME_BLACKLIST;
+
+            if (arrayContains(biomeTypeBlacklist, BiomeDictionary.getTypes(biome)))
+                return GenerationReason.IN_BIOME_TYPE_BLACKLIST;
+            if (arrayContains(biomeTypeWhitelist, BiomeDictionary.getTypes(biome)))
+                return GenerationReason.IN_BIOME_TYPE_WHITELIST;
+
+            if (biomeNameWhitelist.length == 0 || biomeTypeWhitelist.length == 0)
+                return GenerationReason.NOT_BIOME_BLACKLISTED;
+
+            return GenerationReason.NOT_BIOME_WHITELISTED;
+        }
+
+        /**
+         * @return a GenerationReason of why the hot spring can or cannot generate.
+         */
+        public static GenerationReason getGenerationReason(World world, Biome biome)
+        {
+            GenerationReason worldReason = generationReasonWorld(world);
+            if (worldReason.allowsGeneration())
+                return generationReasonBiome(biome);
+            else
+                return worldReason;
         }
 
         private static boolean arrayContains(int[] array, int value)
@@ -283,6 +263,7 @@ public class SimplyHotSpringsConfig
             }
             return false;
         }
+
     }
 
     @SubscribeEvent

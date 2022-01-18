@@ -13,8 +13,12 @@ simplyhotsprings.gen.reason.biome_type_blacklist=This biome has a type in the "B
 simplyhotsprings.gen.reason.biome_type_whitelist=This biome has a type in the "Biome Type Whitelist".
 simplyhotsprings.gen.reason.not_blacklisted=This biome wasn't excluded by any blacklists.
 simplyhotsprings.gen.reason.not_whitelisted=This biome was excluded by whitelists.
+simplyhotsprings.gen.reason.unknown_biome=Unknown biome!
+simplyhotsprings.gen.reason.allow_world=This World passed general hot spring checks. Whether they generate now depends on Biome.
 
 
+simplyhotsprings.command.invalid_dim_id=Dimension with ID '%s' does not exist
+simplyhotsprings.command.biome_not_found=Biome '%s' cannot be found
 simplyhotsprings.command.block_out_of_world=Cannot check block outside of world
 simplyhotsprings.command.click=Click to put in chat box
 simplyhotsprings.command.dim_id=Dimension ID: 
