@@ -2,6 +2,8 @@ package connor135246.simplyhotsprings.common.blocks;
 
 import java.util.Random;
 
+import org.apache.commons.lang3.StringUtils;
+
 import connor135246.simplyhotsprings.client.particles.ParticleSteam;
 import connor135246.simplyhotsprings.common.CommonProxy;
 import connor135246.simplyhotsprings.common.fluids.FluidHotSpringWater;
@@ -159,7 +161,16 @@ public class BlockHotSpringWater extends BlockFluidClassic
     public static void updateConfigSettings()
     {
         ((BlockHotSpringWater) BLOCK_INSTANCE).canCreateSources = SimplyHotSpringsConfig.createsSources;
-        potionEffect = ForgeRegistries.POTIONS.getValue(new ResourceLocation(SimplyHotSpringsConfig.potionEffect));
+
+        if (!StringUtils.isBlank(SimplyHotSpringsConfig.potionEffect))
+        {
+            potionEffect = ForgeRegistries.POTIONS.getValue(new ResourceLocation(SimplyHotSpringsConfig.potionEffect));
+            if (potionEffect == null)
+                SimplyHotSpringsConfig.warnInvalidEntry("Potion Effect", SimplyHotSpringsConfig.potionEffect);
+        }
+        else
+            potionEffect = null;
+
         timer = SimplyHotSpringsConfig.potionEffectSettings.length > 0 ? Math.max(SimplyHotSpringsConfig.potionEffectSettings[0], 1) : 50;
         amplifier = SimplyHotSpringsConfig.potionEffectSettings.length > 1 ? MathHelper.clamp(SimplyHotSpringsConfig.potionEffectSettings[1], 0, 255) : 0;
     }

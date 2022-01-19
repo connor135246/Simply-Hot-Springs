@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 
+import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.blocks.BlockHotSpringWater;
 import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
@@ -264,6 +265,11 @@ public class SimplyHotSpringsConfig
             return false;
         }
 
+    }
+
+    public static void warnInvalidEntry(String config, String input)
+    {
+        SimplyHotSprings.modlog.warn("\"" + config + "\" config entry \"" + input + "\" was not found");
     }
 
     @SubscribeEvent
