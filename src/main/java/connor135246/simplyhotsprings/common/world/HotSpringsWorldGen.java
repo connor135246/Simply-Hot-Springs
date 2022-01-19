@@ -135,7 +135,7 @@ public class HotSpringsWorldGen implements IWorldGenerator
 
                             if (y < 4)
                             {
-                                if (belowState.getMaterial().isSolid() && world.getBlockState(belowPos.up()).getBlock() == BlockHotSpringWater.BLOCK_INSTANCE)
+                                if (belowState.getMaterial().isSolid())
                                 {
                                     if (isDirt || belowState.getBlock() == Blocks.SNOW)
                                         world.setBlockState(belowPos, Blocks.STONE.getDefaultState(), 2);
