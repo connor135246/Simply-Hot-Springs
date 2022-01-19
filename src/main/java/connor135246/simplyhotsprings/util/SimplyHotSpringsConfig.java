@@ -148,7 +148,7 @@ public class SimplyHotSpringsConfig
         @Name("Biome Name Blacklist")
         @Comment({ "The biome names where hot springs are NOT allowed to generate." })
         @LangKey(LANG_CONFIG_WORLDGEN + "biomeNameBlacklist")
-        public static String[] biomeNameBlacklist = {};
+        public static String[] biomeNameBlacklist = { "biomesoplenty:origin_beach", "biomesoplenty:origin_island" };
 
         /**
          * @return a real GenerationReason if not allowed, or {@link GenerationReason#ALLOW_WORLD} if you can pass on to checking {@link #generationReasonBiome(Biome)}
