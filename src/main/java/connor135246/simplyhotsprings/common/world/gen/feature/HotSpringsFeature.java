@@ -151,12 +151,15 @@ public class HotSpringsFeature extends Feature<NoFeatureConfig>
 
                                 if (y < 4)
                                 {
-                                    if (isDirt || belowState.matchesBlock(Blocks.SNOW_BLOCK))
-                                        reader.setBlockState(belowPos, Blocks.STONE.getDefaultState(), 2);
-                                    else if (belowState.matchesBlock(Blocks.SAND))
-                                        reader.setBlockState(belowPos, Blocks.SANDSTONE.getDefaultState(), 2);
-                                    else if (belowState.matchesBlock(Blocks.RED_SAND))
-                                        reader.setBlockState(belowPos, Blocks.RED_SANDSTONE.getDefaultState(), 2);
+                                    if (belowState.getMaterial().isSolid())
+                                    {
+                                        if (isDirt || belowState.matchesBlock(Blocks.SNOW_BLOCK))
+                                            reader.setBlockState(belowPos, Blocks.STONE.getDefaultState(), 2);
+                                        else if (belowState.matchesBlock(Blocks.SAND))
+                                            reader.setBlockState(belowPos, Blocks.SANDSTONE.getDefaultState(), 2);
+                                        else if (belowState.matchesBlock(Blocks.RED_SAND))
+                                            reader.setBlockState(belowPos, Blocks.RED_SANDSTONE.getDefaultState(), 2);
+                                    }
                                 }
                                 else if (y >= 4)
                                 {
