@@ -17,8 +17,9 @@ simplyhotsprings.gen.reason.unknown_biome=Unknown biome!
 simplyhotsprings.gen.reason.allow_world=This World passed general hot spring checks. Whether they generate now depends on Biome.
 
 
-simplyhotsprings.command.invalid_dim_id=Dimension with ID '%s' does not exist
 simplyhotsprings.command.biome_not_found=Biome '%s' cannot be found
+simplyhotsprings.command.dim_not_found=Dimension with ID '%s' cannot be found
+simplyhotsprings.command.dim_not_created=Dimension type '%1$s' with ID '%2$s' has not been created yet
 simplyhotsprings.command.block_out_of_world=Cannot check block outside of world
 simplyhotsprings.command.click=Click to put in chat box
 simplyhotsprings.command.dim_id=Dimension ID: 

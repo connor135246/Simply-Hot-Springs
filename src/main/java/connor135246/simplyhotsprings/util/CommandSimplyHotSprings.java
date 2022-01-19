@@ -1,6 +1,7 @@
 package connor135246.simplyhotsprings.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,7 +28,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.DimensionManager;
-import scala.actors.threadpool.Arrays;
 
 public class CommandSimplyHotSprings implements ICommand
 {
@@ -54,7 +54,7 @@ public class CommandSimplyHotSprings implements ICommand
     public String getUsage(ICommandSender sender)
     {
         return "/" + Reference.MODID + " " + LOCATIONINFO + " [player]"
-                + " OR /" + Reference.MODID + " " + LOCATIONINFO + " <x> <y> <z> [<dimension_id>]"
+                + " OR /" + Reference.MODID + " " + LOCATIONINFO + " <x> <y> <z>"
                 + " OR /" + Reference.MODID + " " + LOCATIONINFO + " <biome> [<dimension_id>]";
     }
 
@@ -84,7 +84,14 @@ public class CommandSimplyHotSprings implements ICommand
                         biome = Biome.REGISTRY.getObject(id);
 
                         if (args.length > 2)
-                            world = getDimWorld(args[2]);
+                        {
+                            int dimId = CommandBase.parseInt(args[2]);
+                            if (!DimensionManager.isDimensionRegistered(dimId))
+                                throw new CommandException(LANG_COMMAND + "dim_not_found", dimId);
+                            world = DimensionManager.getWorld(dimId);
+                            if (world == null)
+                                throw new CommandException(LANG_COMMAND + "dim_not_created", DimensionManager.getProviderType(dimId).getName(), dimId);
+                        }
                         else
                             world = sender.getEntityWorld();
                     }
@@ -106,12 +113,8 @@ public class CommandSimplyHotSprings implements ICommand
             }
             else
             {
+                world = sender.getEntityWorld();
                 pos = CommandBase.parseBlockPos(sender, args, 1, true);
-
-                if (args.length > 4)
-                    world = getDimWorld(args[4]);
-                else
-                    world = sender.getEntityWorld();
             }
 
             if (biome == null)
@@ -143,14 +146,6 @@ public class CommandSimplyHotSprings implements ICommand
         }
         else
             throw new WrongUsageException(getUsage(null));
-    }
-
-    private static final World getDimWorld(String dimId) throws CommandException
-    {
-        World dimWorld = DimensionManager.getWorld(CommandBase.parseInt(dimId));
-        if (dimWorld == null)
-            throw new CommandException(LANG_COMMAND + "invalid_dim_id", dimId);
-        return dimWorld;
     }
 
     private static final HoverEvent clickMe = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_COMMAND + "click"));
