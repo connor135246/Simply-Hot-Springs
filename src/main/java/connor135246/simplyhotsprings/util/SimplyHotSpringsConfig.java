@@ -187,8 +187,18 @@ public class SimplyHotSpringsConfig
 
     //
 
+    private static void warnInvalidEntry(String config, String input)
+    {
+        SimplyHotSprings.log.warn("\"" + config + "\" config entry \"" + input + "\" was not found");
+    }
+
+    //
+
     private static @Nullable Effect potionEffect = null;
 
+    /**
+     * parses user input potion effect into actual potion effect
+     */
     private static void updateEffect()
     {
         String input = COMMON.potionEffect.get();
@@ -217,11 +227,6 @@ public class SimplyHotSpringsConfig
         return false;
     }
 
-    private static void warnInvalidEntry(String config, String input)
-    {
-        SimplyHotSprings.log.warn("\"" + config + "\" config entry \"" + input + "\" was not found");
-    }
-
     //
 
     private static final Set<BiomeDictionary.Type> biomeTypeWhitelist = new HashSet<BiomeDictionary.Type>();
@@ -233,7 +238,7 @@ public class SimplyHotSpringsConfig
     /**
      * parses user input whitelists & blacklists into actual whitelists & blacklists
      */
-    protected static void fillBiomeSets()
+    private static void fillBiomeSets()
     {
         if (!COMMON.worldGen.get())
             return;

@@ -96,7 +96,7 @@ public class SimplyHotSpringsCommand
                                 new TranslationTextComponent(LANG_LOCATIONINFO + "reason").appendString("\n")
                                         .appendSibling(new TranslationTextComponent(reason.getKey())
                                                 .mergeStyle(reason.getTextFormatting())))))
-                .appendSibling(new TranslationTextComponent(LANG_LOCATIONINFO + (reason.allowsGeneration() ? "yes" : "no"))
+                .appendSibling(new TranslationTextComponent(reason.getYN())
                         .mergeStyle(reason.getTextFormatting())),
                 true);
 
