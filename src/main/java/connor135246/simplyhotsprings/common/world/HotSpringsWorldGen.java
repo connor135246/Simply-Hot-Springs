@@ -2,19 +2,26 @@ package connor135246.simplyhotsprings.common.world;
 
 import java.util.Random;
 
+import com.google.common.base.Predicates;
+
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.blocks.BlockHotSpringWater;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
+import net.minecraft.block.BlockDirt;
+import net.minecraft.block.BlockSand;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.state.pattern.BlockStateMatcher;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraftforge.fml.common.IWorldGenerator;
 
+/**
+ * pretty much copy-pasted from {@link net.minecraft.world.gen.feature.WorldGenLakes}
+ */
 public class HotSpringsWorldGen implements IWorldGenerator
 {
 
@@ -26,61 +33,66 @@ public class HotSpringsWorldGen implements IWorldGenerator
         if (!SimplyHotSpringsConfig.WorldGen.generationReasonWorld(world).allowsGeneration())
             return;
 
-        // pretty much copy-pasted from net.minecraft.world.gen.feature.WorldGenLakes
-
         BlockPos pos = world.getTopSolidOrLiquidBlock(new BlockPos(chunkX * 16 + rand.nextInt(16), 255, chunkZ * 16 + rand.nextInt(16))).down(rand.nextInt(3));
 
         if (pos.getY() > 4 && rand.nextInt(Math.max(SimplyHotSpringsConfig.WorldGen.chance, 1)) == 0
                 && SimplyHotSpringsConfig.WorldGen.generationReasonBiome(world.getBiomeForCoordsBody(pos)).allowsGeneration())
         {
             pos = pos.down(4);
-            boolean[] aboolean = new boolean[2048];
+            boolean[] bls = new boolean[2048];
             int i = rand.nextInt(4) + 4;
 
-            for (int j = 0; j < i; ++j)
+            for (int a = 0; a < i; ++a)
             {
-                double d0 = rand.nextDouble() * 6.0D + 3.0D;
-                double d1 = rand.nextDouble() * 4.0D + 2.0D;
-                double d2 = rand.nextDouble() * 6.0D + 3.0D;
-                double d3 = rand.nextDouble() * (16.0D - d0 - 2.0D) + 1.0D + d0 / 2.0D;
-                double d4 = rand.nextDouble() * (8.0D - d1 - 4.0D) + 2.0D + d1 / 2.0D;
-                double d5 = rand.nextDouble() * (16.0D - d2 - 2.0D) + 1.0D + d2 / 2.0D;
+                double d = rand.nextDouble() * 6.0D + 3.0D;
+                double e = rand.nextDouble() * 4.0D + 2.0D;
+                double f = rand.nextDouble() * 6.0D + 3.0D;
+                double g = rand.nextDouble() * (16.0D - d - 2.0D) + 1.0D + d / 2.0D;
+                double h = rand.nextDouble() * (8.0D - e - 4.0D) + 2.0D + e / 2.0D;
+                double k = rand.nextDouble() * (16.0D - f - 2.0D) + 1.0D + f / 2.0D;
 
-                for (int l = 1; l < 15; ++l)
+                for (int x = 1; x < 15; ++x)
                 {
-                    for (int i1 = 1; i1 < 15; ++i1)
+                    for (int z = 1; z < 15; ++z)
                     {
-                        for (int j1 = 1; j1 < 7; ++j1)
+                        for (int y = 1; y < 7; ++y)
                         {
-                            double d6 = ((double) l - d3) / (d0 / 2.0D);
-                            double d7 = ((double) j1 - d4) / (d1 / 2.0D);
-                            double d8 = ((double) i1 - d5) / (d2 / 2.0D);
-                            double d9 = d6 * d6 + d7 * d7 + d8 * d8;
+                            double o = ((double) x - g) / (d / 2.0D);
+                            double p = ((double) y - h) / (e / 2.0D);
+                            double q = ((double) z - k) / (f / 2.0D);
+                            double r = o * o + p * p + q * q;
 
-                            if (d9 < 1.0D)
-                                aboolean[(l * 16 + i1) * 8 + j1] = true;
+                            if (r < 1.0D)
+                                bls[(x * 16 + z) * 8 + y] = true;
                         }
                     }
                 }
             }
 
-            for (int k1 = 0; k1 < 16; ++k1)
+            for (int x = 0; x < 16; ++x)
             {
-                for (int l2 = 0; l2 < 16; ++l2)
+                for (int z = 0; z < 16; ++z)
                 {
-                    for (int k = 0; k < 8; ++k)
+                    for (int y = 0; y < 8; ++y)
                     {
-                        if (!aboolean[(k1 * 16 + l2) * 8 + k]
-                                && (k1 < 15 && aboolean[((k1 + 1) * 16 + l2) * 8 + k] || k1 > 0 && aboolean[((k1 - 1) * 16 + l2) * 8 + k]
-                                        || l2 < 15 && aboolean[(k1 * 16 + l2 + 1) * 8 + k] || l2 > 0 && aboolean[(k1 * 16 + (l2 - 1)) * 8 + k]
-                                        || k < 7 && aboolean[(k1 * 16 + l2) * 8 + k + 1] || k > 0 && aboolean[(k1 * 16 + l2) * 8 + (k - 1)]))
+                        if (bls[(x * 16 + z) * 8 + y])
                         {
-                            IBlockState blockstate = world.getBlockState(pos.add(k1, k, l2));
+                            // {@link IChunkGenerator#isInsideStructure} only checks if the position is within the bounding box of a village building,
+                            // not within a village as a whole.
+                            // to be reasonably sure that the spring isn't ruining a village, multiple positions around the spring have to be checked.
+                            if (x % 5 == 0 && y % 5 == 0 && z % 5 == 0 && chunkGenerator.isInsideStructure(world, "Village", pos.add(x, y, z)))
+                                return;
+                        }
+                        else if (x < 15 && bls[((x + 1) * 16 + z) * 8 + y] || x > 0 && bls[((x - 1) * 16 + z) * 8 + y]
+                                || z < 15 && bls[(x * 16 + z + 1) * 8 + y] || z > 0 && bls[(x * 16 + (z - 1)) * 8 + y]
+                                || y < 7 && bls[(x * 16 + z) * 8 + y + 1] || y > 0 && bls[(x * 16 + z) * 8 + (y - 1)])
+                        {
+                            IBlockState blockstate = world.getBlockState(pos.add(x, y, z));
 
-                            if (k >= 4 && blockstate.getMaterial().isLiquid())
+                            if (y >= 4 && blockstate.getMaterial().isLiquid())
                                 return;
 
-                            if (k < 4 && !blockstate.getMaterial().isSolid() && blockstate.getBlock() != BlockHotSpringWater.BLOCK_INSTANCE)
+                            if (y < 4 && !blockstate.getMaterial().isSolid() && blockstate.getBlock() != BlockHotSpringWater.BLOCK_INSTANCE)
                                 return;
                         }
                     }
@@ -90,43 +102,62 @@ public class HotSpringsWorldGen implements IWorldGenerator
             if (SimplyHotSpringsConfig.WorldGen.debug)
                 SimplyHotSprings.modlog.info("Generated a hot spring around {} {} {}", pos.getX() + 8, pos.getY() + 4, pos.getZ() + 8);
 
-            for (int l1 = 0; l1 < 16; ++l1)
+            for (int x = 0; x < 16; ++x)
             {
-                for (int i3 = 0; i3 < 16; ++i3)
+                for (int z = 0; z < 16; ++z)
                 {
-                    for (int i4 = 0; i4 < 8; ++i4)
+                    for (int y = 0; y < 8; ++y)
                     {
-                        if (aboolean[(l1 * 16 + i3) * 8 + i4])
+                        if (bls[(x * 16 + z) * 8 + y])
                         {
-                            BlockPos setBlockPos = pos.add(l1, i4, i3);
+                            BlockPos setBlockPos = pos.add(x, y, z);
                             IBlockState setBlockState = world.getBlockState(setBlockPos);
 
                             if (setBlockState.getBlockHardness(world, setBlockPos) != -1.0 && !setBlockState.getBlock().hasTileEntity(setBlockState))
-                                world.setBlockState(setBlockPos, i4 >= 4 || world.provider.doesWaterVaporize() ? Blocks.AIR.getDefaultState()
+                                world.setBlockState(setBlockPos, y >= 4 || world.provider.doesWaterVaporize() ? Blocks.AIR.getDefaultState()
                                         : BlockHotSpringWater.BLOCK_INSTANCE.getDefaultState(), 2);
                         }
                     }
                 }
             }
 
-            for (int i2 = 0; i2 < 16; ++i2)
+            for (int x = 0; x < 16; ++x)
             {
-                for (int j3 = 0; j3 < 16; ++j3)
+                for (int z = 0; z < 16; ++z)
                 {
-                    for (int j4 = 4; j4 < 8; ++j4)
+                    for (int y = 0; y < 8; ++y)
                     {
-                        if (aboolean[(i2 * 16 + j3) * 8 + j4])
+                        if (bls[(x * 16 + z) * 8 + y] && (y > 0 ? !bls[(x * 16 + z) * 8 + (y - 1)] : true))
                         {
-                            BlockPos blockpos = pos.add(i2, j4 - 1, j3);
+                            BlockPos belowPos = pos.add(x, y - 1, z);
+                            IBlockState belowState = world.getBlockState(belowPos);
+                            boolean isDirt = DIRT_MATCHER.apply(belowState);
 
-                            if (world.getBlockState(blockpos).getBlock() == Blocks.DIRT && world.getLightFor(EnumSkyBlock.SKY, pos.add(i2, j4, j3)) > 0)
+                            if (y < 4)
                             {
-                                Biome biome = world.getBiome(blockpos);
+                                if (belowState.getMaterial().isSolid() && world.getBlockState(belowPos.up()).getBlock() == BlockHotSpringWater.BLOCK_INSTANCE)
+                                {
+                                    if (isDirt || belowState.getBlock() == Blocks.SNOW)
+                                        world.setBlockState(belowPos, Blocks.STONE.getDefaultState(), 2);
+                                    else if (SAND_MATCHER.apply(belowState))
+                                        world.setBlockState(belowPos, Blocks.SANDSTONE.getDefaultState(), 2);
+                                    else if (RED_SAND_MATCHER.apply(belowState))
+                                        world.setBlockState(belowPos, Blocks.RED_SANDSTONE.getDefaultState(), 2);
+                                }
+                            }
+                            else if (y >= 4)
+                            {
+                                if (isDirt && world.getLightFor(EnumSkyBlock.SKY, belowPos.up()) > 0)
+                                {
+                                    // note that some biomes don't use their top block or set it to something weird.
+                                    // the nether's top block is unused, so it's grass. but there's not going to be skylight there anyway.
+                                    // the end's top block is regular dirt. but the matcher doesn't match regular dirt.
+                                    // so this is fine, i guess.
+                                    IBlockState topBlock = world.getBiome(belowPos).topBlock;
 
-                                if (biome.topBlock.getBlock() == Blocks.MYCELIUM)
-                                    world.setBlockState(blockpos, Blocks.MYCELIUM.getDefaultState(), 2);
-                                else
-                                    world.setBlockState(blockpos, Blocks.GRASS.getDefaultState(), 2);
+                                    if (topBlock.getBlock() == Blocks.MYCELIUM || topBlock.getBlock() == Blocks.GRASS || DIRT_VARIANT_MATCHER.apply(topBlock))
+                                        world.setBlockState(belowPos, topBlock, 2);
+                                }
                             }
                         }
                     }
@@ -134,5 +165,16 @@ public class HotSpringsWorldGen implements IWorldGenerator
             }
         }
     }
+
+    // matching
+
+    protected static final BlockStateMatcher DIRT_MATCHER = BlockStateMatcher.forBlock(Blocks.DIRT).where(BlockDirt.VARIANT,
+            Predicates.equalTo(BlockDirt.DirtType.DIRT));
+    protected static final BlockStateMatcher DIRT_VARIANT_MATCHER = BlockStateMatcher.forBlock(Blocks.DIRT).where(BlockDirt.VARIANT,
+            Predicates.not(Predicates.equalTo(BlockDirt.DirtType.DIRT)));
+    protected static final BlockStateMatcher SAND_MATCHER = BlockStateMatcher.forBlock(Blocks.SAND).where(BlockSand.VARIANT,
+            Predicates.equalTo(BlockSand.EnumType.SAND));
+    protected static final BlockStateMatcher RED_SAND_MATCHER = BlockStateMatcher.forBlock(Blocks.SAND).where(BlockSand.VARIANT,
+            Predicates.equalTo(BlockSand.EnumType.RED_SAND));
 
 }
