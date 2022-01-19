@@ -28,6 +28,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.DimensionManager;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class CommandSimplyHotSprings implements ICommand
 {
@@ -78,10 +79,10 @@ public class CommandSimplyHotSprings implements ICommand
                 if (args.length > 1)
                 {
                     ResourceLocation id = new ResourceLocation(args[1]);
-                    if (Biome.REGISTRY.containsKey(id))
+                    if (ForgeRegistries.BIOMES.containsKey(id))
                     {
                         pos = sender.getPosition();
-                        biome = Biome.REGISTRY.getObject(id);
+                        biome = ForgeRegistries.BIOMES.getValue(id);
 
                         if (args.length > 2)
                         {
