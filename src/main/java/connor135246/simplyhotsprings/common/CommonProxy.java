@@ -21,7 +21,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 
-@EventBusSubscriber
+@EventBusSubscriber(modid = Reference.MODID)
 public class CommonProxy
 {
 

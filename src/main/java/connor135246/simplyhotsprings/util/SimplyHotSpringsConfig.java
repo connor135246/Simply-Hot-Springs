@@ -31,7 +31,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @Config(modid = Reference.MODID)
-@EventBusSubscriber
+@EventBusSubscriber(modid = Reference.MODID)
 public class SimplyHotSpringsConfig
 {
 
