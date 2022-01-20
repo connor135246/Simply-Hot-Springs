@@ -46,9 +46,9 @@ public class SimplyHotSpringsCommand
         dispatcher.register(Commands.literal(COMMAND).requires((source) -> {
             return source.hasPermissionLevel(2);
         }).then(Commands.literal(LOCATIONINFO).executes((context) -> {
-            return sendLocationInfo(context.getSource(), context.getSource().asPlayer().getPosition());
-        }).then(Commands.argument("player", EntityArgument.player()).executes((context) -> {
-            return sendLocationInfo(context.getSource(), EntityArgument.getPlayer(context, "player").getPosition());
+            return sendLocationInfo(context.getSource(), new BlockPos(context.getSource().getPos()));
+        }).then(Commands.argument("target", EntityArgument.entity()).executes((context) -> {
+            return sendLocationInfo(context.getSource(), EntityArgument.getEntity(context, "target").getPosition());
         })).then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
             return sendLocationInfo(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
         })).then(Commands.argument("biome", ResourceLocationArgument.resourceLocation()).suggests(SuggestionProviders.field_239574_d_).executes((context) -> {
