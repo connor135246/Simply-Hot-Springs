@@ -14,7 +14,8 @@ public enum GenerationReason
     IN_NAME_BLACKLIST(false, "in_name_blacklist"),
     IN_TYPE_BLACKLIST(false, "in_type_blacklist"),
     IN_TYPE_WHITELIST(true, "in_type_whitelist"),
-    NOT_BLACKLISTED(true, "not_blacklisted"),
+    EMPTY_NAME_WHITELIST(true, "empty_name_whitelist"),
+    EMPTY_TYPE_WHITELIST(true, "empty_type_whitelist"),
     NOT_WHITELISTED(false, "not_whitelisted"),
     UNKNOWN_BIOME(false, "unknown_biome"),
     CONFIGURED_ERROR(false, "configured_error");

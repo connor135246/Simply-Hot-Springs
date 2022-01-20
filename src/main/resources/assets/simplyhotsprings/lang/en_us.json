@@ -22,7 +22,8 @@
 	"simplyhotsprings.gen.reason.in_name_blacklist": "This biome is in the \"Biome Name Blacklist\".",
 	"simplyhotsprings.gen.reason.in_type_blacklist": "This biome has a type in the \"Biome Type Blacklist\".",
 	"simplyhotsprings.gen.reason.in_type_whitelist": "This biome has a type in the \"Biome Type Whitelist\".",
-	"simplyhotsprings.gen.reason.not_blacklisted": "This biome wasn't excluded by any blacklists.",
+	"simplyhotsprings.gen.reason.empty_name_whitelist": "This biome wasn't excluded by any blacklists, and the \"Biome Name Whitelist\" is empty.",
+	"simplyhotsprings.gen.reason.empty_type_whitelist": "This biome wasn't excluded by any blacklists, and the \"Biome Type Whitelist\" is empty.",
 	"simplyhotsprings.gen.reason.not_whitelisted": "This biome was excluded by whitelists.",
 	"simplyhotsprings.gen.reason.unknown_biome": "Unknown biome!",
 	"simplyhotsprings.gen.reason.configured_error": "The Hot Spring configured feature failed to register! Report this bug!",
@@ -46,11 +47,11 @@
 	"simplyhotsprings.config.worldgen.debug": "Generation Debug",
 	"simplyhotsprings.config.worldgen.debug.tooltip": "When a Hot Spring generates in the world, prints the location to console.",
 	"simplyhotsprings.config.worldgen.biomeTypeWhitelist": "Biome Type Whitelist",
-	"simplyhotsprings.config.worldgen.biomeTypeWhitelist.tooltip": "The biome types where Hot Springs are allowed to generate. If empty, all biome types are allowed. \nThe Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied. \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect.",
+	"simplyhotsprings.config.worldgen.biomeTypeWhitelist.tooltip": "The biome types where Hot Springs are allowed to generate. If empty, all biome types are allowed. \nThe Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied. You can use a period as a dummy entry. \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect.",
 	"simplyhotsprings.config.worldgen.biomeTypeBlacklist": "Biome Type Blacklist",
 	"simplyhotsprings.config.worldgen.biomeTypeBlacklist.tooltip": "The biome types where Hot Springs are NOT allowed to generate. \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect.",
 	"simplyhotsprings.config.worldgen.biomeNameWhitelist": "Biome Name Whitelist",
-	"simplyhotsprings.config.worldgen.biomeNameWhitelist.tooltip": "The individual biomes where Hot Springs are allowed to generate. If empty, all biomes are allowed. \nThe Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied. \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect.",
+	"simplyhotsprings.config.worldgen.biomeNameWhitelist.tooltip": "The individual biomes where Hot Springs are allowed to generate. If empty, all biomes are allowed. \nThe Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied. You can use a period as a dummy entry. \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect.",
 	"simplyhotsprings.config.worldgen.biomeNameBlacklist": "Biome Name Blacklist",
 	"simplyhotsprings.config.worldgen.biomeNameBlacklist.tooltip": "The individual biomes where Hot Springs are NOT allowed to generate. \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect."
 }

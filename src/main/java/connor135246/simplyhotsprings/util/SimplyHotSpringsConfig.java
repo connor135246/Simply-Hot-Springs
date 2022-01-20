@@ -140,12 +140,12 @@ public class SimplyHotSpringsConfig
             biomeTypeWhitelist = builder
                     .translation(LANG_CONFIG_WORLDGEN + "biomeTypeWhitelist")
                     .comment("The biome types where Hot Springs are allowed to generate. If empty, all biome types are allowed. ",
-                            "The Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied.",
+                            "The Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied. You can use a period as a dummy entry. ",
                             "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
                     .worldRestart()
                     .defineListAllowEmpty(Arrays.asList("Biome Type Whitelist"),
                             () -> Arrays.asList(""),
-                            Common::nonEmptyString);
+                            Common::nonBlankString);
 
             biomeTypeBlacklist = builder
                     .translation(LANG_CONFIG_WORLDGEN + "biomeTypeBlacklist")
@@ -154,17 +154,17 @@ public class SimplyHotSpringsConfig
                     .worldRestart()
                     .defineListAllowEmpty(Arrays.asList("Biome Type Blacklist"),
                             () -> Arrays.asList("DRY", "SAVANNA", "NETHER", "END", "OCEAN", "RIVER", "SANDY", "BEACH", "VOID"),
-                            Common::nonEmptyString);
+                            Common::nonBlankString);
 
             biomeNameWhitelist = builder
                     .translation(LANG_CONFIG_WORLDGEN + "biomeNameWhitelist")
                     .comment("The individual biomes where Hot Springs are allowed to generate. If empty, all biomes are allowed. ",
-                            "The Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied.",
+                            "The Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied. You can use a period as a dummy entry. ",
                             "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
                     .worldRestart()
                     .defineListAllowEmpty(Arrays.asList("Biome Name Whitelist"),
                             () -> Arrays.asList(""),
-                            Common::nonEmptyString);
+                            Common::nonBlankString);
 
             biomeNameBlacklist = builder
                     .translation(LANG_CONFIG_WORLDGEN + "biomeNameBlacklist")
@@ -173,14 +173,14 @@ public class SimplyHotSpringsConfig
                     .worldRestart()
                     .defineListAllowEmpty(Arrays.asList("Biome Name Blacklist"),
                             () -> Arrays.asList("biomesoplenty:origin_valley"),
-                            Common::nonEmptyString);
+                            Common::nonBlankString);
 
             builder.pop();
         }
 
-        private static boolean nonEmptyString(Object object)
+        private static boolean nonBlankString(Object object)
         {
-            return object instanceof String ? !StringUtils.isEmpty(object.toString()) : false;
+            return object instanceof String ? !StringUtils.isBlank(object.toString()) : false;
         }
 
     }
@@ -235,6 +235,8 @@ public class SimplyHotSpringsConfig
     private static final Set<RegistryKey<Biome>> biomeNameWhitelist = new HashSet<RegistryKey<Biome>>();
     private static final Set<RegistryKey<Biome>> biomeNameBlacklist = new HashSet<RegistryKey<Biome>>();
 
+    private static final String NO_WARN_DUMMY_ENTRY = ".";
+
     /**
      * parses user input whitelists & blacklists into actual whitelists & blacklists
      */
@@ -249,7 +251,7 @@ public class SimplyHotSpringsConfig
         {
             if (!StringUtils.isEmpty(input))
             {
-                if (!StringUtils.isWhitespace(input))
+                if (!input.equals(NO_WARN_DUMMY_ENTRY))
                 {
                     for (BiomeDictionary.Type type : BiomeDictionary.Type.getAll())
                         if (type.getName().equalsIgnoreCase(input))
@@ -261,21 +263,21 @@ public class SimplyHotSpringsConfig
                     invalidEntries = true;
                 }
                 else
-                    invalidEntries = true; // so you can use whitespace as dummy entries that don't warn you every time
+                    invalidEntries = true; // so you can use '.' as a dummy entry that doesn't warn you every time
             }
         }
 
         // whitelists have a specific behaviour if they're empty - they'll match everything.
-        // i'm assuming that if the whitelist contains only invalid entries or whitespace entries,
+        // i'm assuming that if the whitelist contains only invalid entries or the dummy entry,
         // a user probably doesn't want me to treat it like it was empty.
-        // so i add a dummy entry here.
+        // so i add a useless entry here.
         if (biomeTypeWhitelist.isEmpty() && invalidEntries)
             biomeTypeWhitelist.add(null);
 
         biomeTypeBlacklist.clear();
         inputLoop: for (String input : COMMON.biomeTypeBlacklist.get())
         {
-            if (!StringUtils.isBlank(input))
+            if (!StringUtils.isEmpty(input))
             {
                 for (BiomeDictionary.Type type : BiomeDictionary.Type.getAll())
                     if (type.getName().equalsIgnoreCase(input))
@@ -293,7 +295,7 @@ public class SimplyHotSpringsConfig
         {
             if (!StringUtils.isEmpty(input))
             {
-                if (!StringUtils.isWhitespace(input))
+                if (!input.equals(NO_WARN_DUMMY_ENTRY))
                 {
                     ResourceLocation name = new ResourceLocation(input);
                     if (ForgeRegistries.BIOMES.containsKey(name))
@@ -316,7 +318,7 @@ public class SimplyHotSpringsConfig
         biomeNameBlacklist.clear();
         for (String input : COMMON.biomeNameBlacklist.get())
         {
-            if (!StringUtils.isBlank(input))
+            if (!StringUtils.isEmpty(input))
             {
                 ResourceLocation name = new ResourceLocation(input);
                 if (ForgeRegistries.BIOMES.containsKey(name))
@@ -391,8 +393,10 @@ public class SimplyHotSpringsConfig
         if (biomeTypeWhitelist.stream().anyMatch(biomeTypes::contains))
             return GenerationReason.IN_TYPE_WHITELIST;
 
-        if (biomeNameWhitelist.isEmpty() || biomeTypeWhitelist.isEmpty())
-            return GenerationReason.NOT_BLACKLISTED;
+        if (biomeNameWhitelist.isEmpty())
+            return GenerationReason.EMPTY_NAME_WHITELIST;
+        if (biomeTypeWhitelist.isEmpty())
+            return GenerationReason.EMPTY_TYPE_WHITELIST;
 
         return GenerationReason.NOT_WHITELISTED;
     }
