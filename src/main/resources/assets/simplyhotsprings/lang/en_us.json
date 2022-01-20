@@ -16,6 +16,10 @@
 	"commands.simplyhotsprings.biomeslist.with": "Hot Springs CAN generate in the following biomes: ",
 	"commands.simplyhotsprings.biomeslist.without": "Hot Springs CANNOT generate in the following biomes: ",
 	"commands.simplyhotsprings.biomeslist.click": "Click to check biome info",
+	"commands.simplyhotsprings.biometypes.type_not_found": "Biome Dictionary Type '%s' cannot be found",
+	"commands.simplyhotsprings.biometypes.all": "All Biome Dictionary Types: ",
+	"commands.simplyhotsprings.biometypes.biomes": "All biomes in Biome Dictionary Type '%s': ",
+	"commands.simplyhotsprings.biometypes.click": "Click to list biomes with this type",
 	
 	"simplyhotsprings.gen.reason.no_world_gen": "The \"World Generation\" config option is false.",
 	"simplyhotsprings.gen.reason.in_name_whitelist": "This biome is in the \"Biome Name Whitelist\".",

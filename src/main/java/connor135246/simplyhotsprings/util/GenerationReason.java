@@ -44,7 +44,7 @@ public enum GenerationReason
         return allowsGeneration ? TextFormatting.GREEN : TextFormatting.DARK_RED;
     }
 
-    public static final String YES = "commands." + SimplyHotSprings.MODID + ".locationinfo.yes", NO = "commands." + SimplyHotSprings.MODID + ".locationinfo.no";
+    public static final String YES = SimplyHotSpringsCommand.LANG_LOCATIONINFO + "yes", NO = SimplyHotSpringsCommand.LANG_LOCATIONINFO + "no";
 
     public String getYN()
     {
