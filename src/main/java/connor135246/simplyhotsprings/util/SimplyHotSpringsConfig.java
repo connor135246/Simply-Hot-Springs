@@ -105,17 +105,14 @@ public class SimplyHotSpringsConfig
             // there are 3 new biome dictionary types since 1.12: PLATEAU, MODIFIED, and OVERWORLD
             info = builder
                     .translation(LANG_CONFIG_WORLDGEN + "info")
-                    .comment("The command \"/simplyhotsprings locationinfo\" will tell you the name and types of the biome you're currently in. "
-                            + "Use those results to fill in your whitelists and blacklists. "
-                            + "It will also tell you whether or not a Hot Spring can generate there, so you can use it for testing your whitelists and blacklists. ",
-                            "(This config setting does nothing other than list all default biome types for your convenience, so put whatever you want in here.)")
+                    .comment("The command \"/simplyhotsprings\" has a few subcommands that will help you fill in your whitelists and blacklists "
+                            + "and test to see if they work. "
+                            + "For example, \"/simplyhotsprings locationinfo\" will tell you the name and types of the biome you're currently in "
+                            + "and whether Hot Springs can generate there. "
+                            + "To see how to use \"/simplyhotsprings\", run the command \"/simplyhotsprings help\".",
+                            "(Also, this config setting does nothing, so put whatever you want in here.)")
                     .defineListAllowEmpty(Arrays.asList("#HOW TO FILL WHITELISTS AND BLACKLISTS"),
-                            () -> Arrays.asList("HOT", "COLD", "SPARSE", "DENSE", "WET", "DRY", "SAVANNA", "CONIFEROUS", "JUNGLE", "SPOOKY", "DEAD", "LUSH",
-                                    "MUSHROOM", "MAGICAL", "RARE", "PLATEAU", "MODIFIED", "OCEAN", "RIVER", "WATER", "MESA", "FOREST", "PLAINS", "MOUNTAIN",
-                                    "HILLS", "SWAMP", "SANDY", "SNOWY", "WASTELAND", "BEACH", "VOID", "OVERWORLD", "NETHER", "END",
-                                    "HOT, COLD, SPARSE, DENSE, WET, DRY, SAVANNA, CONIFEROUS, JUNGLE, SPOOKY, DEAD, LUSH, MUSHROOM, MAGICAL, RARE, PLATEAU, "
-                                            + "MODIFIED, OCEAN, RIVER, WATER, MESA, FOREST, PLAINS, MOUNTAIN, HILLS, SWAMP, SANDY, SNOWY, WASTELAND, BEACH, VOID, "
-                                            + "OVERWORLD, NETHER, END"),
+                            () -> Arrays.asList("Run \"/simplyhotsprings biometypes\" to see a list of all Biome Types!"),
                             input -> true);
 
             worldGen = builder

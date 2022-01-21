@@ -62,7 +62,7 @@
 	"simplyhotsprings.config.worldgen": "World Generation",
 	"simplyhotsprings.config.worldgen.tooltip": "Most of these settings require any open world to be closed and reopened.",
 	"simplyhotsprings.config.worldgen.info": "#HOW TO FILL WHITELISTS AND BLACKLISTS",
-	"simplyhotsprings.config.worldgen.info.tooltip": "The command \"/simplyhotsprings locationinfo\" will tell you the name and types of the biome you're currently in. Use those results to fill in your whitelists and blacklists. It will also tell you whether or not a Hot Spring can generate there, so you can use it for testing your whitelists and blacklists. \n(This config setting does nothing other than list all default biome types for your convenience, so put whatever you want in here.)",
+	"simplyhotsprings.config.worldgen.info.tooltip": "The command \"/simplyhotsprings\" has a few subcommands that will help you fill in your whitelists and blacklists and test to see if they work. For example, \"/simplyhotsprings locationinfo\" will tell you the name and types of the biome you're currently in and whether Hot Springs can generate there. To see how to use \"/simplyhotsprings\", run the command \"/simplyhotsprings help\". \n(Also, this config setting does nothing, so put whatever you want in here.)",
 	"simplyhotsprings.config.worldgen.worldGen": "World Generation",
 	"simplyhotsprings.config.worldgen.worldGen.tooltip": "Set to false to stop Hot Springs from generating. \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect.",
 	"simplyhotsprings.config.worldgen.chance": "Generation Chance",
