@@ -30,13 +30,13 @@ public class HotSpringsWorldGen implements IWorldGenerator
     @Override
     public void generate(Random rand, int chunkX, int chunkZ, World world, IChunkGenerator chunkGenerator, IChunkProvider chunkProvider)
     {
-        if (!SimplyHotSpringsConfig.WorldGen.generationReasonWorld(world).allowsGeneration())
+        if (!SimplyHotSpringsConfig.allowedWorld(world))
             return;
 
         BlockPos pos = world.getTopSolidOrLiquidBlock(new BlockPos(chunkX * 16 + rand.nextInt(16), 255, chunkZ * 16 + rand.nextInt(16))).down(rand.nextInt(3));
 
-        if (pos.getY() > 4 && rand.nextInt(Math.max(SimplyHotSpringsConfig.WorldGen.chance, 1)) == 0
-                && SimplyHotSpringsConfig.WorldGen.generationReasonBiome(world.getBiomeForCoordsBody(pos)).allowsGeneration())
+        if (pos.getY() > 4 && rand.nextInt(Math.max(SimplyHotSpringsConfig.Config.WorldGen.chance, 1)) == 0
+                && SimplyHotSpringsConfig.allowedBiome(world.getBiomeForCoordsBody(pos)))
         {
             pos = pos.down(4);
             boolean[] bls = new boolean[2048];
@@ -99,7 +99,7 @@ public class HotSpringsWorldGen implements IWorldGenerator
                 }
             }
 
-            if (SimplyHotSpringsConfig.WorldGen.debug)
+            if (SimplyHotSpringsConfig.Config.WorldGen.debug)
                 SimplyHotSprings.modlog.info("Generated a hot spring around {} {} {}", pos.getX() + 8, pos.getY() + 4, pos.getZ() + 8);
 
             for (int x = 0; x < 16; ++x)

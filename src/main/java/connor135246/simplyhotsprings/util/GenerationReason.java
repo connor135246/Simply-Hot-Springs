@@ -16,12 +16,13 @@ public enum GenerationReason
     /** an internal reason used just to pass on from world checks to biome checks */
     ALLOW_WORLD(true, "allow_world"),
 
-    IN_BIOME_NAME_WHITELIST(true, "biome_name_whitelist"),
-    IN_BIOME_NAME_BLACKLIST(false, "biome_name_blacklist"),
-    IN_BIOME_TYPE_BLACKLIST(false, "biome_type_blacklist"),
-    IN_BIOME_TYPE_WHITELIST(true, "biome_type_whitelist"),
-    NOT_BIOME_BLACKLISTED(true, "not_blacklisted"),
-    NOT_BIOME_WHITELISTED(false, "not_whitelisted"),
+    IN_NAME_WHITELIST(true, "in_name_whitelist"),
+    IN_NAME_BLACKLIST(false, "in_name_blacklist"),
+    IN_TYPE_BLACKLIST(false, "in_type_blacklist"),
+    IN_TYPE_WHITELIST(true, "in_type_whitelist"),
+    EMPTY_NAME_WHITELIST(true, "empty_name_whitelist"),
+    EMPTY_TYPE_WHITELIST(true, "empty_type_whitelist"),
+    NOT_WHITELISTED(false, "not_whitelisted"),
     UNKNOWN_BIOME(false, "unknown_biome");
 
     private final boolean allowsGeneration;
@@ -48,7 +49,7 @@ public enum GenerationReason
         return allowsGeneration ? TextFormatting.GREEN : TextFormatting.DARK_RED;
     }
 
-    public static final String YES = Reference.MODID + ".command.yes", NO = Reference.MODID + ".command.no";
+    public static final String YES = CommandSimplyHotSprings.LANG_LOCATIONINFO + "yes", NO = CommandSimplyHotSprings.LANG_LOCATIONINFO + "no";
 
     public String getYN()
     {

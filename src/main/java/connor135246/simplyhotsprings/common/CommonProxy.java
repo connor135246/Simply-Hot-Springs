@@ -15,8 +15,10 @@ import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -87,10 +89,19 @@ public class CommonProxy
 
     }
 
-    public void serverLoad(FMLServerStartingEvent event)
+    public void loadComplete(FMLLoadCompleteEvent event)
     {
         BlockHotSpringWater.updateConfigSettings();
+        SimplyHotSpringsConfig.fillBiomeSets();
+    }
 
+    public void serverAboutToStart(FMLServerAboutToStartEvent event)
+    {
+        SimplyHotSpringsConfig.serverAboutToStart(event);
+    }
+
+    public void serverStarting(FMLServerStartingEvent event)
+    {
         event.registerServerCommand(CommandSimplyHotSprings.INSTANCE);
     }
 

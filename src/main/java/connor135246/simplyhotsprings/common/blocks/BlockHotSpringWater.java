@@ -156,23 +156,25 @@ public class BlockHotSpringWater extends BlockFluidClassic
     }
 
     /**
-     * Updates {@link #canCreateSources} and {@link #potionEffect} to the config setting. Called on loading the world or when the config changes.
+     * Updates {@link #canCreateSources} and {@link #potionEffect} to the config setting. Called after postInit or when the config changes.
      */
     public static void updateConfigSettings()
     {
-        ((BlockHotSpringWater) BLOCK_INSTANCE).canCreateSources = SimplyHotSpringsConfig.createsSources;
+        ((BlockHotSpringWater) BLOCK_INSTANCE).canCreateSources = SimplyHotSpringsConfig.Config.createsSources;
 
-        if (!StringUtils.isBlank(SimplyHotSpringsConfig.potionEffect))
+        if (!StringUtils.isBlank(SimplyHotSpringsConfig.Config.potionEffect))
         {
-            potionEffect = ForgeRegistries.POTIONS.getValue(new ResourceLocation(SimplyHotSpringsConfig.potionEffect));
+            potionEffect = ForgeRegistries.POTIONS.getValue(new ResourceLocation(SimplyHotSpringsConfig.Config.potionEffect));
             if (potionEffect == null)
-                SimplyHotSpringsConfig.warnInvalidEntry("Potion Effect", SimplyHotSpringsConfig.potionEffect);
+                SimplyHotSpringsConfig.warnInvalidEntry("Potion Effect", SimplyHotSpringsConfig.Config.potionEffect);
         }
         else
             potionEffect = null;
 
-        timer = SimplyHotSpringsConfig.potionEffectSettings.length > 0 ? Math.max(SimplyHotSpringsConfig.potionEffectSettings[0], 1) : 50;
-        amplifier = SimplyHotSpringsConfig.potionEffectSettings.length > 1 ? MathHelper.clamp(SimplyHotSpringsConfig.potionEffectSettings[1], 0, 255) : 0;
+        timer = SimplyHotSpringsConfig.Config.potionEffectSettings.length > 0 ? Math.max(SimplyHotSpringsConfig.Config.potionEffectSettings[0], 1) : 50;
+        amplifier = SimplyHotSpringsConfig.Config.potionEffectSettings.length > 1
+                ? MathHelper.clamp(SimplyHotSpringsConfig.Config.potionEffectSettings[1], 0, 255)
+                : 0;
     }
 
 }

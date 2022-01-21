@@ -1,19 +1,21 @@
 package connor135246.simplyhotsprings.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.google.common.collect.Lists;
 
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
+import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -27,7 +29,6 @@ import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class CommandSimplyHotSprings implements ICommand
@@ -35,9 +36,17 @@ public class CommandSimplyHotSprings implements ICommand
 
     public static final CommandSimplyHotSprings INSTANCE = new CommandSimplyHotSprings();
 
-    public static final String LOCATIONINFO = "locationinfo";
+    /** base command */
+    public static final String COMMAND = Reference.MODID;
+    /** command options */
+    public static final String HELP = "help", LOCATIONINFO = "locationinfo", BIOMESLIST = "biomeslist", BIOMETYPES = "biometypes",
+            ALL = "all", WITH = "with", WITHOUT = "without";
 
-    protected static final String LANG_COMMAND = Reference.MODID + ".command.";
+    public static final String LANG_COMMAND = Reference.MODID + ".command.";
+    public static final String LANG_LOCATIONINFO = LANG_COMMAND + LOCATIONINFO + ".";
+    public static final String LANG_BIOMESLIST = LANG_COMMAND + BIOMESLIST + ".";
+    public static final String LANG_BIOMETYPES = LANG_COMMAND + BIOMETYPES + ".";
+    public static final String LANG_HELP = LANG_COMMAND + HELP + ".";
 
     @Override
     public int compareTo(ICommand ico)
@@ -48,15 +57,13 @@ public class CommandSimplyHotSprings implements ICommand
     @Override
     public String getName()
     {
-        return Reference.MODID;
+        return COMMAND;
     }
 
     @Override
     public String getUsage(ICommandSender sender)
     {
-        return "/" + Reference.MODID + " " + LOCATIONINFO + " [player]"
-                + " OR /" + Reference.MODID + " " + LOCATIONINFO + " <x> <y> <z>"
-                + " OR /" + Reference.MODID + " " + LOCATIONINFO + " <biome> [<dimension_id>]";
+        return "/" + COMMAND + " " + HELP;
     }
 
     @Override
@@ -68,96 +75,203 @@ public class CommandSimplyHotSprings implements ICommand
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        if (args.length > 0 && args[0].equals(LOCATIONINFO))
+        if (args.length < 1)
+            throw new WrongUsageException(getUsage(null));
+        else if (args[0].equals(HELP))
+            sendHelp(server, sender, args);
+        else if (args[0].equals(LOCATIONINFO))
+            sendLocationInfo(server, sender, args);
+        else if (args[0].equals(BIOMESLIST))
+            sendBiomesList(server, sender, args);
+        else if (args[0].equals(BIOMETYPES))
+            sendBiomeTypes(server, sender, args);
+        else
+            throw new WrongUsageException(getUsage(null));
+    }
+
+    // help
+
+    public void sendHelp(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
+    {
+        String subcommand = "";
+        int helps = 2;
+        if (args.length > 1)
         {
-            World world;
-            BlockPos pos;
-            Biome biome = null;
-
-            if (args.length < 4)
+            if (args[1].equals(LOCATIONINFO))
             {
-                if (args.length > 1)
-                {
-                    ResourceLocation id = new ResourceLocation(args[1]);
-                    if (ForgeRegistries.BIOMES.containsKey(id))
-                    {
-                        pos = sender.getPosition();
-                        biome = ForgeRegistries.BIOMES.getValue(id);
+                subcommand = LOCATIONINFO;
+                helps = 7;
+            }
+            else if (args[1].equals(BIOMESLIST))
+            {
+                subcommand = BIOMESLIST;
+                helps = 5;
+            }
+            else if (args[1].equals(BIOMETYPES))
+            {
+                subcommand = BIOMETYPES;
+                helps = 3;
+            }
+        }
 
-                        if (args.length > 2)
-                        {
-                            int dimId = CommandBase.parseInt(args[2]);
-                            if (!DimensionManager.isDimensionRegistered(dimId))
-                                throw new CommandException(LANG_COMMAND + "dim_not_found", dimId);
-                            world = DimensionManager.getWorld(dimId);
-                            if (world == null)
-                                throw new CommandException(LANG_COMMAND + "dim_not_created", DimensionManager.getProviderType(dimId).getName(), dimId);
-                        }
-                        else
-                            world = sender.getEntityWorld();
-                    }
-                    else if (args[1].contains(":"))
-                        throw new CommandException(LANG_COMMAND + "biome_not_found", args[1]);
-                    else
-                    {
-                        EntityPlayerMP player = CommandBase.getPlayer(server, sender, args[1]);
-                        world = player.world;
-                        pos = player.getPosition();
-                    }
+        if (subcommand.isEmpty())
+        {
+            sender.sendMessage(new TextComponentString("--- " + getUsage(sender) + " ---")
+                    .setStyle(new Style().setColor(TextFormatting.GOLD)));
+
+            sender.sendMessage(makeHelpComponent(LOCATIONINFO));
+            sender.sendMessage(makeHelpComponent(BIOMESLIST));
+            sender.sendMessage(makeHelpComponent(BIOMETYPES));
+        }
+        else
+        {
+            sender.sendMessage(new TextComponentString("--- " + getUsage(sender) + " " + subcommand + " ---")
+                    .setStyle(new Style().setColor(TextFormatting.GOLD)));
+
+            for (int i = 0; i <= helps; ++i)
+            {
+                sender.sendMessage(new TextComponentTranslation(LANG_HELP + subcommand + "." + i)
+                        .setStyle(new Style().setColor(i % 2 == 1 ? TextFormatting.GRAY : TextFormatting.WHITE)));
+            }
+        }
+
+        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, helps + 1);
+    }
+
+    // locationinfo
+
+    public void sendLocationInfo(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
+    {
+        World world;
+        BlockPos pos;
+        Biome biome = null;
+
+        if (args.length < 4)
+        {
+            if (args.length > 1)
+            {
+                ResourceLocation id = new ResourceLocation(args[1]);
+                if (ForgeRegistries.BIOMES.containsKey(id))
+                {
+                    world = sender.getEntityWorld();
+                    pos = sender.getPosition();
+                    biome = ForgeRegistries.BIOMES.getValue(id);
                 }
+                else if (args[1].contains(":"))
+                    throw new CommandException(LANG_LOCATIONINFO + "biome_not_found", args[1]);
                 else
                 {
-                    EntityPlayerMP player = CommandBase.getCommandSenderAsPlayer(sender);
-                    world = player.world;
-                    pos = player.getPosition();
+                    Entity entity = CommandBase.getEntity(server, sender, args[1]);
+                    world = entity.getEntityWorld();
+                    pos = entity.getPosition();
                 }
             }
             else
             {
                 world = sender.getEntityWorld();
-                pos = CommandBase.parseBlockPos(sender, args, 1, true);
+                pos = sender.getPosition();
             }
-
-            if (biome == null)
-            {
-                if (!world.isBlockLoaded(pos))
-                    throw new CommandException(LANG_COMMAND + "block_out_of_world");
-                biome = world.getBiomeForCoordsBody(pos);
-            }
-
-            sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "dim_id",
-                    world.provider.getDimension() + ""));
-
-            sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "biome_name",
-                    biome.getRegistryName().toString()));
-
-            sender.sendMessage(makeHoverAndClickComponent(LANG_COMMAND + "biome_types",
-                    CommandBase.joinNiceString(BiomeDictionary.getTypes(biome).toArray())));
-
-            GenerationReason reason = SimplyHotSpringsConfig.WorldGen.getGenerationReason(world, biome);
-            ITextComponent hotSpringMessage = new TextComponentTranslation(LANG_COMMAND + "hot_springs")
-                    .setStyle(new Style().setColor(TextFormatting.AQUA).setHoverEvent(
-                            new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                    new TextComponentTranslation(LANG_COMMAND + "reason").appendText("\n")
-                                            .appendSibling(new TextComponentTranslation(reason.getKey())
-                                                    .setStyle(new Style().setColor(reason.getTextFormatting()))))))
-                    .appendSibling(new TextComponentTranslation(reason.getYN())
-                            .setStyle(new Style().setColor(reason.getTextFormatting())));
-            sender.sendMessage(hotSpringMessage);
         }
         else
-            throw new WrongUsageException(getUsage(null));
+        {
+            world = sender.getEntityWorld();
+            pos = CommandBase.parseBlockPos(sender, args, 1, true);
+        }
+
+        if (biome == null)
+        {
+            if (!world.isBlockLoaded(pos))
+                throw new CommandException(LANG_LOCATIONINFO + "block_out_of_world");
+            biome = world.getBiomeForCoordsBody(pos);
+        }
+
+        sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "dim_id")
+                .appendSibling(makeSuggestComponent(world.provider.getDimension() + "")));
+
+        GenerationReason reason = SimplyHotSpringsConfig.getGenerationReasonWorld(world);
+        if (reason.allowsGeneration())
+        {
+            reason = SimplyHotSpringsConfig.biomeReasons.get(biome.getRegistryName());
+
+            sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_name")
+                    .appendSibling(makeSuggestComponent(biome.getRegistryName().toString())));
+
+            sender.sendMessage(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
+                    BiomeDictionary.getTypes(biome), type -> type.getName(), string -> makeSuggestComponent(string)));
+        }
+
+        sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "hot_springs")
+                .appendSibling(makeHotSpringsReasonComponent(reason)));
+
+        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, reason.allowsGeneration() ? 1 : 0);
     }
 
-    private static final HoverEvent clickMe = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_COMMAND + "click"));
+    // biomeslist
 
-    private ITextComponent makeHoverAndClickComponent(String key, String toCopy)
+    public void sendBiomesList(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        return new TextComponentTranslation(key)
-                .setStyle(new Style().setColor(TextFormatting.AQUA).setHoverEvent(clickMe)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, toCopy)))
-                .appendSibling(new TextComponentString(toCopy).setStyle(new Style().setColor(TextFormatting.WHITE)));
+        if (args.length < 2)
+            throw new WrongUsageException(getUsage(sender) + " " + BIOMESLIST);
+        else if (args[1].equals(ALL))
+        {
+            sender.sendMessage(makeAquaTranslatable(LANG_BIOMESLIST + "all"));
+
+            sender.sendMessage(makeSortedList(SimplyHotSpringsConfig.biomeReasons.keySet(), id -> makeLocationInfoComponent(id.toString())));
+
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, SimplyHotSpringsConfig.biomeReasons.size());
+        }
+        else
+        {
+            boolean with;
+            if (args[1].equals(WITH))
+                with = true;
+            else if (args[1].equals(WITHOUT))
+                with = false;
+            else
+                throw new WrongUsageException(getUsage(sender) + " " + BIOMESLIST);
+
+            sender.sendMessage(new TextComponentTranslation(LANG_BIOMESLIST + (with ? "with" : "without"))
+                    .setStyle(new Style().setColor(with ? TextFormatting.GREEN : TextFormatting.DARK_RED)));
+
+            Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
+                    .filter(entry -> with == entry.getValue().allowsGeneration())
+                    .map(entry -> entry.getKey()).collect(Collectors.toSet());
+            sender.sendMessage(makeSortedList(filteredIds, id -> makeLocationInfoComponent(id.toString())));
+
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, filteredIds.size());
+        }
     }
+
+    // biometypes
+
+    public void sendBiomeTypes(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
+    {
+        if (args.length <= 1)
+        {
+            sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "all"));
+
+            sender.sendMessage(makeMultiComponent(BiomeDictionary.Type.getAll(), type -> type.getName(), string -> makeBiomeTypeComponent(string)));
+
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, BiomeDictionary.Type.getAll().size());
+        }
+        else
+        {
+            for (BiomeDictionary.Type type : BiomeDictionary.Type.getAll())
+                if (type.getName().equals(args[1]))
+                {
+                    sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()));
+
+                    Set<Biome> biomes = BiomeDictionary.getBiomes(type);
+                    sender.sendMessage(makeMultiComponent(biomes, biome -> biome.getRegistryName(), id -> makeLocationInfoComponent(id.toString())));
+
+                    sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, biomes.size());
+                    return;
+                }
+            throw new CommandException(LANG_BIOMETYPES + "type_not_found", args[1]);
+        }
+    }
+
+    //
 
     @Override
     public boolean checkPermission(MinecraftServer server, ICommandSender sender)
@@ -174,24 +288,180 @@ public class CommandSimplyHotSprings implements ICommand
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos)
     {
         if (args.length == 1)
-            return CommandBase.getListOfStringsMatchingLastWord(args, new String[] { LOCATIONINFO });
-        else if (args.length == 2)
-            return CommandBase.getListOfStringsMatchingLastWord(args,
-                    ArrayUtils.addAll(server.getOnlinePlayerNames(), Biome.REGISTRY.getKeys().stream()
-                            .<ArrayList<String>> collect(ArrayList<String>::new, (list, id) -> list.add(id.toString()), (left, right) -> left.addAll(right))
-                            .toArray(new String[0])));
-        else if (args.length == 5 || (args.length == 3 && !(args[1].startsWith("~") || StringUtils.isNumeric(args[1]))))
-            return CommandBase.getListOfStringsMatchingLastWord(args, Arrays.asList(DimensionManager.getIDs()));
-        else if (args.length >= 2 && args.length <= 4)
-            return CommandBase.getTabCompletionCoordinate(args, 1, targetPos);
-        else
-            return Collections.<String> emptyList();
+            return CommandBase.getListOfStringsMatchingLastWord(args, LOCATIONINFO, BIOMESLIST, BIOMETYPES, HELP);
+        else if (args.length > 1)
+        {
+            if (args[0].equals(LOCATIONINFO))
+            {
+                if (args.length == 2)
+                    return CommandBase.getListOfStringsMatchingLastWord(args, ForgeRegistries.BIOMES.getKeys());
+                else if (args.length >= 2 && args.length <= 4 && !args[1].contains(":"))
+                    return CommandBase.getTabCompletionCoordinate(args, 1, targetPos);
+            }
+            else if (args[0].equals(BIOMESLIST))
+            {
+                if (args.length == 2)
+                    return CommandBase.getListOfStringsMatchingLastWord(args, ALL, WITH, WITHOUT);
+            }
+            else if (args[0].equals(BIOMETYPES))
+            {
+                if (args.length == 2)
+                    return CommandBase.getListOfStringsMatchingLastWord(args, BiomeDictionary.Type.getAll());
+            }
+            else if (args[0].equals(HELP))
+            {
+                if (args.length == 2)
+                    return CommandBase.getListOfStringsMatchingLastWord(args, LOCATIONINFO, BIOMESLIST, BIOMETYPES);
+            }
+        }
+        return Collections.<String> emptyList();
     }
 
     @Override
     public boolean isUsernameIndex(String[] args, int index)
     {
-        return index == 1 && args.length == 2 && !args[1].contains(":");
+        return index == 1 && args.length == 2 && args[0].equals(LOCATIONINFO) && !args[1].contains(":");
+    }
+
+    // text component stuff
+
+    /**
+     * @return a TextComponentTranslation colored with TextFormatting.AQUA
+     */
+    private static ITextComponent makeAquaTranslatable(String key, Object... args)
+    {
+        return new TextComponentTranslation(key, args).setStyle(new Style().setColor(TextFormatting.AQUA));
+    }
+
+    /**
+     * @return a text component encapsulating this {@link GenerationReason}
+     */
+    public static ITextComponent makeHotSpringsReasonComponent(GenerationReason reason)
+    {
+        return new TextComponentTranslation(reason.getYN()).setStyle(new Style().setColor(reason.getTextFormatting())
+                .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new TextComponentTranslation(LANG_LOCATIONINFO + "reason").appendText("\n")
+                                .appendSibling(new TextComponentTranslation(reason.getKey()).setStyle(new Style().setColor(reason.getTextFormatting()))))));
+    }
+
+    /**
+     * @return a TextComponentString of toCopy that suggests itself to the chat box when you click it
+     */
+    private static ITextComponent makeSuggestComponent(String toCopy)
+    {
+        return new TextComponentString(toCopy).setStyle(new Style().setColor(TextFormatting.WHITE)
+                .setHoverEvent(clickForSuggest).setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, toCopy)));
+    }
+
+    private static final HoverEvent clickForSuggest = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_LOCATIONINFO + "click"));
+
+    /**
+     * @return a TextComponentString of location that runs /simplyhotsprings locationinfo [location] when clicked
+     */
+    private static ITextComponent makeLocationInfoComponent(String location)
+    {
+        return new TextComponentString(location)
+                .setStyle(new Style().setHoverEvent(clickForInfo)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + COMMAND + " " + LOCATIONINFO + " " + location)));
+    }
+
+    private static final HoverEvent clickForInfo = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_BIOMESLIST + "click"));
+
+    /**
+     * @return a TextComponentString of name that runs /simplyhotsprings biometypes [name] when clicked
+     */
+    private static ITextComponent makeBiomeTypeComponent(String name)
+    {
+        return new TextComponentString(name)
+                .setStyle(new Style().setHoverEvent(clickForList)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name)));
+    }
+
+    private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_BIOMETYPES + "click"));
+
+    /**
+     * @return a TextComponentString of /simplyhotsprings help [subcommand] that runs itself when clicked
+     */
+    private static ITextComponent makeHelpComponent(String subcommand)
+    {
+        String command = "/" + COMMAND + " " + HELP + " " + subcommand;
+        return new TextComponentString(command)
+                .setStyle(new Style().setHoverEvent(clickForHelp)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)));
+    }
+
+    private static final HoverEvent clickForHelp = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_HELP + "click"));
+
+    /**
+     * turns the collection of things into a list of comparable things, sorts them, turns them into text components, and then puts them all into one text component separated by
+     * commas. see {@link #makeSortedList}
+     * 
+     * @param <T>
+     *            the type of the collection
+     * @param <C>
+     *            the comparable thing
+     * @param collection
+     *            the collection of things
+     * @param toComparable
+     *            turns each thing into something that extends {@link Comparable} so that the things can be sorted
+     * @param toTextComponent
+     *            turns each comparable into an actual text component
+     */
+    private static <T, C extends Comparable<C>> ITextComponent makeMultiComponent(Collection<T> collection,
+            Function<T, C> toComparable,
+            Function<C, ITextComponent> toTextComponent)
+    {
+        return makeSortedList(collection.stream().map(toComparable).collect(Collectors.toList()), toTextComponent);
+    }
+
+    /**
+     * does {@link #makeMultiComponent(Collection, Function, Function)} and appends it to first
+     */
+    private static <T, C extends Comparable<C>> ITextComponent makeMultiComponent(ITextComponent first, Collection<T> collection,
+            Function<T, C> toComparable,
+            Function<C, ITextComponent> toTextComponent)
+    {
+        return first.appendSibling(makeMultiComponent(collection, toComparable, toTextComponent));
+    }
+
+    // --- these two methods are copy-pasted from 1.16.5 net.minecraft.util.text.TextComponentUtils ---
+
+    public static <T extends Comparable<T>> ITextComponent makeSortedList(Collection<T> collection, Function<T, ITextComponent> toTextComponent)
+    {
+        if (collection.isEmpty())
+            return new TextComponentString("");
+        else if (collection.size() == 1)
+            return toTextComponent.apply(collection.iterator().next());
+        else
+        {
+            List<T> list = Lists.newArrayList(collection);
+            list.sort(Comparable::compareTo);
+            return func_240649_b_(list, toTextComponent);
+        }
+    }
+
+    public static <T> ITextComponent func_240649_b_(Collection<T> collection, Function<T, ITextComponent> toTextComponent)
+    {
+        if (collection.isEmpty())
+            return new TextComponentString("");
+        else if (collection.size() == 1)
+            return toTextComponent.apply(collection.iterator().next()).createCopy();
+        else
+        {
+            ITextComponent itextcomponent = new TextComponentString("");
+            boolean first = true;
+
+            for (T t : collection)
+            {
+                if (!first)
+                    itextcomponent.appendSibling((new TextComponentString(", ")).setStyle(new Style().setColor(TextFormatting.GRAY)));
+
+                itextcomponent.appendSibling(toTextComponent.apply(t));
+                first = false;
+            }
+
+            return itextcomponent;
+        }
     }
 
 }
