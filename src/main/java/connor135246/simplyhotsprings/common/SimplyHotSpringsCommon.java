@@ -146,7 +146,7 @@ public class SimplyHotSpringsCommon
             CeilingAwareHeightmapPlacement ceiling)
     {
         return springs.withConfiguration(IFeatureConfig.NO_FEATURE_CONFIG)
-                .withPlacement(ceiling.configure(new TopSolidRangeConfig(5, 16, 512)))
+                .withPlacement(ceiling.configure(new TopSolidRangeConfig(5, 16, -1)))
                 .square()
                 .withPlacement(chance.configure(NoPlacementConfig.INSTANCE));
     }

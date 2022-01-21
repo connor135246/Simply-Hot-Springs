@@ -63,7 +63,7 @@ public class CeilingAwareHeightmapPlacement extends HeightmapBasedPlacement<TopS
         if (helperReader != null && helperReader.getDimensionType().getHasCeiling()
                 && helperReader.hasBlockState(pos.down(), state -> state.matchesBlock(Blocks.BEDROCK)))
         {
-            if (pos.getY() > config.maximum)
+            if (config.maximum > -1 && pos.getY() > config.maximum)
                 pos = new BlockPos(pos.getX(), config.maximum, pos.getZ());
             pos = pos.down(config.topOffset);
             // find first section of air below the top
