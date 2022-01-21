@@ -36,6 +36,11 @@ simplyhotsprings.command.biometypes.type_not_found=Biome Dictionary Type '%s' ca
 simplyhotsprings.command.biometypes.all=All Biome Dictionary Types: 
 simplyhotsprings.command.biometypes.biomes=All biomes in Biome Dictionary Type '%s': 
 simplyhotsprings.command.biometypes.click=Click to list biomes with this type
+simplyhotsprings.command.placespring.placed=Generated a hot spring around %1$s %2$s %3$s. 
+simplyhotsprings.command.placespring.not_placed=Failed to generate a hot spring around %1$s %2$s %3$s. 
+simplyhotsprings.command.placespring.too_low=There wasn't enough space above y=0 for the hot spring to generate.
+simplyhotsprings.command.placespring.failed=Either there is a liquid above the hot spring or there weren't enough solid blocks to hold the water.
+simplyhotsprings.command.placespring.click=Click to teleport
 simplyhotsprings.command.help.click=Click to see help
 simplyhotsprings.command.help.locationinfo.0=/simplyhotsprings locationinfo
 simplyhotsprings.command.help.locationinfo.1=   Checks your current dimension, your current biome, and whether hot springs can generate there.
@@ -55,6 +60,8 @@ simplyhotsprings.command.help.biometypes.0=/simplyhotsprings biometypes
 simplyhotsprings.command.help.biometypes.1=   Lists all Biome Dictionary Types.
 simplyhotsprings.command.help.biometypes.2=/simplyhotsprings biometypes <biome_type>
 simplyhotsprings.command.help.biometypes.3=   Lists all biomes that are in the given Biome Dictionary Type.
+simplyhotsprings.command.help.placespring.0=/simplyhotsprings placespring <x> <y> <z>
+simplyhotsprings.command.help.placespring.1=   Attempts to generate a hot spring centered at the position. If the north-west corner is air, moves down to the next solid block.
 
 
 simplyhotsprings.config.createsSources=Creates Source Blocks

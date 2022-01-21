@@ -3,12 +3,14 @@ package connor135246.simplyhotsprings.util;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
 
+import connor135246.simplyhotsprings.common.world.HotSpringsWorldGen;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandResultStats;
@@ -39,13 +41,17 @@ public class CommandSimplyHotSprings implements ICommand
     /** base command */
     public static final String COMMAND = Reference.MODID;
     /** command options */
-    public static final String HELP = "help", LOCATIONINFO = "locationinfo", BIOMESLIST = "biomeslist", BIOMETYPES = "biometypes",
-            ALL = "all", WITH = "with", WITHOUT = "without";
+    public static final String HELP = "help",
+            LOCATIONINFO = "locationinfo",
+            BIOMESLIST = "biomeslist", ALL = "all", WITH = "with", WITHOUT = "without",
+            BIOMETYPES = "biometypes",
+            PLACESPRING = "placespring";
 
     public static final String LANG_COMMAND = Reference.MODID + ".command.";
     public static final String LANG_LOCATIONINFO = LANG_COMMAND + LOCATIONINFO + ".";
     public static final String LANG_BIOMESLIST = LANG_COMMAND + BIOMESLIST + ".";
     public static final String LANG_BIOMETYPES = LANG_COMMAND + BIOMETYPES + ".";
+    public static final String LANG_PLACESPRING = LANG_COMMAND + PLACESPRING + ".";
     public static final String LANG_HELP = LANG_COMMAND + HELP + ".";
 
     @Override
@@ -85,6 +91,8 @@ public class CommandSimplyHotSprings implements ICommand
             sendBiomesList(server, sender, args);
         else if (args[0].equals(BIOMETYPES))
             sendBiomeTypes(server, sender, args);
+        else if (args[0].equals(PLACESPRING))
+            placeSpring(server, sender, args);
         else
             throw new WrongUsageException(getUsage(null));
     }
@@ -94,7 +102,7 @@ public class CommandSimplyHotSprings implements ICommand
     public void sendHelp(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
         String subcommand = "";
-        int helps = 2;
+        int helps = 3;
         if (args.length > 1)
         {
             if (args[1].equals(LOCATIONINFO))
@@ -112,6 +120,11 @@ public class CommandSimplyHotSprings implements ICommand
                 subcommand = BIOMETYPES;
                 helps = 3;
             }
+            else if (args[1].equals(PLACESPRING))
+            {
+                subcommand = PLACESPRING;
+                helps = 1;
+            }
         }
 
         if (subcommand.isEmpty())
@@ -122,6 +135,7 @@ public class CommandSimplyHotSprings implements ICommand
             sender.sendMessage(makeHelpComponent(LOCATIONINFO));
             sender.sendMessage(makeHelpComponent(BIOMESLIST));
             sender.sendMessage(makeHelpComponent(BIOMETYPES));
+            sender.sendMessage(makeHelpComponent(PLACESPRING));
         }
         else
         {
@@ -271,6 +285,49 @@ public class CommandSimplyHotSprings implements ICommand
         }
     }
 
+    // placespring
+
+    public void placeSpring(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
+    {
+        if (args.length < 4)
+            throw new WrongUsageException(getUsage(sender) + " " + PLACESPRING);
+
+        World world = sender.getEntityWorld();
+        BlockPos pos = CommandBase.parseBlockPos(sender, args, 1, true);
+        Random rand = new Random();
+
+        pos = pos.add(-8, 0, -8);
+
+        while (pos.getY() > 5 && world.isAirBlock(pos))
+            pos = pos.down();
+        
+        pos = pos.down(rand.nextInt(3));
+
+        boolean success = true;
+        String reasonKey = "";
+        if (pos.getY() > 4)
+        {
+            if (!HotSpringsWorldGen.doGenerate(rand, world, pos, null))
+            {
+                success = false;
+                reasonKey = "failed";
+            }
+        }
+        else
+        {
+            success = false;
+            reasonKey = "too_low";
+        }
+
+        ITextComponent message = makeTeleportComponent(LANG_PLACESPRING + (success ? "placed" : "not_placed"), pos.add(8, 0, 8));
+        message.getStyle().setColor(success ? TextFormatting.GREEN : TextFormatting.RED);
+        if (!reasonKey.isEmpty())
+            message.appendSibling(new TextComponentTranslation(LANG_PLACESPRING + reasonKey));
+        sender.sendMessage(message);
+
+        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, success ? 1 : 0);
+    }
+
     //
 
     @Override
@@ -288,7 +345,7 @@ public class CommandSimplyHotSprings implements ICommand
     public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos targetPos)
     {
         if (args.length == 1)
-            return CommandBase.getListOfStringsMatchingLastWord(args, LOCATIONINFO, BIOMESLIST, BIOMETYPES, HELP);
+            return CommandBase.getListOfStringsMatchingLastWord(args, LOCATIONINFO, BIOMESLIST, BIOMETYPES, PLACESPRING, HELP);
         else if (args.length > 1)
         {
             if (args[0].equals(LOCATIONINFO))
@@ -308,10 +365,15 @@ public class CommandSimplyHotSprings implements ICommand
                 if (args.length == 2)
                     return CommandBase.getListOfStringsMatchingLastWord(args, BiomeDictionary.Type.getAll());
             }
+            else if (args[0].equals(PLACESPRING))
+            {
+                if (args.length >= 2 && args.length <= 4)
+                    return CommandBase.getTabCompletionCoordinate(args, 1, targetPos);
+            }
             else if (args[0].equals(HELP))
             {
                 if (args.length == 2)
-                    return CommandBase.getListOfStringsMatchingLastWord(args, LOCATIONINFO, BIOMESLIST, BIOMETYPES);
+                    return CommandBase.getListOfStringsMatchingLastWord(args, LOCATIONINFO, BIOMESLIST, BIOMETYPES, PLACESPRING);
             }
         }
         return Collections.<String> emptyList();
@@ -378,6 +440,18 @@ public class CommandSimplyHotSprings implements ICommand
     }
 
     private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_BIOMETYPES + "click"));
+
+    /**
+     * @return a TextComponentTranslation that teleports you to the pos when clicked
+     */
+    private static ITextComponent makeTeleportComponent(String key, BlockPos pos)
+    {
+        return new TextComponentTranslation(key, pos.getX(), pos.getY(), pos.getZ())
+                .setStyle(new Style().setHoverEvent(clickForTeleport)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + pos.getX() + " " + pos.getY() + " " + pos.getZ())));
+    }
+
+    private static final HoverEvent clickForTeleport = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_PLACESPRING + "click"));
 
     /**
      * @return a TextComponentString of /simplyhotsprings help [subcommand] that runs itself when clicked

@@ -2,6 +2,8 @@ package connor135246.simplyhotsprings.common.world;
 
 import java.util.Random;
 
+import javax.annotation.Nullable;
+
 import com.google.common.base.Predicates;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
@@ -37,6 +39,14 @@ public class HotSpringsWorldGen implements IWorldGenerator
 
         if (pos.getY() > 4 && rand.nextInt(Math.max(SimplyHotSpringsConfig.Config.WorldGen.chance, 1)) == 0
                 && SimplyHotSpringsConfig.allowedBiome(world.getBiomeForCoordsBody(pos)))
+        {
+            doGenerate(rand, world, pos, chunkGenerator);
+        }
+    }
+
+    public static boolean doGenerate(Random rand, World world, BlockPos pos, @Nullable IChunkGenerator chunkGenerator)
+    {
+        if (pos.getY() > 4)
         {
             pos = pos.down(4);
             boolean[] bls = new boolean[2048];
@@ -77,11 +87,14 @@ public class HotSpringsWorldGen implements IWorldGenerator
                     {
                         if (bls[(x * 16 + z) * 8 + y])
                         {
-                            // {@link IChunkGenerator#isInsideStructure} only checks if the position is within the bounding box of a village building,
-                            // not within a village as a whole.
-                            // to be reasonably sure that the spring isn't ruining a village, multiple positions around the spring have to be checked.
-                            if (x % 5 == 0 && y % 5 == 0 && z % 5 == 0 && chunkGenerator.isInsideStructure(world, "Village", pos.add(x, y, z)))
-                                return;
+                            if (chunkGenerator != null)
+                            {
+                                // {@link IChunkGenerator#isInsideStructure} only checks if the position is within the bounding box of a village building,
+                                // not within a village as a whole.
+                                // to be reasonably sure that the spring isn't ruining a village, multiple positions around the spring have to be checked.
+                                if (x % 5 == 0 && y % 5 == 0 && z % 5 == 0 && chunkGenerator.isInsideStructure(world, "Village", pos.add(x, y, z)))
+                                    return false;
+                            }
                         }
                         else if (x < 15 && bls[((x + 1) * 16 + z) * 8 + y] || x > 0 && bls[((x - 1) * 16 + z) * 8 + y]
                                 || z < 15 && bls[(x * 16 + z + 1) * 8 + y] || z > 0 && bls[(x * 16 + (z - 1)) * 8 + y]
@@ -90,10 +103,10 @@ public class HotSpringsWorldGen implements IWorldGenerator
                             IBlockState blockstate = world.getBlockState(pos.add(x, y, z));
 
                             if (y >= 4 && blockstate.getMaterial().isLiquid())
-                                return;
+                                return false;
 
                             if (y < 4 && !blockstate.getMaterial().isSolid() && blockstate.getBlock() != BlockHotSpringWater.BLOCK_INSTANCE)
-                                return;
+                                return false;
                         }
                     }
                 }
@@ -163,7 +176,9 @@ public class HotSpringsWorldGen implements IWorldGenerator
                     }
                 }
             }
+            return true;
         }
+        return false;
     }
 
     // matching
