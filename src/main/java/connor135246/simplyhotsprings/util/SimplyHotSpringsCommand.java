@@ -2,6 +2,7 @@ package connor135246.simplyhotsprings.util;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import com.mojang.brigadier.CommandDispatcher;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
+import connor135246.simplyhotsprings.common.world.gen.feature.HotSpringsFeature;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
 import net.minecraft.command.arguments.BlockPosArgument;
@@ -28,6 +30,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -37,13 +40,17 @@ public class SimplyHotSpringsCommand
     /** base command */
     public static final String COMMAND = SimplyHotSprings.MODID;
     /** command options */
-    public static final String HELP = "help", LOCATIONINFO = "locationinfo", BIOMESLIST = "biomeslist", BIOMETYPES = "biometypes",
-            ALL = "all", WITH = "with", WITHOUT = "without";
+    public static final String HELP = "help",
+            LOCATIONINFO = "locationinfo",
+            BIOMESLIST = "biomeslist", ALL = "all", WITH = "with", WITHOUT = "without",
+            BIOMETYPES = "biometypes",
+            PLACESPRING = "placespring";
 
     public static final String LANG_COMMAND = "commands." + SimplyHotSprings.MODID + ".";
     public static final String LANG_LOCATIONINFO = LANG_COMMAND + LOCATIONINFO + ".";
     public static final String LANG_BIOMESLIST = LANG_COMMAND + BIOMESLIST + ".";
     public static final String LANG_BIOMETYPES = LANG_COMMAND + BIOMETYPES + ".";
+    public static final String LANG_PLACESPRING = LANG_COMMAND + PLACESPRING + ".";
     public static final String LANG_HELP = LANG_COMMAND + HELP + ".";
 
     public static void register(CommandDispatcher<CommandSource> dispatcher)
@@ -58,6 +65,8 @@ public class SimplyHotSpringsCommand
             return sendHelpForSubcommand(context.getSource(), BIOMESLIST, 5);
         })).then(Commands.literal(BIOMETYPES).executes((context) -> {
             return sendHelpForSubcommand(context.getSource(), BIOMETYPES, 3);
+        })).then(Commands.literal(PLACESPRING).executes((context) -> {
+            return sendHelpForSubcommand(context.getSource(), PLACESPRING, 1);
         }))).then(Commands.literal(LOCATIONINFO).executes((context) -> {
             return sendLocationInfo(context.getSource(), new BlockPos(context.getSource().getPos()));
         }).then(Commands.argument("target", EntityArgument.entity()).executes((context) -> {
@@ -77,7 +86,10 @@ public class SimplyHotSpringsCommand
                     return sendAllBiomeTypes(context.getSource());
                 }).then(Commands.argument("biome_type", BiomeTypeArgument.biomeTypeArgument()).executes((context) -> {
                     return sendBiomesOfType(context.getSource(), context.getArgument("biome_type", BiomeDictionary.Type.class));
-                }))));
+                }))).then(Commands.literal(PLACESPRING)
+                        .then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
+                            return placeSpring(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
+                        }))));
     }
 
     // help
@@ -89,8 +101,9 @@ public class SimplyHotSpringsCommand
         source.sendFeedback(makeHelpComponent(LOCATIONINFO), true);
         source.sendFeedback(makeHelpComponent(BIOMESLIST), true);
         source.sendFeedback(makeHelpComponent(BIOMETYPES), true);
+        source.sendFeedback(makeHelpComponent(PLACESPRING), true);
 
-        return 3;
+        return 4;
     }
 
     private static int sendHelpForSubcommand(CommandSource source, String subcommand, int helps)
@@ -186,6 +199,45 @@ public class SimplyHotSpringsCommand
         return biomeIds.size();
     }
 
+    // placespring
+
+    private static int placeSpring(CommandSource source, BlockPos pos)
+    {
+        ServerWorld world = source.getWorld();
+        Random rand = new Random();
+
+        pos = pos.add(-8, 0, -8);
+
+        while (pos.getY() > 5 && world.isAirBlock(pos))
+            pos = pos.down();
+
+        pos = pos.down(rand.nextInt(3));
+
+        boolean success = true;
+        String reasonKey = "";
+        if (pos.getY() > 4)
+        {
+            if (!HotSpringsFeature.doGenerate(world, rand, pos, false))
+            {
+                success = false;
+                reasonKey = "failed";
+            }
+        }
+        else
+        {
+            success = false;
+            reasonKey = "too_low";
+        }
+
+        IFormattableTextComponent message = makeTeleportComponent(LANG_PLACESPRING + (success ? "placed" : "not_placed"), pos.add(8, 0, 8));
+        message.mergeStyle(success ? TextFormatting.GREEN : TextFormatting.RED);
+        if (!reasonKey.isEmpty())
+            message.appendSibling(new TranslationTextComponent(LANG_PLACESPRING + reasonKey));
+        source.sendFeedback(message, true);
+
+        return success ? 1 : 0;
+    }
+
     // text component stuff
 
     /**
@@ -241,6 +293,18 @@ public class SimplyHotSpringsCommand
     }
 
     private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslationTextComponent(LANG_BIOMETYPES + "click"));
+
+    /**
+     * @return a TranslationTextComponent that teleports you to the pos when clicked
+     */
+    private static IFormattableTextComponent makeTeleportComponent(String key, BlockPos pos)
+    {
+        return new TranslationTextComponent(key, pos.getX(), pos.getY(), pos.getZ())
+                .setStyle(Style.EMPTY.setHoverEvent(clickForTeleport)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp " + pos.getX() + " " + pos.getY() + " " + pos.getZ())));
+    }
+
+    private static final HoverEvent clickForTeleport = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslationTextComponent(LANG_PLACESPRING + "click"));
 
     /**
      * @return a StringTextComponent of /simplyhotsprings help [subcommand] that runs itself when clicked

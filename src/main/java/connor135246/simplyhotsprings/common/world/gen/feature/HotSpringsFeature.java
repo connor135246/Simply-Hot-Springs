@@ -45,12 +45,20 @@ public class HotSpringsFeature extends Feature<NoFeatureConfig>
 
         pos = pos.down(rand.nextInt(3));
 
+        return doGenerate(reader, rand, pos, true);
+    }
+
+    public static boolean doGenerate(ISeedReader reader, Random rand, BlockPos pos, boolean checkForVillage)
+    {
+        if (!HOT_SPRING_WATER_BLOCK.isPresent())
+            return false;
+
         if (pos.getY() <= 4)
             return false;
         else
         {
             pos = pos.down(4);
-            if (reader.func_241827_a(SectionPos.from(pos), Structure.VILLAGE).findAny().isPresent())
+            if (checkForVillage && reader.func_241827_a(SectionPos.from(pos), Structure.VILLAGE).findAny().isPresent())
                 return false;
             else
             {
