@@ -299,7 +299,7 @@ public class SimplyHotSpringsConfig
                         biomeNameWhitelist.add(RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, name));
                     else
                     {
-                        warnInvalidEntry("Biome Name Whitelist", input);
+                        warnInvalidEntry("Biome Name Whitelist", name.toString());
                         invalidEntries = true;
                     }
                 }
@@ -321,7 +321,7 @@ public class SimplyHotSpringsConfig
                 if (ForgeRegistries.BIOMES.containsKey(name))
                     biomeNameBlacklist.add(RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, name));
                 else
-                    warnInvalidEntry("Biome Name Blacklist", input);
+                    warnInvalidEntry("Biome Name Blacklist", name.toString());
             }
         }
     }
@@ -331,7 +331,7 @@ public class SimplyHotSpringsConfig
      * this field is only used from the logical server side, from {@link SimplyHotSpringsCommand}.
      */
     public static final Object2ObjectOpenHashMap<RegistryKey<Biome>, GenerationReason> biomeReasons = Util.make(
-            new Object2ObjectOpenHashMap<RegistryKey<Biome>, GenerationReason>(), map -> map.defaultReturnValue(GenerationReason.UNKNOWN_BIOME));
+            new Object2ObjectOpenHashMap<RegistryKey<Biome>, GenerationReason>(255, 1.0F), map -> map.defaultReturnValue(GenerationReason.UNKNOWN_BIOME));
 
     /**
      * Called from {@link SimplyHotSpringsEventHandler#onBiomeLoading} <br>

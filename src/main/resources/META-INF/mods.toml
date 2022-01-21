@@ -33,9 +33,7 @@ credits="Glitchfiend/Biomes O' Plenty" #optional
 # A text field displayed in the mod UI
 authors="connor135246" #optional
 # The description text for the mod (multi line!) (#mandatory)
-description='''
-Adds Hot Springs.
-'''
+description='''Adds Hot Springs.'''
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.simplyhotsprings]] #optional
     # the modid of the dependency
