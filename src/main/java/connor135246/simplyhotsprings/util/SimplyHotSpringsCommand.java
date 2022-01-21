@@ -37,19 +37,28 @@ public class SimplyHotSpringsCommand
     /** base command */
     public static final String COMMAND = SimplyHotSprings.MODID;
     /** command options */
-    public static final String LOCATIONINFO = "locationinfo", BIOMESLIST = "biomeslist", BIOMETYPES = "biometypes",
+    public static final String HELP = "help", LOCATIONINFO = "locationinfo", BIOMESLIST = "biomeslist", BIOMETYPES = "biometypes",
             ALL = "all", WITH = "with", WITHOUT = "without";
 
     public static final String LANG_COMMAND = "commands." + SimplyHotSprings.MODID + ".";
     public static final String LANG_LOCATIONINFO = LANG_COMMAND + LOCATIONINFO + ".";
     public static final String LANG_BIOMESLIST = LANG_COMMAND + BIOMESLIST + ".";
     public static final String LANG_BIOMETYPES = LANG_COMMAND + BIOMETYPES + ".";
+    public static final String LANG_HELP = LANG_COMMAND + HELP + ".";
 
     public static void register(CommandDispatcher<CommandSource> dispatcher)
     {
         dispatcher.register(Commands.literal(COMMAND).requires((source) -> {
             return source.hasPermissionLevel(2);
+        }).then(Commands.literal(HELP).executes((context) -> {
+            return sendHelp(context.getSource());
         }).then(Commands.literal(LOCATIONINFO).executes((context) -> {
+            return sendHelpForSubcommand(context.getSource(), LOCATIONINFO, 7);
+        })).then(Commands.literal(BIOMESLIST).executes((context) -> {
+            return sendHelpForSubcommand(context.getSource(), BIOMESLIST, 5);
+        })).then(Commands.literal(BIOMETYPES).executes((context) -> {
+            return sendHelpForSubcommand(context.getSource(), BIOMETYPES, 3);
+        }))).then(Commands.literal(LOCATIONINFO).executes((context) -> {
             return sendLocationInfo(context.getSource(), new BlockPos(context.getSource().getPos()));
         }).then(Commands.argument("target", EntityArgument.entity()).executes((context) -> {
             return sendLocationInfo(context.getSource(), EntityArgument.getEntity(context, "target").getPosition());
@@ -69,6 +78,31 @@ public class SimplyHotSpringsCommand
                 }).then(Commands.argument("biome_type", BiomeTypeArgument.biomeTypeArgument()).executes((context) -> {
                     return sendBiomesOfType(context.getSource(), context.getArgument("biome_type", BiomeDictionary.Type.class));
                 }))));
+    }
+
+    // help
+
+    private static int sendHelp(CommandSource source)
+    {
+        source.sendFeedback(new StringTextComponent("--- " + "/" + COMMAND + " " + HELP + " ---").mergeStyle(TextFormatting.GOLD), true);
+
+        source.sendFeedback(makeHelpComponent(LOCATIONINFO), true);
+        source.sendFeedback(makeHelpComponent(BIOMESLIST), true);
+        source.sendFeedback(makeHelpComponent(BIOMETYPES), true);
+
+        return 3;
+    }
+
+    private static int sendHelpForSubcommand(CommandSource source, String subcommand, int helps)
+    {
+        source.sendFeedback(new StringTextComponent("--- " + "/" + COMMAND + " " + HELP + " " + subcommand + " ---").mergeStyle(TextFormatting.GOLD), true);
+
+        for (int i = 0; i <= helps; ++i)
+            source.sendFeedback(new TranslationTextComponent(LANG_HELP + subcommand + "." + i)
+                    .mergeStyle(i % 2 == 1 ? TextFormatting.GRAY : TextFormatting.WHITE), true);
+
+        return helps + 1;
+
     }
 
     // locationinfo
@@ -207,6 +241,19 @@ public class SimplyHotSpringsCommand
     }
 
     private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslationTextComponent(LANG_BIOMETYPES + "click"));
+
+    /**
+     * @return a StringTextComponent of /simplyhotsprings help [subcommand] that runs itself when clicked
+     */
+    private static IFormattableTextComponent makeHelpComponent(String subcommand)
+    {
+        String command = "/" + COMMAND + " " + HELP + " " + subcommand;
+        return new StringTextComponent(command)
+                .mergeStyle(Style.EMPTY.setHoverEvent(clickForHelp)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command)));
+    }
+
+    private static final HoverEvent clickForHelp = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslationTextComponent(LANG_HELP + "click"));
 
     /**
      * turns the collection of things into a list of comparable things, sorts them, turns them into text components, and then puts them all into one text component separated by
