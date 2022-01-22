@@ -9,7 +9,6 @@ import com.google.common.base.Predicates;
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.blocks.BlockHotSpringWater;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
-import net.minecraft.block.BlockDirt;
 import net.minecraft.block.BlockSand;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.block.state.pattern.BlockStateMatcher;
@@ -144,7 +143,7 @@ public class HotSpringsWorldGen implements IWorldGenerator
                         {
                             BlockPos belowPos = pos.add(x, y - 1, z);
                             IBlockState belowState = world.getBlockState(belowPos);
-                            boolean isDirt = DIRT_MATCHER.apply(belowState);
+                            boolean isDirt = belowState.getBlock() == Blocks.DIRT;
 
                             if (y < 4)
                             {
@@ -164,11 +163,11 @@ public class HotSpringsWorldGen implements IWorldGenerator
                                 {
                                     // note that some biomes don't use their top block or set it to something weird.
                                     // the nether's top block is unused, so it's grass. but there's not going to be skylight there anyway.
-                                    // the end's top block is regular dirt. but the matcher doesn't match regular dirt.
+                                    // the end's top block is regular dirt. but there's not likely to be dirt in the end anyway.
                                     // so this is fine, i guess.
                                     IBlockState topBlock = world.getBiome(belowPos).topBlock;
 
-                                    if (topBlock.getBlock() == Blocks.MYCELIUM || topBlock.getBlock() == Blocks.GRASS || DIRT_VARIANT_MATCHER.apply(topBlock))
+                                    if (topBlock.getBlock() == Blocks.MYCELIUM || topBlock.getBlock() == Blocks.GRASS || topBlock.getBlock() == Blocks.DIRT)
                                         world.setBlockState(belowPos, topBlock, 2);
                                 }
                             }
@@ -183,10 +182,6 @@ public class HotSpringsWorldGen implements IWorldGenerator
 
     // matching
 
-    protected static final BlockStateMatcher DIRT_MATCHER = BlockStateMatcher.forBlock(Blocks.DIRT).where(BlockDirt.VARIANT,
-            Predicates.equalTo(BlockDirt.DirtType.DIRT));
-    protected static final BlockStateMatcher DIRT_VARIANT_MATCHER = BlockStateMatcher.forBlock(Blocks.DIRT).where(BlockDirt.VARIANT,
-            Predicates.not(Predicates.equalTo(BlockDirt.DirtType.DIRT)));
     protected static final BlockStateMatcher SAND_MATCHER = BlockStateMatcher.forBlock(Blocks.SAND).where(BlockSand.VARIANT,
             Predicates.equalTo(BlockSand.EnumType.SAND));
     protected static final BlockStateMatcher RED_SAND_MATCHER = BlockStateMatcher.forBlock(Blocks.SAND).where(BlockSand.VARIANT,
