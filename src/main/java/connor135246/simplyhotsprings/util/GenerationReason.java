@@ -1,7 +1,7 @@
 package connor135246.simplyhotsprings.util;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
 
 /**
  * An enum for encapsulating the reason a hot spring might or might not generate in a biome.
@@ -18,7 +18,7 @@ public enum GenerationReason
     EMPTY_TYPE_WHITELIST(true, "empty_type_whitelist"),
     NOT_WHITELISTED(false, "not_whitelisted"),
     UNKNOWN_BIOME(false, "unknown_biome"),
-    CONFIGURED_ERROR(false, "configured_error");
+    REGISTER_ERROR(false, "register_error");
 
     private final boolean allowsGeneration;
     private final String key;
@@ -39,9 +39,9 @@ public enum GenerationReason
         return key;
     }
 
-    public TextFormatting getTextFormatting()
+    public ChatFormatting getTextFormatting()
     {
-        return allowsGeneration ? TextFormatting.GREEN : TextFormatting.DARK_RED;
+        return allowsGeneration ? ChatFormatting.GREEN : ChatFormatting.DARK_RED;
     }
 
     public static final String YES = SimplyHotSpringsCommand.LANG_LOCATIONINFO + "yes", NO = SimplyHotSpringsCommand.LANG_LOCATIONINFO + "no";

@@ -56,7 +56,7 @@
 	"simplyhotsprings.gen.reason.empty_type_whitelist": "This biome isn't in any blacklists, and the \"Biome Type Whitelist\" is empty.",
 	"simplyhotsprings.gen.reason.not_whitelisted": "This biome was excluded by whitelists.",
 	"simplyhotsprings.gen.reason.unknown_biome": "Unknown biome!",
-	"simplyhotsprings.gen.reason.configured_error": "The Hot Spring configured feature failed to register! Report this bug!",
+	"simplyhotsprings.gen.reason.register_error": "The Hot Spring placed feature failed to register! Report this bug!",
 	
 	"simplyhotsprings.config.createsSources": "Creates Source Blocks",
 	"simplyhotsprings.config.createsSources.tooltip": "If true, Hot Spring Water makes infinite water sources, like vanilla water does.",

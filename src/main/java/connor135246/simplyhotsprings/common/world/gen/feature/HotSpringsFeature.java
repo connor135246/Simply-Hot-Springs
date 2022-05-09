@@ -9,58 +9,66 @@ import com.mojang.serialization.Codec;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.SectionPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.LightType;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.NoFeatureConfig;
-import net.minecraft.world.gen.feature.structure.Structure;
-import net.minecraftforge.common.Tags;
+import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
+import net.minecraft.world.level.material.Material;
 
 /**
- * pretty much copy-pasted from {@link net.minecraft.world.gen.feature.LakesFeature}
+ * pretty much copy-pasted from {@link net.minecraft.world.level.levelgen.feature.LakeFeature}
  */
-public class HotSpringsFeature extends Feature<NoFeatureConfig>
+public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
 {
 
-    public HotSpringsFeature(Codec<NoFeatureConfig> codec)
+    public HotSpringsFeature(Codec<NoneFeatureConfiguration> codec)
     {
         super(codec);
     }
 
     @Override
-    public boolean generate(ISeedReader reader, ChunkGenerator generator, Random rand, BlockPos pos, NoFeatureConfig config)
+    public boolean place(FeaturePlaceContext<NoneFeatureConfiguration> context)
     {
         if (!HOT_SPRING_WATER_BLOCK.isPresent())
             return false;
 
-        while (pos.getY() > 5 && reader.isAirBlock(pos))
-            pos = pos.down();
+        WorldGenLevel glevel = context.level();
+        Random rand = context.random();
+        BlockPos pos = context.origin();
 
-        pos = pos.down(rand.nextInt(3));
+        if (context.chunkGenerator().hasFeatureChunkInRange(BuiltinStructureSets.VILLAGES, context.level().getSeed(),
+                SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()), 1))
+        {
+            SimplyHotSprings.log.info("Village found!"); // TODO remove
+            return false;
+        }
 
-        return doGenerate(reader, rand, pos, true);
+        while (pos.getY() > glevel.getMinBuildHeight() + 5 && glevel.isEmptyBlock(pos))
+            pos = pos.below();
+
+        pos = pos.below(rand.nextInt(3));
+
+        return doPlace(glevel, rand, pos);
     }
 
-    public static boolean doGenerate(ISeedReader reader, Random rand, BlockPos pos, boolean checkForVillage)
+    public static boolean doPlace(WorldGenLevel glevel, Random rand, BlockPos pos)
     {
         if (!HOT_SPRING_WATER_BLOCK.isPresent())
             return false;
 
-        if (pos.getY() <= 4)
+        if (pos.getY() <= glevel.getMinBuildHeight() + 4)
             return false;
         else
         {
-            pos = pos.down(4);
-            if (checkForVillage && reader.func_241827_a(SectionPos.from(pos), Structure.VILLAGE).findAny().isPresent())
-                return false;
-            else
+            pos = pos.below(4);
+
             {
                 // TODO find out what exactly each of these values does and make them configurable via worldgen .jsons
                 // lakes are made by creating multiple overlapping spheres
@@ -112,11 +120,11 @@ public class HotSpringsFeature extends Feature<NoFeatureConfig>
                                             || y < 7 && bls[(x * 16 + z) * 8 + y + 1] || y > 0 && bls[(x * 16 + z) * 8 + (y - 1)]);
                             if (flag)
                             {
-                                Material material = reader.getBlockState(pos.add(x, y, z)).getMaterial();
+                                Material material = glevel.getBlockState(pos.offset(x, y, z)).getMaterial();
                                 if (y >= 4 && material.isLiquid())
                                     return false;
 
-                                if (y < 4 && !material.isSolid() && !reader.getFluidState(pos.add(x, y, z)).isTagged(TAG_HOT_SPRING_WATER))
+                                if (y < 4 && !material.isSolid() && !glevel.getFluidState(pos.offset(x, y, z)).is(TAG_HOT_SPRING_WATER))
                                     return false;
                             }
                         }
@@ -134,12 +142,17 @@ public class HotSpringsFeature extends Feature<NoFeatureConfig>
                         {
                             if (bls[(x * 16 + z) * 8 + y])
                             {
-                                BlockPos setPos = pos.add(x, y, z);
-                                BlockState replaceState = reader.getBlockState(setPos);
-
-                                if (replaceState.getBlockHardness(reader, setPos) >= 0.0F && !replaceState.hasTileEntity())
-                                    reader.setBlockState(setPos, y >= 4 || reader.getDimensionType().isUltrawarm() ? Blocks.AIR.getDefaultState()
-                                            : HOT_SPRING_WATER_BLOCK.get().getDefaultState(), 2);
+                                BlockPos setPos = pos.offset(x, y, z);
+                                if (canReplaceBlock(glevel.getBlockState(setPos)))
+                                {
+                                    boolean air = y >= 4 || glevel.dimensionType().ultraWarm();
+                                    glevel.setBlock(setPos, air ? Blocks.AIR.defaultBlockState() : HOT_SPRING_WATER_BLOCK.get().defaultBlockState(), 2);
+                                    if (air)
+                                    {
+                                        glevel.scheduleTick(setPos, Blocks.AIR, 0);
+                                        markAboveForPostProcessingStatic(glevel, setPos);
+                                    }
+                                }
                             }
                         }
                     }
@@ -153,36 +166,39 @@ public class HotSpringsFeature extends Feature<NoFeatureConfig>
                         {
                             if (bls[(x * 16 + z) * 8 + y] && (y > 0 ? !bls[(x * 16 + z) * 8 + (y - 1)] : true))
                             {
-                                BlockPos belowPos = pos.add(x, y - 1, z);
-                                BlockState belowState = reader.getBlockState(belowPos);
-                                boolean isDirt = isDirt(belowState.getBlock());
+                                BlockPos belowPos = pos.offset(x, y - 1, z);
+                                BlockState belowState = glevel.getBlockState(belowPos);
+                                boolean isDirt = isDirt(belowState);
 
                                 if (y < 4)
                                 {
                                     if (belowState.getMaterial().isSolid())
                                     {
-                                        if (isDirt || belowState.matchesBlock(Blocks.SNOW_BLOCK))
-                                            reader.setBlockState(belowPos, Blocks.STONE.getDefaultState(), 2);
-                                        else if (belowState.matchesBlock(Blocks.SAND))
-                                            reader.setBlockState(belowPos, Blocks.SANDSTONE.getDefaultState(), 2);
-                                        else if (belowState.matchesBlock(Blocks.RED_SAND))
-                                            reader.setBlockState(belowPos, Blocks.RED_SANDSTONE.getDefaultState(), 2);
+                                        if (isDirt || belowState.is(Blocks.SNOW_BLOCK))
+                                            glevel.setBlock(belowPos, Blocks.STONE.defaultBlockState(), 2);
+                                        else if (belowState.is(Blocks.SAND))
+                                            glevel.setBlock(belowPos, Blocks.SANDSTONE.defaultBlockState(), 2);
+                                        else if (belowState.is(Blocks.RED_SAND))
+                                            glevel.setBlock(belowPos, Blocks.RED_SANDSTONE.defaultBlockState(), 2);
                                     }
                                 }
                                 else if (y >= 4)
                                 {
-                                    BlockState topBlock = reader.getBiome(belowPos).getGenerationSettings().getSurfaceBuilderConfig().getTop();
+                                    // TODO
+                                    /*
+                                    BlockState topBlock = glevel.getBiome(belowPos).value().getGenerationSettings().getSurfaceBuilderConfig().getTop();
 
                                     if (isDirt)
                                     {
-                                        if (reader.getLightFor(LightType.SKY, belowPos.up()) > 0 && isDirt(topBlock.getBlock()))
-                                            reader.setBlockState(belowPos, topBlock, 2);
+                                        if (glevel.getBrightness(LightLayer.SKY, belowPos.above()) > 0 && isDirt(topBlock))
+                                            glevel.setBlock(belowPos, topBlock, 2);
                                     }
                                     else if (Tags.Blocks.NETHERRACK.contains(belowState.getBlock()))
                                     {
-                                        if (reader.isAirBlock(belowPos.up()) && BlockTags.NYLIUM.contains(topBlock.getBlock()))
-                                            reader.setBlockState(belowPos, topBlock, 2);
+                                        if (glevel.isEmptyBlock(belowPos.above()) && BlockTags.NYLIUM.contains(topBlock.getBlock()))
+                                            glevel.setBlock(belowPos, topBlock, 2);
                                     }
+                                    */
                                 }
                             }
                         }
@@ -191,6 +207,28 @@ public class HotSpringsFeature extends Feature<NoFeatureConfig>
 
                 return true;
             }
+        }
+    }
+
+    public static boolean canReplaceBlock(BlockState state)
+    {
+        return !state.is(BlockTags.FEATURES_CANNOT_REPLACE);
+    }
+
+    /**
+     * {@link #markAboveForPostProcessing(WorldGenLevel, BlockPos)} but static
+     */
+    public static void markAboveForPostProcessingStatic(WorldGenLevel glevel, BlockPos pos)
+    {
+        BlockPos.MutableBlockPos mutablePos = pos.mutable();
+
+        for (int i = 0; i < 2; ++i)
+        {
+            mutablePos.move(Direction.UP);
+            if (glevel.getBlockState(mutablePos).isAir())
+                return;
+
+            glevel.getChunk(mutablePos).markPosForPostprocessing(mutablePos);
         }
     }
 

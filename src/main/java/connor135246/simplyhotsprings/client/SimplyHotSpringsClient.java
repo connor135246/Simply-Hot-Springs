@@ -7,8 +7,8 @@ import connor135246.simplyhotsprings.client.particles.HotSpringWaterDripParticle
 import connor135246.simplyhotsprings.client.particles.HotSpringWaterUnderwaterParticle;
 import connor135246.simplyhotsprings.client.particles.SteamParticle;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ParticleFactoryRegisterEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -24,9 +24,9 @@ public class SimplyHotSpringsClient
     public static void onClientSetup(FMLClientSetupEvent event)
     {
         event.enqueueWork(() -> {
-            HOT_SPRING_WATER.ifPresent(render -> RenderTypeLookup.setRenderLayer(render, RenderType.getTranslucent()));
-            FLOWING_HOT_SPRING_WATER.ifPresent(render -> RenderTypeLookup.setRenderLayer(render, RenderType.getTranslucent()));
-            HOT_SPRING_WATER_BLOCK.ifPresent(render -> RenderTypeLookup.setRenderLayer(render, RenderType.getTranslucent()));
+            HOT_SPRING_WATER.ifPresent(render -> ItemBlockRenderTypes.setRenderLayer(render, RenderType.translucent()));
+            FLOWING_HOT_SPRING_WATER.ifPresent(render -> ItemBlockRenderTypes.setRenderLayer(render, RenderType.translucent()));
+            HOT_SPRING_WATER_BLOCK.ifPresent(render -> ItemBlockRenderTypes.setRenderLayer(render, RenderType.translucent()));
         });
     }
 
@@ -34,11 +34,11 @@ public class SimplyHotSpringsClient
     public static void registerParticleFactories(ParticleFactoryRegisterEvent event)
     {
         Minecraft mc = Minecraft.getInstance();
-        HOT_SPRING_WATER_STEAM.ifPresent(type -> mc.particles.registerFactory(type, SteamParticle.Factory::new));
-        DRIPPING_HOT_SPRING_WATER.ifPresent(type -> mc.particles.registerFactory(type, HotSpringWaterDripParticle.DrippingFactory::new));
-        FALLING_HOT_SPRING_WATER.ifPresent(type -> mc.particles.registerFactory(type, HotSpringWaterDripParticle.FallingFactory::new));
-        SPLASHING_HOT_SPRING_WATER.ifPresent(type -> mc.particles.registerFactory(type, HotSpringWaterDripParticle.SplashingFactory::new));
-        HOT_SPRING_WATER_UNDERWATER.ifPresent(type -> mc.particles.registerFactory(type, HotSpringWaterUnderwaterParticle.Factory::new));
+        HOT_SPRING_WATER_STEAM.ifPresent(type -> mc.particleEngine.register(type, SteamParticle.Provider::new));
+        DRIPPING_HOT_SPRING_WATER.ifPresent(type -> mc.particleEngine.register(type, HotSpringWaterDripParticle.DrippingProvider::new));
+        FALLING_HOT_SPRING_WATER.ifPresent(type -> mc.particleEngine.register(type, HotSpringWaterDripParticle.FallingProvider::new));
+        SPLASHING_HOT_SPRING_WATER.ifPresent(type -> mc.particleEngine.register(type, HotSpringWaterDripParticle.SplashingProvider::new));
+        HOT_SPRING_WATER_UNDERWATER.ifPresent(type -> mc.particleEngine.register(type, HotSpringWaterUnderwaterParticle.Provider::new));
     }
 
 }

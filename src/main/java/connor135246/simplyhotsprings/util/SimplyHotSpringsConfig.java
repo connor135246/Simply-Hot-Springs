@@ -14,28 +14,28 @@ import com.electronwill.nightconfig.core.Config;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
-import connor135246.simplyhotsprings.common.world.gen.placement.ConfigChancePlacement;
+import connor135246.simplyhotsprings.common.world.gen.placement.ConfigChanceFilter;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.potion.Effect;
-import net.minecraft.potion.EffectInstance;
-import net.minecraft.util.RegistryKey;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.GenerationStage;
+import net.minecraft.Util;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
+import net.minecraftforge.event.server.ServerAboutToStartEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
 import net.minecraftforge.event.world.BiomeLoadingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
-import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
 @EventBusSubscriber(modid = SimplyHotSprings.MODID, bus = Bus.MOD)
@@ -99,10 +99,8 @@ public class SimplyHotSpringsConfig
             builder.comment("Most of these settings require any open world to be closed and reopened.")
                     .push("worldgen");
 
-            // for the string lists, the default supplier apparently can't be an empty list or else configured thinks it's a boolean list instead of a string list and turns all
-            // your inputs into "false". very strange.
-
             // there are 3 new biome dictionary types since 1.12: PLATEAU, MODIFIED, and OVERWORLD
+            // there are 3 new biome dictionary types since 1.16: PEAK, SLOPE, and UNDERGROUND
             info = builder
                     .translation(LANG_CONFIG_WORLDGEN + "info")
                     .comment("The command \"/simplyhotsprings\" has a few subcommands that will help you fill in your whitelists and blacklists "
@@ -191,7 +189,7 @@ public class SimplyHotSpringsConfig
 
     //
 
-    private static @Nullable Effect potionEffect = null;
+    private static @Nullable MobEffect potionEffect = null;
 
     /**
      * parses user input potion effect into actual potion effect
@@ -203,15 +201,16 @@ public class SimplyHotSpringsConfig
             potionEffect = null;
         else
         {
-            potionEffect = ForgeRegistries.POTIONS.getValue(new ResourceLocation(input));
+            potionEffect = ForgeRegistries.MOB_EFFECTS.getValue(new ResourceLocation(input));
             if (potionEffect == null)
                 warnInvalidEntry("Potion Effect", input);
         }
     }
 
-    public static @Nullable EffectInstance getNewHotSpringsEffect()
+    public static @Nullable MobEffectInstance getNewHotSpringsEffect()
     {
-        return potionEffect == null ? null : new EffectInstance(potionEffect, COMMON.potionEffectTimer.get(), COMMON.potionEffectAmplifier.get(), true, true);
+        return potionEffect == null ? null
+                : new MobEffectInstance(potionEffect, COMMON.potionEffectTimer.get(), COMMON.potionEffectAmplifier.get(), true, true);
     }
 
     /**
@@ -219,8 +218,8 @@ public class SimplyHotSpringsConfig
      */
     public static boolean addHotSpringsEffect(LivingEntity livingEntity)
     {
-        if (potionEffect != null && !livingEntity.isPotionActive(potionEffect))
-            return livingEntity.addPotionEffect(getNewHotSpringsEffect());
+        if (potionEffect != null && !livingEntity.hasEffect(potionEffect))
+            return livingEntity.addEffect(getNewHotSpringsEffect());
         return false;
     }
 
@@ -229,8 +228,8 @@ public class SimplyHotSpringsConfig
     private static final Set<BiomeDictionary.Type> biomeTypeWhitelist = new HashSet<BiomeDictionary.Type>();
     private static final Set<BiomeDictionary.Type> biomeTypeBlacklist = new HashSet<BiomeDictionary.Type>();
 
-    private static final Set<RegistryKey<Biome>> biomeNameWhitelist = new HashSet<RegistryKey<Biome>>();
-    private static final Set<RegistryKey<Biome>> biomeNameBlacklist = new HashSet<RegistryKey<Biome>>();
+    private static final Set<ResourceKey<Biome>> biomeNameWhitelist = new HashSet<ResourceKey<Biome>>();
+    private static final Set<ResourceKey<Biome>> biomeNameBlacklist = new HashSet<ResourceKey<Biome>>();
 
     private static final String NO_WARN_DUMMY_ENTRY = ".";
 
@@ -296,7 +295,7 @@ public class SimplyHotSpringsConfig
                 {
                     ResourceLocation name = new ResourceLocation(input);
                     if (ForgeRegistries.BIOMES.containsKey(name))
-                        biomeNameWhitelist.add(RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, name));
+                        biomeNameWhitelist.add(ResourceKey.create(ForgeRegistries.Keys.BIOMES, name));
                     else
                     {
                         warnInvalidEntry("Biome Name Whitelist", name.toString());
@@ -319,7 +318,7 @@ public class SimplyHotSpringsConfig
             {
                 ResourceLocation name = new ResourceLocation(input);
                 if (ForgeRegistries.BIOMES.containsKey(name))
-                    biomeNameBlacklist.add(RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, name));
+                    biomeNameBlacklist.add(ResourceKey.create(ForgeRegistries.Keys.BIOMES, name));
                 else
                     warnInvalidEntry("Biome Name Blacklist", name.toString());
             }
@@ -330,8 +329,8 @@ public class SimplyHotSpringsConfig
      * the map of biomes to reasons they can or cannot generate. emptied and recreated when loading a world. <br>
      * this field is only used from the logical server side, from {@link SimplyHotSpringsCommand}.
      */
-    public static final Object2ObjectOpenHashMap<RegistryKey<Biome>, GenerationReason> biomeReasons = Util.make(
-            new Object2ObjectOpenHashMap<RegistryKey<Biome>, GenerationReason>(255, 1.0F), map -> map.defaultReturnValue(GenerationReason.UNKNOWN_BIOME));
+    public static final Object2ObjectOpenHashMap<ResourceKey<Biome>, GenerationReason> biomeReasons = Util.make(
+            new Object2ObjectOpenHashMap<ResourceKey<Biome>, GenerationReason>(255, 0.95F), map -> map.defaultReturnValue(GenerationReason.UNKNOWN_BIOME));
 
     /**
      * Called from {@link SimplyHotSpringsEventHandler#onBiomeLoading} <br>
@@ -341,14 +340,14 @@ public class SimplyHotSpringsConfig
     {
         if (event.getName() != null)
         {
-            RegistryKey<Biome> biomeLoading = RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, event.getName());
-            if (SimplyHotSpringsCommon.CONFIGURED_HOT_SPRINGS_FEATURE == null)
-                biomeReasons.put(biomeLoading, GenerationReason.CONFIGURED_ERROR);
+            ResourceKey<Biome> biomeLoading = ResourceKey.create(ForgeRegistries.Keys.BIOMES, event.getName());
+            if (!SimplyHotSpringsCommon.PLACED_HOT_SPRINGS_FEATURE.isPresent())
+                biomeReasons.put(biomeLoading, GenerationReason.REGISTER_ERROR);
             else
             {
                 GenerationReason reason = SimplyHotSpringsConfig.getGenerationReason(biomeLoading);
                 if (reason.allowsGeneration())
-                    event.getGeneration().withFeature(GenerationStage.Decoration.LAKES, SimplyHotSpringsCommon.CONFIGURED_HOT_SPRINGS_FEATURE);
+                    event.getGeneration().addFeature(GenerationStep.Decoration.LAKES, SimplyHotSpringsCommon.PLACED_HOT_SPRINGS_FEATURE.getHolder().get());
                 biomeReasons.put(biomeLoading, reason);
             }
         }
@@ -357,16 +356,16 @@ public class SimplyHotSpringsConfig
     /**
      * Called from {@link SimplyHotSpringsEventHandler#onServerAboutToStart}
      */
-    public static void finalizeSpringsGeneration(FMLServerAboutToStartEvent event)
+    public static void finalizeSpringsGeneration(ServerAboutToStartEvent event)
     {
         biomeReasons.trim();
-        ConfigChancePlacement.updateChance(COMMON.chance.get());
+        ConfigChanceFilter.updateChance(COMMON.chance.get());
     }
 
     /**
      * Called from {@link SimplyHotSpringsEventHandler#onServerStopped}
      */
-    public static void resetSpringsGeneration(FMLServerStoppedEvent event)
+    public static void resetSpringsGeneration(ServerStoppedEvent event)
     {
         biomeReasons.clear();
     }
@@ -374,7 +373,7 @@ public class SimplyHotSpringsConfig
     /**
      * @return a GenerationReason of why the hot spring can or cannot generate.
      */
-    public static GenerationReason getGenerationReason(RegistryKey<Biome> biomeKey)
+    public static GenerationReason getGenerationReason(ResourceKey<Biome> biomeKey)
     {
         if (!COMMON.worldGen.get())
             return GenerationReason.NO_WORLD_GEN;
@@ -410,13 +409,13 @@ public class SimplyHotSpringsConfig
     }
 
     @SubscribeEvent
-    public static void onLoad(ModConfig.Loading event)
+    public static void onLoad(ModConfigEvent.Loading event)
     {
         onReOrLoad();
     }
 
     @SubscribeEvent
-    public static void onReload(ModConfig.Reloading event)
+    public static void onReload(ModConfigEvent.Reloading event)
     {
         onReOrLoad();
     }

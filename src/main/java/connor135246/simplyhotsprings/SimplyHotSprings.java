@@ -5,10 +5,10 @@ import org.apache.logging.log4j.Logger;
 
 import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ITag;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -32,9 +32,9 @@ public class SimplyHotSprings
     /**
      * The method our mixins redirect <b>FluidState.isTagged(FluidTags.WATER)</b> to instead
      */
-    public static boolean redirectWaterTag(FluidState fluidstate, ITag<Fluid> fluidTag)
+    public static boolean redirectWaterTag(FluidState fluidstate, TagKey<Fluid> waterTag)
     {
-        return fluidstate.isTagged(fluidTag) && (fluidTag == FluidTags.WATER ? !fluidstate.isTagged(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER) : true);
+        return fluidstate.is(waterTag) && (waterTag == FluidTags.WATER ? !fluidstate.is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER) : true);
     }
 
     // TODO things to fix due to using FluidTags.WATER

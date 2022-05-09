@@ -1,98 +1,101 @@
 package connor135246.simplyhotsprings.common.world.gen.placement;
 
-import java.lang.reflect.Field;
 import java.util.Random;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.feature.WorldDecoratingHelper;
-import net.minecraft.world.gen.placement.HeightmapBasedPlacement;
-import net.minecraft.world.gen.placement.TopSolidRangeConfig;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.valueproviders.ConstantInt;
+import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.VerticalAnchor;
+import net.minecraft.world.level.levelgen.placement.PlacementContext;
+import net.minecraft.world.level.levelgen.placement.PlacementModifier;
+import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 
 /**
- * if the dimension doesn't have a ceiling, it's the same as {@link net.minecraft.world.gen.placement.HeightmapPlacement} except if the y is below the
- * {@link TopSolidRangeConfig#bottomOffset}, the placement is discarded. <br>
- * if the dimension does have a ceiling, it ensures the y isn't above {@link TopSolidRangeConfig#maximum}, moves the y down by {@link TopSolidRangeConfig#topOffset}, finds the next
- * surface below, and then if the y is below the {@link TopSolidRangeConfig#bottomOffset}, the placement is discarded.
+ * if the dimension doesn't have a ceiling, it's the same as {@link net.minecraft.world.level.levelgen.placement.HeightmapPlacement} except if the y is below the
+ * {@link #minHeight}, the placement is discarded. <br>
+ * if the dimension does have a ceiling, it ensures the y isn't above the {@link #maxHeightIfBelowRoof}, moves the y down by {@link #roofOffset}, finds the next surface below, and
+ * then if the y is below the {@link #minHeight}, the placement is discarded.
  */
-public class CeilingAwareHeightmapPlacement extends HeightmapBasedPlacement<TopSolidRangeConfig>
+public class CeilingAwareHeightmapPlacement extends PlacementModifier
 {
 
-    /** reflecting the {@link WorldDecoratingHelper}'s ISeedReader to be able to check if the dimension has a ceiling */
-    protected static Field helperReaderField = null;
-    static
+    public static final Codec<CeilingAwareHeightmapPlacement> CODEC = RecordCodecBuilder.create((p_191701_) -> {
+        return p_191701_.group(Heightmap.Types.CODEC.fieldOf("heightmap").forGetter((p_191705_) -> {
+            return p_191705_.heightmap;
+        }), VerticalAnchor.CODEC.optionalFieldOf("min_height", VerticalAnchor.bottom()).forGetter((p_191705_) -> {
+            return p_191705_.minHeight;
+        }), IntProvider.CODEC.fieldOf("roof_offset").forGetter((p_191705_) -> {
+            return p_191705_.roofOffset;
+        }), VerticalAnchor.CODEC.optionalFieldOf("max_height_if_below_roof", VerticalAnchor.top()).forGetter((p_191705_) -> {
+            return p_191705_.maxHeightIfBelowRoof;
+        })).apply(p_191701_, CeilingAwareHeightmapPlacement::new);
+    });
+
+    private final Heightmap.Types heightmap;
+    private final VerticalAnchor minHeight;
+    private final IntProvider roofOffset;
+    private final VerticalAnchor maxHeightIfBelowRoof;
+
+    public CeilingAwareHeightmapPlacement(Heightmap.Types heightmap, VerticalAnchor minHeight, IntProvider roofOffset, VerticalAnchor maxHeightIfBelowRoof)
     {
-        try
-        {
-            helperReaderField = WorldDecoratingHelper.class.getDeclaredField("field_242889_a");
-            helperReaderField.setAccessible(true);
-        }
-        catch (NoSuchFieldException | SecurityException excep)
-        {
-            helperReaderField = null;
-        }
+        this.heightmap = heightmap;
+        this.minHeight = minHeight;
+        this.roofOffset = roofOffset;
+        this.maxHeightIfBelowRoof = maxHeightIfBelowRoof;
     }
 
-    public CeilingAwareHeightmapPlacement(Codec<TopSolidRangeConfig> codec)
+    private static final CeilingAwareHeightmapPlacement simpleSurface = new CeilingAwareHeightmapPlacement(
+            Heightmap.Types.WORLD_SURFACE_WG, VerticalAnchor.bottom(), ConstantInt.of(16), VerticalAnchor.top());
+
+    public static CeilingAwareHeightmapPlacement simpleSurface()
     {
-        super(codec);
+        return simpleSurface;
     }
 
     @Override
-    protected Heightmap.Type func_241858_a(TopSolidRangeConfig config)
-    {
-        return Heightmap.Type.MOTION_BLOCKING;
-    }
-
-    @Override
-    public Stream<BlockPos> getPositions(WorldDecoratingHelper helper, Random rand, TopSolidRangeConfig config, BlockPos pos)
+    public Stream<BlockPos> getPositions(PlacementContext context, Random rand, BlockPos pos)
     {
         int x = pos.getX();
         int z = pos.getZ();
-        int y = helper.func_242893_a(func_241858_a(config), x, z);
+        int y = context.getHeight(heightmap, x, z);
         pos = new BlockPos(x, y, z);
 
-        ISeedReader helperReader = getHelperReader(helper);
-        if (helperReader != null && helperReader.getDimensionType().getHasCeiling()
-                && helperReader.hasBlockState(pos.down(), state -> state.matchesBlock(Blocks.BEDROCK)))
+        if (context.getLevel().dimensionType().hasCeiling() && context.getLevel().isStateAtPosition(pos.below(), state -> state.is(Blocks.BEDROCK)))
         {
-            if (config.maximum > -1 && pos.getY() > config.maximum)
-                pos = new BlockPos(pos.getX(), config.maximum, pos.getZ());
-            pos = pos.down(config.topOffset);
+            int maximum = maxHeightIfBelowRoof.resolveY(context);
+            if (pos.getY() > maximum)
+                pos = new BlockPos(pos.getX(), maximum, pos.getZ());
+            pos = pos.below(roofOffset.sample(rand));
             // find first section of air below the top
-            while (pos.getY() >= 0 && !helperReader.isAirBlock(pos))
-                pos = pos.down();
+            while (pos.getY() >= context.getMinGenY() && !context.getLevel().isEmptyBlock(pos))
+                pos = pos.below();
             // find first non-air block below the first section of air (the new "surface")
-            while (pos.getY() >= 0 && helperReader.isAirBlock(pos))
-                pos = pos.down();
-            pos = pos.up();
+            while (pos.getY() >= context.getMinGenY() && context.getLevel().isEmptyBlock(pos))
+                pos = pos.below();
+            pos = pos.above();
         }
 
-        return pos.getY() > config.bottomOffset ? Stream.of(pos) : Stream.of();
+        return pos.getY() > minHeight.resolveY(context) ? Stream.of(pos) : Stream.of();
     }
 
-    @Nullable
-    protected static ISeedReader getHelperReader(WorldDecoratingHelper helper)
-    {
-        if (helperReaderField != null)
+    public static final PlacementModifierType<CeilingAwareHeightmapPlacement> TYPE = new PlacementModifierType<CeilingAwareHeightmapPlacement>() {
+        @Override
+        public Codec<CeilingAwareHeightmapPlacement> codec()
         {
-            try
-            {
-                return (ISeedReader) helperReaderField.get(helper);
-            }
-            catch (ClassCastException | IllegalArgumentException | IllegalAccessException excep)
-            {
-                ;
-            }
+            return CeilingAwareHeightmapPlacement.CODEC;
         }
-        return null;
+    };
+
+    @Override
+    public PlacementModifierType<?> type()
+    {
+        return TYPE;
     }
 
 }

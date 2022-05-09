@@ -3,40 +3,39 @@ package connor135246.simplyhotsprings.client.particles;
 import javax.annotation.Nullable;
 
 import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
-import net.minecraft.client.particle.IAnimatedSprite;
-import net.minecraft.client.particle.IParticleFactory;
-import net.minecraft.client.particle.IParticleRenderType;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.SpriteTexturedParticle;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.particles.BasicParticleType;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 /**
  * a lot copy-pasted from {@link net.minecraft.client.particle.DripParticle} and {@link net.minecraft.client.particle.SplashParticle}
  */
-public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
+public abstract class HotSpringWaterDripParticle extends TextureSheetParticle
 {
 
     protected static final Fluid FLUID = SimplyHotSpringsCommon.HOT_SPRING_WATER.orElse(null);
 
-    protected final @Nullable IParticleData nextParticle;
+    protected final @Nullable ParticleOptions nextParticle;
 
-    public HotSpringWaterDripParticle(ClientWorld cworld, double x, double y, double z, @Nullable IParticleData nextParticle)
+    public HotSpringWaterDripParticle(ClientLevel clevel, double x, double y, double z, @Nullable ParticleOptions nextParticle)
     {
-        super(cworld, x, y, z);
+        super(clevel, x, y, z);
         this.nextParticle = nextParticle;
         this.setup();
     }
 
-    public HotSpringWaterDripParticle(ClientWorld cworld, double x, double y, double z, double motionX, double motionY, double motionZ,
-            @Nullable IParticleData nextParticle)
+    public HotSpringWaterDripParticle(ClientLevel clevel, double x, double y, double z, double motionX, double motionY, double motionZ,
+            @Nullable ParticleOptions nextParticle)
     {
-        super(cworld, x, y, z, motionX, motionY, motionZ);
+        super(clevel, x, y, z, motionX, motionY, motionZ);
         this.nextParticle = nextParticle;
         this.setup();
     }
@@ -45,32 +44,32 @@ public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
     {
         this.setSize(0.01F, 0.01F);
         this.setColor(0.01F, 1.0F, 1.0F);
-        this.particleGravity = 0.06F;
+        this.gravity = 0.06F;
     }
 
     @Override
-    public IParticleRenderType getRenderType()
+    public ParticleRenderType getRenderType()
     {
-        return IParticleRenderType.PARTICLE_SHEET_OPAQUE;
+        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
     }
 
     @Override
     public void tick()
     {
-        this.prevPosX = this.posX;
-        this.prevPosY = this.posY;
-        this.prevPosZ = this.posZ;
+        this.xo = this.x;
+        this.yo = this.y;
+        this.zo = this.z;
         this.ageParticle();
-        if (!this.isExpired)
+        if (this.isAlive())
         {
-            this.motionY -= this.particleGravity;
-            this.move(this.motionX, this.motionY, this.motionZ);
+            this.yd -= this.gravity;
+            this.move(this.xd, this.yd, this.zd);
             this.updateMotion();
-            if (!this.isExpired)
+            if (this.isAlive())
             {
-                this.motionX *= 0.98F;
-                this.motionY *= 0.98F;
-                this.motionZ *= 0.98F;
+                this.xd *= 0.98F;
+                this.yd *= 0.98F;
+                this.zd *= 0.98F;
                 this.checkBlockState();
             }
         }
@@ -78,8 +77,8 @@ public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
 
     protected void ageParticle()
     {
-        if (this.maxAge-- <= 0)
-            this.setExpired();
+        if (this.lifetime-- <= 0)
+            this.remove();
     }
 
     protected void updateMotion()
@@ -89,36 +88,36 @@ public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
 
     protected void checkBlockState()
     {
-        BlockPos blockpos = new BlockPos(this.posX, this.posY, this.posZ);
-        FluidState fluidstate = this.world.getFluidState(blockpos);
-        if (fluidstate.getFluid() == FLUID && this.posY < blockpos.getY() + fluidstate.getActualHeight(this.world, blockpos))
-            this.setExpired();
+        BlockPos blockpos = new BlockPos(this.x, this.y, this.z);
+        FluidState fluidstate = this.level.getFluidState(blockpos);
+        if (fluidstate.getType() == FLUID && this.y < blockpos.getY() + fluidstate.getHeight(this.level, blockpos))
+            this.remove();
     }
 
     protected void spawnNextParticle(boolean copyMotion)
     {
         if (this.nextParticle != null)
         {
-            this.world.addParticle(this.nextParticle, this.posX, this.posY, this.posZ,
-                    copyMotion ? this.motionX : 0.0D, copyMotion ? this.motionY : 0.0D, copyMotion ? this.motionZ : 0.0D);
+            this.level.addParticle(this.nextParticle, this.x, this.y, this.z,
+                    copyMotion ? this.xd : 0.0D, copyMotion ? this.yd : 0.0D, copyMotion ? this.zd : 0.0D);
         }
     }
 
     public static class Dripping extends HotSpringWaterDripParticle
     {
-        public Dripping(ClientWorld cworld, double x, double y, double z, @Nullable IParticleData nextParticle)
+        public Dripping(ClientLevel clevel, double x, double y, double z, @Nullable ParticleOptions nextParticle)
         {
-            super(cworld, x, y, z, nextParticle);
-            this.particleGravity *= 0.02F;
-            this.maxAge = 40;
+            super(clevel, x, y, z, nextParticle);
+            this.gravity *= 0.02F;
+            this.lifetime = 40;
         }
 
         @Override
         protected void ageParticle()
         {
-            if (this.maxAge-- <= 0)
+            if (this.lifetime-- <= 0)
             {
-                this.setExpired();
+                this.remove();
                 this.spawnNextParticle(true);
             }
         }
@@ -126,18 +125,18 @@ public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
         @Override
         protected void updateMotion()
         {
-            this.motionX *= 0.02D;
-            this.motionY *= 0.02D;
-            this.motionZ *= 0.02D;
+            this.xd *= 0.02D;
+            this.yd *= 0.02D;
+            this.zd *= 0.02D;
         }
     }
 
     public static class Falling extends HotSpringWaterDripParticle
     {
-        public Falling(ClientWorld cworld, double x, double y, double z, @Nullable IParticleData nextParticle)
+        public Falling(ClientLevel clevel, double x, double y, double z, @Nullable ParticleOptions nextParticle)
         {
-            super(cworld, x, y, z, nextParticle);
-            this.maxAge = (int) (64.0D / (Math.random() * 0.8D + 0.2D));
+            super(clevel, x, y, z, nextParticle);
+            this.lifetime = (int) (64.0D / (Math.random() * 0.8D + 0.2D));
         }
 
         @Override
@@ -145,7 +144,7 @@ public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
         {
             if (this.onGround)
             {
-                this.setExpired();
+                this.remove();
                 this.spawnNextParticle(false);
             }
         }
@@ -158,23 +157,23 @@ public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
      */
     public static class Splashing extends HotSpringWaterDripParticle
     {
-        protected Splashing(ClientWorld cworld, double x, double y, double z, double motionX, double motionY, double motionZ)
+        protected Splashing(ClientLevel clevel, double x, double y, double z, double motionX, double motionY, double motionZ)
         {
-            super(cworld, x, y, z, 0.0D, 0.0D, 0.0D, null);
+            super(clevel, x, y, z, 0.0D, 0.0D, 0.0D, null);
             if (motionY == 0.0D && (motionX != 0.0D || motionZ != 0.0D))
             {
-                this.motionX = motionX;
-                this.motionY = 0.1D;
-                this.motionZ = motionZ;
+                this.xd = motionX;
+                this.yd = 0.1D;
+                this.zd = motionZ;
             }
             else
             {
-                this.motionX *= 0.3F;
-                this.motionY = Math.random() * 0.2F + 0.1F;
-                this.motionZ *= 0.3F;
+                this.xd *= 0.3F;
+                this.yd = Math.random() * 0.2F + 0.1F;
+                this.zd *= 0.3F;
             }
-            this.particleGravity = 0.04F;
-            this.maxAge = (int) (8.0D / (Math.random() * 0.8D + 0.2D));
+            this.gravity = 0.04F;
+            this.lifetime = (int) (8.0D / (Math.random() * 0.8D + 0.2D));
         }
 
         @Override
@@ -183,11 +182,11 @@ public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
             if (this.onGround)
             {
                 if (Math.random() < 0.5D)
-                    this.setExpired();
+                    this.remove();
                 else
                 {
-                    this.motionX *= 0.7F;
-                    this.motionZ *= 0.7F;
+                    this.xd *= 0.7F;
+                    this.zd *= 0.7F;
                 }
             }
         }
@@ -195,63 +194,63 @@ public abstract class HotSpringWaterDripParticle extends SpriteTexturedParticle
         @Override
         protected void checkBlockState()
         {
-            BlockPos blockpos = new BlockPos(this.posX, this.posY, this.posZ);
-            double collisionHeight = Math.max(this.world.getBlockState(blockpos).getCollisionShapeUncached(this.world, blockpos).max(Direction.Axis.Y,
-                    this.posX - blockpos.getX(), this.posZ - blockpos.getZ()), this.world.getFluidState(blockpos).getActualHeight(this.world, blockpos));
-            if (collisionHeight > 0.0D && this.posY < (double) blockpos.getY() + collisionHeight)
-                this.setExpired();
+            BlockPos blockpos = new BlockPos(this.x, this.y, this.z);
+            double collisionHeight = Math.max(this.level.getBlockState(blockpos).getCollisionShape(level, blockpos).max(Direction.Axis.Y,
+                    this.x - blockpos.getX(), this.z - blockpos.getZ()), this.level.getFluidState(blockpos).getHeight(this.level, blockpos));
+            if (collisionHeight > 0.0D && this.y < (double) blockpos.getY() + collisionHeight)
+                this.remove();
         }
     }
 
-    public static class DrippingFactory implements IParticleFactory<BasicParticleType>
+    public static class DrippingProvider implements ParticleProvider<SimpleParticleType>
     {
-        protected final IAnimatedSprite spriteSet;
+        protected final SpriteSet spriteSet;
 
-        public DrippingFactory(IAnimatedSprite spriteSet)
+        public DrippingProvider(SpriteSet spriteSet)
         {
             this.spriteSet = spriteSet;
         }
 
-        public Particle makeParticle(BasicParticleType type, ClientWorld cworld, double x, double y, double z, double motionX, double motionY, double motionZ)
+        public Particle createParticle(SimpleParticleType type, ClientLevel clevel, double x, double y, double z, double motionX, double motionY, double motionZ)
         {
-            HotSpringWaterDripParticle particle = new HotSpringWaterDripParticle.Dripping(cworld, x, y, z,
+            HotSpringWaterDripParticle particle = new HotSpringWaterDripParticle.Dripping(clevel, x, y, z,
                     SimplyHotSpringsCommon.FALLING_HOT_SPRING_WATER.orElse(null));
-            particle.selectSpriteRandomly(this.spriteSet);
+            particle.pickSprite(this.spriteSet);
             return particle;
         }
     }
 
-    public static class FallingFactory implements IParticleFactory<BasicParticleType>
+    public static class FallingProvider implements ParticleProvider<SimpleParticleType>
     {
-        protected final IAnimatedSprite spriteSet;
+        protected final SpriteSet spriteSet;
 
-        public FallingFactory(IAnimatedSprite spriteSet)
+        public FallingProvider(SpriteSet spriteSet)
         {
             this.spriteSet = spriteSet;
         }
 
-        public Particle makeParticle(BasicParticleType type, ClientWorld cworld, double x, double y, double z, double motionX, double motionY, double motionZ)
+        public Particle createParticle(SimpleParticleType type, ClientLevel clevel, double x, double y, double z, double motionX, double motionY, double motionZ)
         {
-            HotSpringWaterDripParticle particle = new HotSpringWaterDripParticle.Falling(cworld, x, y, z,
+            HotSpringWaterDripParticle particle = new HotSpringWaterDripParticle.Falling(clevel, x, y, z,
                     SimplyHotSpringsCommon.SPLASHING_HOT_SPRING_WATER.orElse(null));
-            particle.selectSpriteRandomly(this.spriteSet);
+            particle.pickSprite(this.spriteSet);
             return particle;
         }
     }
 
-    public static class SplashingFactory implements IParticleFactory<BasicParticleType>
+    public static class SplashingProvider implements ParticleProvider<SimpleParticleType>
     {
-        private final IAnimatedSprite spriteSet;
+        private final SpriteSet spriteSet;
 
-        public SplashingFactory(IAnimatedSprite spriteSet)
+        public SplashingProvider(SpriteSet spriteSet)
         {
             this.spriteSet = spriteSet;
         }
 
-        public Particle makeParticle(BasicParticleType type, ClientWorld world, double x, double y, double z, double motionX, double motionY, double motionZ)
+        public Particle createParticle(SimpleParticleType type, ClientLevel clevel, double x, double y, double z, double motionX, double motionY, double motionZ)
         {
-            HotSpringWaterDripParticle particle = new HotSpringWaterDripParticle.Splashing(world, x, y, z, motionX, motionY, motionZ);
-            particle.selectSpriteRandomly(this.spriteSet);
+            HotSpringWaterDripParticle particle = new HotSpringWaterDripParticle.Splashing(clevel, x, y, z, motionX, motionY, motionZ);
+            particle.pickSprite(spriteSet);
             return particle;
         }
     }

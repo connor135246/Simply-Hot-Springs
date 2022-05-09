@@ -1,56 +1,55 @@
 package connor135246.simplyhotsprings.common;
 
+import static connor135246.simplyhotsprings.SimplyHotSprings.MODID;
+
+import java.util.List;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
-import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.blocks.HotSpringWaterBlock;
 import connor135246.simplyhotsprings.common.fluids.HotSpringWaterFluid;
 import connor135246.simplyhotsprings.common.world.gen.feature.HotSpringsFeature;
 import connor135246.simplyhotsprings.common.world.gen.placement.CeilingAwareHeightmapPlacement;
-import connor135246.simplyhotsprings.common.world.gen.placement.ConfigChancePlacement;
-import net.minecraft.block.Block;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.FlowingFluidBlock;
-import net.minecraft.dispenser.DefaultDispenseItemBehavior;
-import net.minecraft.dispenser.IBlockSource;
-import net.minecraft.dispenser.IDispenseItemBehavior;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.fluid.FlowingFluid;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.item.BucketItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.particles.BasicParticleType;
-import net.minecraft.particles.ParticleType;
+import connor135246.simplyhotsprings.common.world.gen.placement.ConfigChanceFilter;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.BlockSource;
+import net.minecraft.core.Registry;
+import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
+import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.WorldGenRegistries;
-import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.IFeatureConfig;
-import net.minecraft.world.gen.feature.NoFeatureConfig;
-import net.minecraft.world.gen.placement.NoPlacementConfig;
-import net.minecraft.world.gen.placement.Placement;
-import net.minecraft.world.gen.placement.TopSolidRangeConfig;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BucketItem;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.DispensibleContainerItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DispenserBlock;
+import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import net.minecraft.world.level.levelgen.placement.BiomeFilter;
+import net.minecraft.world.level.levelgen.placement.InSquarePlacement;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
+import net.minecraft.world.level.material.FlowingFluid;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.RegistryObject;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
 
-@EventBusSubscriber(modid = SimplyHotSprings.MODID, bus = Bus.MOD)
+@EventBusSubscriber(modid = MODID, bus = Bus.MOD)
 public class SimplyHotSpringsCommon
 {
 
@@ -58,54 +57,59 @@ public class SimplyHotSpringsCommon
 
     // deferred registers
 
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, SimplyHotSprings.MODID);
-    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SimplyHotSprings.MODID);
-    public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(ForgeRegistries.FLUIDS, SimplyHotSprings.MODID);
-    public static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(ForgeRegistries.PARTICLE_TYPES, SimplyHotSprings.MODID);
-    public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(ForgeRegistries.FEATURES, SimplyHotSprings.MODID);
-    public static final DeferredRegister<Placement<?>> DECORATORS = DeferredRegister.create(ForgeRegistries.DECORATORS, SimplyHotSprings.MODID);
+    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registry.BLOCK_REGISTRY, MODID);
+    public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registry.ITEM_REGISTRY, MODID);
+    public static final DeferredRegister<Fluid> FLUIDS = DeferredRegister.create(Registry.FLUID_REGISTRY, MODID);
+    public static final DeferredRegister<ParticleType<?>> PARTICLES = DeferredRegister.create(Registry.PARTICLE_TYPE_REGISTRY, MODID);
+    public static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registry.FEATURE_REGISTRY, MODID);
+    public static final DeferredRegister<ConfiguredFeature<?, ?>> CONFIGURED_FEATURES = DeferredRegister.create(Registry.CONFIGURED_FEATURE_REGISTRY, MODID);
+    public static final DeferredRegister<PlacementModifierType<?>> PLACEMENT_MODIFIERS = DeferredRegister.create(Registry.PLACEMENT_MODIFIER_REGISTRY, MODID);
+    public static final DeferredRegister<PlacedFeature> PLACED_FEATURES = DeferredRegister.create(Registry.PLACED_FEATURE_REGISTRY, MODID);
 
     // registry objects
 
-    public static final RegistryObject<FlowingFluidBlock> HOT_SPRING_WATER_BLOCK = BLOCKS.register(NAME, HotSpringWaterBlock::new);
+    public static final RegistryObject<LiquidBlock> HOT_SPRING_WATER_BLOCK = BLOCKS.register(NAME, HotSpringWaterBlock::new);
 
     public static final RegistryObject<FlowingFluid> HOT_SPRING_WATER = FLUIDS.register(NAME, HotSpringWaterFluid.Source::new);
     public static final RegistryObject<FlowingFluid> FLOWING_HOT_SPRING_WATER = FLUIDS.register("flowing_" + NAME, HotSpringWaterFluid.Flowing::new);
 
     public static final RegistryObject<Item> HOT_SPRING_WATER_BUCKET = ITEMS.register(NAME + "_bucket",
-            () -> new BucketItem(HOT_SPRING_WATER, new Item.Properties().maxStackSize(1).containerItem(Items.BUCKET).group(ItemGroup.MISC)));
+            () -> new BucketItem(HOT_SPRING_WATER, new Item.Properties().stacksTo(1).craftRemainder(Items.BUCKET).tab(CreativeModeTab.TAB_MISC)));
 
-    public static final RegistryObject<BasicParticleType> HOT_SPRING_WATER_STEAM = PARTICLES.register(NAME + "_steam", particleBasic(false));
-    public static final RegistryObject<BasicParticleType> DRIPPING_HOT_SPRING_WATER = PARTICLES.register("dripping_" + NAME, particleBasic(false));
-    public static final RegistryObject<BasicParticleType> FALLING_HOT_SPRING_WATER = PARTICLES.register("falling_" + NAME, particleBasic(false));
-    public static final RegistryObject<BasicParticleType> SPLASHING_HOT_SPRING_WATER = PARTICLES.register("splashing_" + NAME, particleBasic(false));
-    public static final RegistryObject<BasicParticleType> HOT_SPRING_WATER_UNDERWATER = PARTICLES.register(NAME + "_underwater", particleBasic(false));
+    public static final RegistryObject<SimpleParticleType> HOT_SPRING_WATER_STEAM = PARTICLES.register(NAME + "_steam", particleSimple(false));
+    public static final RegistryObject<SimpleParticleType> DRIPPING_HOT_SPRING_WATER = PARTICLES.register("dripping_" + NAME, particleSimple(false));
+    public static final RegistryObject<SimpleParticleType> FALLING_HOT_SPRING_WATER = PARTICLES.register("falling_" + NAME, particleSimple(false));
+    public static final RegistryObject<SimpleParticleType> SPLASHING_HOT_SPRING_WATER = PARTICLES.register("splashing_" + NAME, particleSimple(false));
+    public static final RegistryObject<SimpleParticleType> HOT_SPRING_WATER_UNDERWATER = PARTICLES.register(NAME + "_underwater", particleSimple(false));
 
-    public static final RegistryObject<Feature<NoFeatureConfig>> HOT_SPRINGS_FEATURE = FEATURES.register("hot_springs",
-            () -> new HotSpringsFeature(NoFeatureConfig.CODEC));
-    public static final RegistryObject<ConfigChancePlacement> CONFIG_CHANCE_PLACEMENT = DECORATORS.register("config_chance",
-            () -> new ConfigChancePlacement(NoPlacementConfig.CODEC));
-    public static final RegistryObject<CeilingAwareHeightmapPlacement> CEILING_AWARE_HEIGHTMAP_PLACEMENT = DECORATORS.register("ceiling_aware_heightmap",
-            () -> new CeilingAwareHeightmapPlacement(TopSolidRangeConfig.CODEC));
+    public static final RegistryObject<Feature<NoneFeatureConfiguration>> HOT_SPRINGS_FEATURE = FEATURES.register("hot_springs",
+            () -> new HotSpringsFeature(NoneFeatureConfiguration.CODEC));
+    public static final RegistryObject<ConfiguredFeature<?, ?>> CONFIGURED_HOT_SPRINGS_FEATURE = CONFIGURED_FEATURES.register("hot_springs",
+            () -> new ConfiguredFeature<>(HOT_SPRINGS_FEATURE.get(), NoneFeatureConfiguration.INSTANCE));
+    public static final RegistryObject<PlacementModifierType<?>> CONFIG_CHANCE_FILTER = PLACEMENT_MODIFIERS.register("config_chance",
+            () -> ConfigChanceFilter.TYPE);
+    public static final RegistryObject<PlacementModifierType<?>> CEILING_AWARE_HEIGHTMAP_PLACEMENT = PLACEMENT_MODIFIERS.register("ceiling_aware_heightmap",
+            () -> CeilingAwareHeightmapPlacement.TYPE);
+    public static final RegistryObject<PlacedFeature> PLACED_HOT_SPRINGS_FEATURE = PLACED_FEATURES.register("hot_springs_default",
+            () -> new PlacedFeature(CONFIGURED_HOT_SPRINGS_FEATURE.getHolder().get(),
+                    List.of(ConfigChanceFilter.configChance(), InSquarePlacement.spread(), CeilingAwareHeightmapPlacement.simpleSurface(), BiomeFilter.biome())));
 
     // other
 
-    public static @Nullable ConfiguredFeature<?, ?> CONFIGURED_HOT_SPRINGS_FEATURE = null;
+    public static final TagKey<Fluid> TAG_HOT_SPRING_WATER = FluidTags.create(new ResourceLocation(MODID, NAME));
 
-    public static final ITag.INamedTag<Fluid> TAG_HOT_SPRING_WATER = FluidTags.createOptional(new ResourceLocation(SimplyHotSprings.MODID, NAME));
-
-    /** copy-pasted from vanilla filled bucket behaviours from {@link net.minecraft.dispenser.IDispenseItemBehavior} */
-    public static final IDispenseItemBehavior dispenseHotSpringWaterBehaviour = new DefaultDispenseItemBehavior() {
+    /** copy-pasted from vanilla filled bucket behaviours from {@link net.minecraft.core.dispenser.DispenseItemBehavior} */
+    public static final DispenseItemBehavior dispenseHotSpringWaterBehaviour = new DefaultDispenseItemBehavior() {
         private final DefaultDispenseItemBehavior defaultBehaviour = new DefaultDispenseItemBehavior();
 
-        public ItemStack dispenseStack(IBlockSource source, ItemStack stack)
+        public ItemStack execute(BlockSource source, ItemStack stack)
         {
-            BucketItem bucketitem = (BucketItem) stack.getItem();
-            BlockPos blockpos = source.getBlockPos().offset(source.getBlockState().get(DispenserBlock.FACING));
-            World world = source.getWorld();
-            if (bucketitem.tryPlaceContainedLiquid((PlayerEntity) null, world, blockpos, (BlockRayTraceResult) null))
+            DispensibleContainerItem dispensiblecontaineritem = (DispensibleContainerItem) stack.getItem();
+            BlockPos blockpos = source.getPos().relative(source.getBlockState().getValue(DispenserBlock.FACING));
+            Level level = source.getLevel();
+            if (dispensiblecontaineritem.emptyContents((Player) null, level, blockpos, (BlockHitResult) null))
             {
-                bucketitem.onLiquidPlaced(world, stack, blockpos);
+                dispensiblecontaineritem.checkExtraContent((Player) null, level, stack, blockpos);
                 return new ItemStack(Items.BUCKET);
             }
             else
@@ -122,38 +126,24 @@ public class SimplyHotSpringsCommon
         FLUIDS.register(eventBus);
         PARTICLES.register(eventBus);
         FEATURES.register(eventBus);
-        DECORATORS.register(eventBus);
+        CONFIGURED_FEATURES.register(eventBus);
+        PLACEMENT_MODIFIERS.register(eventBus);
+        PLACED_FEATURES.register(eventBus);
     }
 
     @SubscribeEvent
     public static void onCommonSetup(FMLCommonSetupEvent event)
     {
         event.enqueueWork(() -> {
-            if (HOT_SPRINGS_FEATURE.isPresent() && CONFIG_CHANCE_PLACEMENT.isPresent() && CEILING_AWARE_HEIGHTMAP_PLACEMENT.isPresent())
-            {
-                CONFIGURED_HOT_SPRINGS_FEATURE = Registry.register(WorldGenRegistries.CONFIGURED_FEATURE,
-                        new ResourceLocation(SimplyHotSprings.MODID, "hot_springs"),
-                        getDefaultConfiguredHotSprings(HOT_SPRINGS_FEATURE.get(), CONFIG_CHANCE_PLACEMENT.get(), CEILING_AWARE_HEIGHTMAP_PLACEMENT.get()));
-            }
-
-            HOT_SPRING_WATER_BUCKET.ifPresent(bucket -> DispenserBlock.registerDispenseBehavior(bucket, dispenseHotSpringWaterBehaviour));
+            HOT_SPRING_WATER_BUCKET.ifPresent(bucket -> DispenserBlock.registerBehavior(bucket, dispenseHotSpringWaterBehaviour));
         });
     }
 
     // other methods
 
-    private static ConfiguredFeature<?, ?> getDefaultConfiguredHotSprings(Feature<NoFeatureConfig> springs, ConfigChancePlacement chance,
-            CeilingAwareHeightmapPlacement ceiling)
+    private static Supplier<SimpleParticleType> particleSimple(boolean alwaysShow)
     {
-        return springs.withConfiguration(IFeatureConfig.NO_FEATURE_CONFIG)
-                .withPlacement(ceiling.configure(new TopSolidRangeConfig(5, 16, -1)))
-                .square()
-                .withPlacement(chance.configure(NoPlacementConfig.INSTANCE));
-    }
-
-    private static Supplier<BasicParticleType> particleBasic(boolean alwaysShow)
-    {
-        return () -> new BasicParticleType(alwaysShow);
+        return () -> new SimpleParticleType(alwaysShow);
     }
 
 }

@@ -6,28 +6,28 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.projectile.FishingBobberEntity;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.projectile.FishingHook;
+import net.minecraft.world.level.Level;
 
 /**
  * Fishing bobbers in hot spring water will never start catching a fish.
  */
-@Mixin(FishingBobberEntity.class)
-public abstract class FishingBobberEntityMixin extends Entity
+@Mixin(FishingHook.class)
+public abstract class FishingHookMixin extends Entity
 {
 
-    public FishingBobberEntityMixin(EntityType<?> entityTypeIn, World worldIn)
+    public FishingHookMixin(EntityType<?> entityTypeIn, Level level)
     {
-        super(entityTypeIn, worldIn);
+        super(entityTypeIn, level);
     }
 
     @Inject(method = "catchingFish", at = @At("HEAD"), cancellable = true)
     public void onCatchingFish(BlockPos pos, CallbackInfo ci)
     {
-        if (this.world.getFluidState(pos).isTagged(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER))
+        if (this.level.getFluidState(pos).is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER))
             ci.cancel();
     }
 

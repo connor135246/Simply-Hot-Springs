@@ -6,20 +6,19 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.block.DoublePlantBlock;
-import net.minecraft.world.level.block.TallSeagrassBlock;
+import net.minecraft.world.level.block.BaseCoralPlantTypeBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
 /**
- * Instead of becoming waterlogged with regular water when placed in hot spring water, tall seagrass simply can't be placed in hot spring water. <br>
- * Note: tall seagrass doesn't actually have a BlockItem. I don't think that its getStateForPlacement method is ever called. Well, this is here just in case.
+ * Coral plants will not become waterlogged with regular water when placed in hot spring water.
  */
-@Mixin(TallSeagrassBlock.class)
-public abstract class TallSeagrassBlockMixin extends DoublePlantBlock
+@Mixin(BaseCoralPlantTypeBlock.class)
+public abstract class BaseCoralPlantTypeBlockMixin extends Block
 {
 
-    public TallSeagrassBlockMixin(Properties properties)
+    public BaseCoralPlantTypeBlockMixin(Properties properties)
     {
         super(properties);
     }

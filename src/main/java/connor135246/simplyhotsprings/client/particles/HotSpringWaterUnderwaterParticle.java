@@ -1,86 +1,87 @@
 package connor135246.simplyhotsprings.client.particles;
 
 import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
-import net.minecraft.client.particle.IAnimatedSprite;
-import net.minecraft.client.particle.IParticleFactory;
-import net.minecraft.client.particle.IParticleRenderType;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.SpriteTexturedParticle;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.fluid.Fluid;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.particles.BasicParticleType;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.ParticleRenderType;
+import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.FluidState;
 
 /**
- * a lot copy-pasted {@link net.minecraft.client.particle.UnderwaterParticle}
+ * a lot copy-pasted {@link net.minecraft.client.particle.SuspendedParticle}
  */
-public class HotSpringWaterUnderwaterParticle extends SpriteTexturedParticle
+public class HotSpringWaterUnderwaterParticle extends TextureSheetParticle
 {
 
     protected static final Fluid FLUID = SimplyHotSpringsCommon.HOT_SPRING_WATER.orElse(null);
 
-    public HotSpringWaterUnderwaterParticle(ClientWorld cworld, double x, double y, double z)
+    public HotSpringWaterUnderwaterParticle(ClientLevel clevel, double x, double y, double z)
     {
-        super(cworld, x, y - 0.125D, z);
-        this.particleRed = 0.1F;
-        this.particleGreen = 0.7F;
-        this.particleBlue = 0.7F;
+        super(clevel, x, y - 0.125D, z);
+        this.rCol = 0.1F;
+        this.gCol = 0.7F;
+        this.bCol = 0.7F;
         this.setSize(0.01F, 0.01F);
-        this.particleScale *= this.rand.nextFloat() * 0.6F + 0.2F;
-        this.maxAge = (int) (16.0D / (Math.random() * 0.8D + 0.2D));
-        this.canCollide = false;
+        this.quadSize *= this.random.nextFloat() * 0.6F + 0.2F;
+        this.lifetime = (int) (16.0D / (Math.random() * 0.8D + 0.2D));
+        this.friction = 1.0F;
+        this.hasPhysics = false;
     }
 
-    public HotSpringWaterUnderwaterParticle(ClientWorld cworld, double x, double y, double z, double motionX, double motionY, double motionZ)
+    public HotSpringWaterUnderwaterParticle(ClientLevel clevel, double x, double y, double z, double motionX, double motionY, double motionZ)
     {
-        this(cworld, x, y, z);
-        this.motionX = motionX;
-        this.motionY = motionY;
-        this.motionZ = motionZ;
+        this(clevel, x, y, z);
+        this.xd = motionX;
+        this.yd = motionY;
+        this.zd = motionZ;
     }
 
-    public IParticleRenderType getRenderType()
+    public ParticleRenderType getRenderType()
     {
-        return IParticleRenderType.PARTICLE_SHEET_OPAQUE;
+        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
     }
 
     public void tick()
     {
-        this.prevPosX = this.posX;
-        this.prevPosY = this.posY;
-        this.prevPosZ = this.posZ;
+        this.xo = this.x;
+        this.yo = this.y;
+        this.zo = this.z;
 
-        if (this.maxAge-- <= 0)
-            this.setExpired();
+        if (this.lifetime-- <= 0)
+            this.remove();
         else
         {
-            this.move(this.motionX, this.motionY, this.motionZ);
+            this.move(this.xd, this.yd, this.zd);
             checkBlockState();
         }
     }
 
     protected void checkBlockState()
     {
-        BlockPos blockpos = new BlockPos(this.posX, this.posY, this.posZ);
-        FluidState fluidstate = this.world.getFluidState(blockpos);
-        if (fluidstate.getFluid() != FLUID || this.posY > blockpos.getY() + fluidstate.getActualHeight(this.world, blockpos))
-            this.setExpired();
+        BlockPos blockpos = new BlockPos(this.x, this.y, this.z);
+        FluidState fluidstate = this.level.getFluidState(blockpos);
+        if (fluidstate.getType() != FLUID || this.y > blockpos.getY() + fluidstate.getHeight(this.level, blockpos))
+            this.remove();
     }
 
-    public static class Factory implements IParticleFactory<BasicParticleType>
+    public static class Provider implements ParticleProvider<SimpleParticleType>
     {
-        private final IAnimatedSprite spriteSet;
+        private final SpriteSet spriteSet;
 
-        public Factory(IAnimatedSprite spriteSet)
+        public Provider(SpriteSet spriteSet)
         {
             this.spriteSet = spriteSet;
         }
 
-        public Particle makeParticle(BasicParticleType type, ClientWorld cworld, double x, double y, double z, double motionX, double motionY, double motionZ)
+        public Particle createParticle(SimpleParticleType type, ClientLevel clevel, double x, double y, double z, double motionX, double motionY, double motionZ)
         {
-            HotSpringWaterUnderwaterParticle particle = new HotSpringWaterUnderwaterParticle(cworld, x, y, z, motionX, motionY, motionZ);
-            particle.selectSpriteRandomly(this.spriteSet);
+            HotSpringWaterUnderwaterParticle particle = new HotSpringWaterUnderwaterParticle(clevel, x, y, z, motionX, motionY, motionZ);
+            particle.pickSprite(this.spriteSet);
             return particle;
         }
     }
