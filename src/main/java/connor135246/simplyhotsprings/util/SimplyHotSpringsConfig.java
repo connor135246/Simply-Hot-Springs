@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -11,18 +12,24 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.electronwill.nightconfig.core.Config;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
+import connor135246.simplyhotsprings.common.world.gen.feature.HotSpringsFeature;
 import connor135246.simplyhotsprings.common.world.gen.placement.ConfigChanceFilter;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.Util;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.ForgeConfigSpec;
@@ -70,6 +77,8 @@ public class SimplyHotSpringsConfig
         public final ConfigValue<List<? extends String>> biomeTypeBlacklist;
         public final ConfigValue<List<? extends String>> biomeNameWhitelist;
         public final ConfigValue<List<? extends String>> biomeNameBlacklist;
+
+        public final ConfigValue<List<? extends String>> biomeGrasses;
 
         Common(ForgeConfigSpec.Builder builder)
         {
@@ -170,7 +179,25 @@ public class SimplyHotSpringsConfig
                             () -> Arrays.asList("biomesoplenty:origin_valley"),
                             Common::nonBlankString);
 
+            biomeGrasses = builder
+                    .translation(LANG_CONFIG_WORLDGEN + "biomeGrasses")
+                    .comment("A list of biomes and their specific types of grass.",
+                            "By default, dirt around Hot Springs will be turned into grass. But some biomes have their own specific grass type which you need to tell Simply Hot Springs about.",
+                            "The format is \"modid:biome;modid:block[states]\".",
+                            "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
+                    .worldRestart()
+                    .defineListAllowEmpty(Arrays.asList("Biome Grasses"),
+                            () -> Arrays.asList("minecraft:mushroom_fields;minecraft:mycelium", "biomesoplenty:origin_valley;biomesoplenty:origin_grass_block"),
+                            Common::biomeGrassesPat);
+
             builder.pop();
+        }
+
+        private static final Pattern biomeGrassesPat = Pattern.compile("\\w+:\\w+;\\w+:\\w+");
+
+        private static boolean biomeGrassesPat(Object object)
+        {
+            return object instanceof String ? biomeGrassesPat.matcher((String) object).matches() : false;
         }
 
         private static boolean nonBlankString(Object object)
@@ -325,6 +352,56 @@ public class SimplyHotSpringsConfig
         }
     }
 
+    //
+
+    /**
+     * the map of biomes to biome-specific grasses. damn you surface rules!!!
+     */
+    public static final Object2ObjectOpenHashMap<ResourceKey<Biome>, BlockState> biomeGrasses = Util.make(
+            new Object2ObjectOpenHashMap<ResourceKey<Biome>, BlockState>(10, 0.95F), map -> map.defaultReturnValue(Blocks.GRASS_BLOCK.defaultBlockState()));
+
+    /**
+     * parses user input biomes & grasses into actual biomes & grasses
+     */
+    private static void fillBiomeGrasses()
+    {
+        biomeGrasses.clear();
+
+        for (String input : COMMON.biomeGrasses.get())
+        {
+            String[] parts = input.split(";");
+            if (parts.length < 2)
+                warnInvalidEntry("Biome Grasses", input);
+
+            ResourceLocation name = new ResourceLocation(parts[0]);
+
+            if (ForgeRegistries.BIOMES.containsKey(name))
+            {
+                try
+                {
+                    ResourceKey<Biome> biomeKey = ResourceKey.create(ForgeRegistries.Keys.BIOMES, name);
+
+                    BlockStateParser stateParser = new BlockStateParser(new StringReader(parts[1]), false).parse(false);
+                    BlockState state = stateParser.getState();
+                    if (state == null)
+                        throw BlockStateParser.ERROR_UNKNOWN_BLOCK.create(parts[1]);
+
+                    biomeGrasses.put(biomeKey, state);
+                }
+                catch (CommandSyntaxException excep)
+                {
+                    warnInvalidEntry("Biome Grasses", parts[1]);
+                }
+            }
+            else
+                warnInvalidEntry("Biome Grasses", name.toString());
+        }
+
+        biomeGrasses.trim();
+    }
+
+    //
+
     /**
      * the map of biomes to reasons they can or cannot generate. emptied and recreated when loading a world. <br>
      * this field is only used from the logical server side, from {@link SimplyHotSpringsCommand}.
@@ -360,6 +437,7 @@ public class SimplyHotSpringsConfig
     {
         biomeReasons.trim();
         ConfigChanceFilter.updateChance(COMMON.chance.get());
+        HotSpringsFeature.updateBiomeGrasses(biomeGrasses);
     }
 
     /**
@@ -424,6 +502,7 @@ public class SimplyHotSpringsConfig
     {
         updateEffect();
         fillBiomeSets();
+        fillBiomeGrasses();
     }
 
 }

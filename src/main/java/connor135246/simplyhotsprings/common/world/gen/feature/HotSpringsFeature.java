@@ -3,17 +3,23 @@ package connor135246.simplyhotsprings.common.world.gen.feature;
 import static connor135246.simplyhotsprings.common.SimplyHotSpringsCommon.HOT_SPRING_WATER_BLOCK;
 import static connor135246.simplyhotsprings.common.SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER;
 
+import java.util.Map.Entry;
 import java.util.Random;
 
 import com.mojang.serialization.Codec;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
@@ -21,6 +27,7 @@ import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.material.Material;
+import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * pretty much copy-pasted from {@link net.minecraft.world.level.levelgen.feature.LakeFeature}
@@ -168,37 +175,33 @@ public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
                             {
                                 BlockPos belowPos = pos.offset(x, y - 1, z);
                                 BlockState belowState = glevel.getBlockState(belowPos);
-                                boolean isDirt = isDirt(belowState);
-
-                                if (y < 4)
+                                if (canReplaceBlock(belowState))
                                 {
-                                    if (belowState.getMaterial().isSolid())
+                                    if (y < 4)
                                     {
-                                        if (isDirt || belowState.is(Blocks.SNOW_BLOCK))
-                                            glevel.setBlock(belowPos, Blocks.STONE.defaultBlockState(), 2);
-                                        else if (belowState.is(Blocks.SAND))
-                                            glevel.setBlock(belowPos, Blocks.SANDSTONE.defaultBlockState(), 2);
-                                        else if (belowState.is(Blocks.RED_SAND))
-                                            glevel.setBlock(belowPos, Blocks.RED_SANDSTONE.defaultBlockState(), 2);
+                                        if (belowState.getMaterial().isSolid())
+                                        {
+                                            if (isDirt(belowState) || belowState.is(Blocks.SNOW))
+                                                glevel.setBlock(belowPos, Blocks.STONE.defaultBlockState(), 2);
+                                            else if (belowState.is(Blocks.SAND))
+                                                glevel.setBlock(belowPos, Blocks.SANDSTONE.defaultBlockState(), 2);
+                                            else if (belowState.is(Blocks.RED_SAND))
+                                                glevel.setBlock(belowPos, Blocks.RED_SANDSTONE.defaultBlockState(), 2);
+                                        }
                                     }
-                                }
-                                else if (y >= 4)
-                                {
-                                    // TODO
-                                    /*
-                                    BlockState topBlock = glevel.getBiome(belowPos).value().getGenerationSettings().getSurfaceBuilderConfig().getTop();
-
-                                    if (isDirt)
+                                    else if (y >= 4)
                                     {
-                                        if (glevel.getBrightness(LightLayer.SKY, belowPos.above()) > 0 && isDirt(topBlock))
-                                            glevel.setBlock(belowPos, topBlock, 2);
+                                        ResourceKey<Biome> biome = ResourceKey.create(ForgeRegistries.Keys.BIOMES,
+                                                glevel.getBiome(belowPos).value().getRegistryName());
+                                        if (biome == Biomes.CRIMSON_FOREST || biome == Biomes.WARPED_FOREST)
+                                        {
+                                            if (belowState.is(Blocks.NETHERRACK) && glevel.isEmptyBlock(belowPos.above()))
+                                                glevel.setBlock(belowPos, biome == Biomes.CRIMSON_FOREST ? Blocks.CRIMSON_NYLIUM.defaultBlockState()
+                                                        : Blocks.WARPED_NYLIUM.defaultBlockState(), 2);
+                                        }
+                                        else if (belowState.is(Blocks.DIRT) && glevel.isEmptyBlock(belowPos.above())) // can't do glevel.getBrightness - lighting manager sometimes isn't ready in adjacent chunks
+                                            glevel.setBlock(belowPos, biomeGrasses.get(biome), 2);
                                     }
-                                    else if (Tags.Blocks.NETHERRACK.contains(belowState.getBlock()))
-                                    {
-                                        if (glevel.isEmptyBlock(belowPos.above()) && BlockTags.NYLIUM.contains(topBlock.getBlock()))
-                                            glevel.setBlock(belowPos, topBlock, 2);
-                                    }
-                                    */
                                 }
                             }
                         }
@@ -208,6 +211,20 @@ public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
                 return true;
             }
         }
+    }
+
+    private static final Object2ObjectOpenHashMap<ResourceKey<Biome>, BlockState> biomeGrasses = Util.make(
+            new Object2ObjectOpenHashMap<ResourceKey<Biome>, BlockState>(10, 0.95F), map -> map.defaultReturnValue(Blocks.GRASS_BLOCK.defaultBlockState()));
+
+    /**
+     * instead of using a direct reference to the config option, we only update this when a world loads (from {@link SimplyHotSpringsConfig#finalizeSpringsGeneration})
+     */
+    public static void updateBiomeGrasses(Object2ObjectOpenHashMap<ResourceKey<Biome>, BlockState> newBiomeGrasses)
+    {
+        biomeGrasses.clear();
+        for (Entry<ResourceKey<Biome>, BlockState> entry : newBiomeGrasses.entrySet())
+            biomeGrasses.put(entry.getKey(), entry.getValue());
+        biomeGrasses.trim();
     }
 
     public static boolean canReplaceBlock(BlockState state)
