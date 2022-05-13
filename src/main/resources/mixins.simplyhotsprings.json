@@ -12,6 +12,7 @@
         "AbstractCoralPlantBlockMixin",
         "ConduitBlockMixin",
         "WorldEntitySpawnerMixin",
-        "FishingBobberEntityMixin"
-    ]
+        "FishingBobberEntityMixin",
+        "LilyPadBlockMixin"
+   ]
 }
