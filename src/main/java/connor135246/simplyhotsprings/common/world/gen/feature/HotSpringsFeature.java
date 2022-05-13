@@ -14,7 +14,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.WorldGenLevel;
@@ -25,7 +24,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.FeaturePlaceContext;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraft.world.level.levelgen.structure.BuiltinStructureSets;
 import net.minecraft.world.level.material.Material;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -50,13 +48,6 @@ public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
         Random rand = context.random();
         BlockPos pos = context.origin();
 
-        if (context.chunkGenerator().hasFeatureChunkInRange(BuiltinStructureSets.VILLAGES, context.level().getSeed(),
-                SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()), 1))
-        {
-            SimplyHotSprings.log.info("Village found!"); // TODO remove
-            return false;
-        }
-
         while (pos.getY() > glevel.getMinBuildHeight() + 5 && glevel.isEmptyBlock(pos))
             pos = pos.below();
 
@@ -72,145 +63,141 @@ public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
 
         if (pos.getY() <= glevel.getMinBuildHeight() + 4)
             return false;
-        else
+
+        pos = pos.below(4);
+
+        // TODO find out what exactly each of these values does and make them configurable via worldgen .jsons
+        // lakes are made by creating multiple overlapping spheres
+        // the dimensions of the spheres are random, but the y is always smaller making that ellipse shape
+        // i is the number of spheres
+        // d,e,f are the diameters in each dimension
+        // g,h,k is the center of the sphere
+
+        boolean[] bls = new boolean[2048];
+        int i = rand.nextInt(4) + 4;
+
+        for (int a = 0; a < i; ++a)
         {
-            pos = pos.below(4);
+            double d = rand.nextDouble() * 6.0D + 3.0D;
+            double e = rand.nextDouble() * 4.0D + 2.0D;
+            double f = rand.nextDouble() * 6.0D + 3.0D;
+            double g = rand.nextDouble() * (16.0D - d - 2.0D) + 1.0D + d / 2.0D;
+            double h = rand.nextDouble() * (8.0D - e - 4.0D) + 2.0D + e / 2.0D;
+            double k = rand.nextDouble() * (16.0D - f - 2.0D) + 1.0D + f / 2.0D;
 
+            for (int x = 1; x < 15; ++x)
             {
-                // TODO find out what exactly each of these values does and make them configurable via worldgen .jsons
-                // lakes are made by creating multiple overlapping spheres
-                // the dimensions of the spheres are random, but the y is always smaller making that ellipse shape
-                // i is the number of spheres
-                // d,e,f are the diameters in each dimension
-                // g,h,k is the center of the sphere
-
-                boolean[] bls = new boolean[2048];
-                int i = rand.nextInt(4) + 4;
-
-                for (int a = 0; a < i; ++a)
+                for (int z = 1; z < 15; ++z)
                 {
-                    double d = rand.nextDouble() * 6.0D + 3.0D;
-                    double e = rand.nextDouble() * 4.0D + 2.0D;
-                    double f = rand.nextDouble() * 6.0D + 3.0D;
-                    double g = rand.nextDouble() * (16.0D - d - 2.0D) + 1.0D + d / 2.0D;
-                    double h = rand.nextDouble() * (8.0D - e - 4.0D) + 2.0D + e / 2.0D;
-                    double k = rand.nextDouble() * (16.0D - f - 2.0D) + 1.0D + f / 2.0D;
-
-                    for (int x = 1; x < 15; ++x)
+                    for (int y = 1; y < 7; ++y)
                     {
-                        for (int z = 1; z < 15; ++z)
+                        double o = ((double) x - g) / (d / 2.0D);
+                        double p = ((double) y - h) / (e / 2.0D);
+                        double q = ((double) z - k) / (f / 2.0D);
+                        double r = o * o + p * p + q * q;
+                        if (r < 1.0D)
                         {
-                            for (int y = 1; y < 7; ++y)
-                            {
-                                double o = ((double) x - g) / (d / 2.0D);
-                                double p = ((double) y - h) / (e / 2.0D);
-                                double q = ((double) z - k) / (f / 2.0D);
-                                double r = o * o + p * p + q * q;
-                                if (r < 1.0D)
-                                {
-                                    bls[(x * 16 + z) * 8 + y] = true;
-                                }
-                            }
+                            bls[(x * 16 + z) * 8 + y] = true;
                         }
                     }
                 }
-
-                for (int x = 0; x < 16; ++x)
-                {
-                    for (int z = 0; z < 16; ++z)
-                    {
-                        for (int y = 0; y < 8; ++y)
-                        {
-                            boolean flag = !bls[(x * 16 + z) * 8 + y]
-                                    && (x < 15 && bls[((x + 1) * 16 + z) * 8 + y] || x > 0 && bls[((x - 1) * 16 + z) * 8 + y]
-                                            || z < 15 && bls[(x * 16 + z + 1) * 8 + y] || z > 0 && bls[(x * 16 + (z - 1)) * 8 + y]
-                                            || y < 7 && bls[(x * 16 + z) * 8 + y + 1] || y > 0 && bls[(x * 16 + z) * 8 + (y - 1)]);
-                            if (flag)
-                            {
-                                Material material = glevel.getBlockState(pos.offset(x, y, z)).getMaterial();
-                                if (y >= 4 && material.isLiquid())
-                                    return false;
-
-                                if (y < 4 && !material.isSolid() && !glevel.getFluidState(pos.offset(x, y, z)).is(TAG_HOT_SPRING_WATER))
-                                    return false;
-                            }
-                        }
-                    }
-                }
-
-                if (SimplyHotSpringsConfig.COMMON.debug.get())
-                    SimplyHotSprings.log.info("Generated a hot spring around {} {} {}", pos.getX() + 8, pos.getY() + 4, pos.getZ() + 8);
-
-                for (int x = 0; x < 16; ++x)
-                {
-                    for (int z = 0; z < 16; ++z)
-                    {
-                        for (int y = 0; y < 8; ++y)
-                        {
-                            if (bls[(x * 16 + z) * 8 + y])
-                            {
-                                BlockPos setPos = pos.offset(x, y, z);
-                                if (canReplaceBlock(glevel.getBlockState(setPos)))
-                                {
-                                    boolean air = y >= 4 || glevel.dimensionType().ultraWarm();
-                                    glevel.setBlock(setPos, air ? Blocks.AIR.defaultBlockState() : HOT_SPRING_WATER_BLOCK.get().defaultBlockState(), 2);
-                                    if (air)
-                                    {
-                                        glevel.scheduleTick(setPos, Blocks.AIR, 0);
-                                        markAboveForPostProcessingStatic(glevel, setPos);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                for (int x = 0; x < 16; ++x)
-                {
-                    for (int z = 0; z < 16; ++z)
-                    {
-                        for (int y = 0; y < 8; ++y)
-                        {
-                            if (bls[(x * 16 + z) * 8 + y] && (y > 0 ? !bls[(x * 16 + z) * 8 + (y - 1)] : true))
-                            {
-                                BlockPos belowPos = pos.offset(x, y - 1, z);
-                                BlockState belowState = glevel.getBlockState(belowPos);
-                                if (canReplaceBlock(belowState))
-                                {
-                                    if (y < 4)
-                                    {
-                                        if (belowState.getMaterial().isSolid())
-                                        {
-                                            if (isDirt(belowState) || belowState.is(Blocks.SNOW))
-                                                glevel.setBlock(belowPos, Blocks.STONE.defaultBlockState(), 2);
-                                            else if (belowState.is(Blocks.SAND))
-                                                glevel.setBlock(belowPos, Blocks.SANDSTONE.defaultBlockState(), 2);
-                                            else if (belowState.is(Blocks.RED_SAND))
-                                                glevel.setBlock(belowPos, Blocks.RED_SANDSTONE.defaultBlockState(), 2);
-                                        }
-                                    }
-                                    else if (y >= 4)
-                                    {
-                                        ResourceKey<Biome> biome = ResourceKey.create(ForgeRegistries.Keys.BIOMES,
-                                                glevel.getBiome(belowPos).value().getRegistryName());
-                                        if (biome == Biomes.CRIMSON_FOREST || biome == Biomes.WARPED_FOREST)
-                                        {
-                                            if (belowState.is(Blocks.NETHERRACK) && glevel.isEmptyBlock(belowPos.above()))
-                                                glevel.setBlock(belowPos, biome == Biomes.CRIMSON_FOREST ? Blocks.CRIMSON_NYLIUM.defaultBlockState()
-                                                        : Blocks.WARPED_NYLIUM.defaultBlockState(), 2);
-                                        }
-                                        else if (belowState.is(Blocks.DIRT) && glevel.isEmptyBlock(belowPos.above())) // can't do glevel.getBrightness - lighting manager sometimes isn't ready in adjacent chunks
-                                            glevel.setBlock(belowPos, biomeGrasses.get(biome), 2);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                return true;
             }
         }
+
+        for (int x = 0; x < 16; ++x)
+        {
+            for (int z = 0; z < 16; ++z)
+            {
+                for (int y = 0; y < 8; ++y)
+                {
+                    boolean flag = !bls[(x * 16 + z) * 8 + y]
+                            && (x < 15 && bls[((x + 1) * 16 + z) * 8 + y] || x > 0 && bls[((x - 1) * 16 + z) * 8 + y]
+                                    || z < 15 && bls[(x * 16 + z + 1) * 8 + y] || z > 0 && bls[(x * 16 + (z - 1)) * 8 + y]
+                                    || y < 7 && bls[(x * 16 + z) * 8 + y + 1] || y > 0 && bls[(x * 16 + z) * 8 + (y - 1)]);
+                    if (flag)
+                    {
+                        Material material = glevel.getBlockState(pos.offset(x, y, z)).getMaterial();
+                        if (y >= 4 && material.isLiquid())
+                            return false;
+
+                        if (y < 4 && !material.isSolid() && !glevel.getFluidState(pos.offset(x, y, z)).is(TAG_HOT_SPRING_WATER))
+                            return false;
+                    }
+                }
+            }
+        }
+
+        if (SimplyHotSpringsConfig.COMMON.debug.get())
+            SimplyHotSprings.log.info("Generated a hot spring around {} {} {}", pos.getX() + 8, pos.getY() + 4, pos.getZ() + 8);
+
+        for (int x = 0; x < 16; ++x)
+        {
+            for (int z = 0; z < 16; ++z)
+            {
+                for (int y = 0; y < 8; ++y)
+                {
+                    if (bls[(x * 16 + z) * 8 + y])
+                    {
+                        BlockPos setPos = pos.offset(x, y, z);
+                        if (canReplaceBlock(glevel.getBlockState(setPos)))
+                        {
+                            boolean air = y >= 4 || glevel.dimensionType().ultraWarm();
+                            glevel.setBlock(setPos, air ? Blocks.AIR.defaultBlockState() : HOT_SPRING_WATER_BLOCK.get().defaultBlockState(), 2);
+                            if (air)
+                            {
+                                glevel.scheduleTick(setPos, Blocks.AIR, 0);
+                                markAboveForPostProcessingStatic(glevel, setPos);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int x = 0; x < 16; ++x)
+        {
+            for (int z = 0; z < 16; ++z)
+            {
+                for (int y = 0; y < 8; ++y)
+                {
+                    if (bls[(x * 16 + z) * 8 + y] && (y > 0 ? !bls[(x * 16 + z) * 8 + (y - 1)] : true))
+                    {
+                        BlockPos belowPos = pos.offset(x, y - 1, z);
+                        BlockState belowState = glevel.getBlockState(belowPos);
+                        if (canReplaceBlock(belowState))
+                        {
+                            if (y < 4)
+                            {
+                                if (belowState.getMaterial().isSolid())
+                                {
+                                    if (isDirt(belowState) || belowState.is(BlockTags.SNOW))
+                                        glevel.setBlock(belowPos, Blocks.STONE.defaultBlockState(), 2);
+                                    else if (belowState.is(Blocks.SAND))
+                                        glevel.setBlock(belowPos, Blocks.SANDSTONE.defaultBlockState(), 2);
+                                    else if (belowState.is(Blocks.RED_SAND))
+                                        glevel.setBlock(belowPos, Blocks.RED_SANDSTONE.defaultBlockState(), 2);
+                                }
+                            }
+                            else if (y >= 4)
+                            {
+                                ResourceKey<Biome> biome = ResourceKey.create(ForgeRegistries.Keys.BIOMES,
+                                        glevel.getBiome(belowPos).value().getRegistryName());
+                                if (biome == Biomes.CRIMSON_FOREST || biome == Biomes.WARPED_FOREST)
+                                {
+                                    if (belowState.is(Blocks.NETHERRACK) && glevel.isEmptyBlock(belowPos.above()))
+                                        glevel.setBlock(belowPos, biome == Biomes.CRIMSON_FOREST ? Blocks.CRIMSON_NYLIUM.defaultBlockState()
+                                                : Blocks.WARPED_NYLIUM.defaultBlockState(), 2);
+                                }
+                                else if (belowState.is(Blocks.DIRT) && glevel.isEmptyBlock(belowPos.above())) // can't do glevel.getBrightness - lighting manager sometimes isn't ready in adjacent chunks
+                                    glevel.setBlock(belowPos, biomeGrasses.get(biome), 2);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     private static final Object2ObjectOpenHashMap<ResourceKey<Biome>, BlockState> biomeGrasses = Util.make(
