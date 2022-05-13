@@ -12,6 +12,8 @@
         "BaseCoralPlantTypeBlockMixin",
         "ConduitBlockMixin",
         "NaturalSpawnerMixin",
-        "FishingHookMixin"
+        "FishingHookMixin",
+        "WaterlilyBlockMixin",
+        "SmallDripleafBlockMixin"
     ]
 }
