@@ -30,7 +30,7 @@ public class SimplyHotSprings
     }
 
     /**
-     * The method our mixins redirect <b>FluidState.isTagged(FluidTags.WATER)</b> to instead
+     * The method our mixins redirect <b>FluidState.is(FluidTags.WATER)</b> to instead
      */
     public static boolean redirectWaterTag(FluidState fluidstate, TagKey<Fluid> waterTag)
     {

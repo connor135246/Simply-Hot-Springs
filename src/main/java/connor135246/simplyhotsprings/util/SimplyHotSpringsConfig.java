@@ -187,7 +187,8 @@ public class SimplyHotSpringsConfig
                             "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
                     .worldRestart()
                     .defineListAllowEmpty(Arrays.asList("Biome Grasses"),
-                            () -> Arrays.asList("minecraft:mushroom_fields;minecraft:mycelium", "biomesoplenty:origin_valley;biomesoplenty:origin_grass_block"),
+                            () -> Arrays.asList("minecraft:mushroom_fields;minecraft:mycelium", "biomesoplenty:origin_valley;biomesoplenty:origin_grass_block", 
+                                    "biomesoplenty:redwood_forest;minecraft:podzol"),
                             Common::biomeGrassesPat);
 
             builder.pop();

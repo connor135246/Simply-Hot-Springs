@@ -22,7 +22,7 @@
 	"commands.simplyhotsprings.biometypes.click": "Click to list biomes with this type",
 	"commands.simplyhotsprings.placespring.placed": "Generated a Hot Spring around %1$s %2$s %3$s. ",
 	"commands.simplyhotsprings.placespring.not_placed": "Failed to generate a Hot Spring around %1$s %2$s %3$s. ",
-	"commands.simplyhotsprings.placespring.too_low": "There wasn't enough space above y=0 for the Hot Spring to generate.",
+	"commands.simplyhotsprings.placespring.too_low": "There wasn't enough space above the bottom of the world for the Hot Spring to generate.",
 	"commands.simplyhotsprings.placespring.failed": "Either there is a liquid above the Hot Spring or there weren't enough solid blocks to hold the Hot Spring Water.",
 	"commands.simplyhotsprings.placespring.click": "Click to teleport",
 	"commands.simplyhotsprings.help.click": "Click to see help",

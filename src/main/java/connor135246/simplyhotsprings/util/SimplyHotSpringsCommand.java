@@ -243,7 +243,7 @@ public class SimplyHotSpringsCommand
     // text component stuff
 
     /**
-     * @return a TranslationTextComponent colored with ChatFormatting.AQUA
+     * @return a TranslatableComponent colored with ChatFormatting.AQUA
      */
     private static MutableComponent makeAquaTranslatable(String key, Object... args)
     {
@@ -262,7 +262,7 @@ public class SimplyHotSpringsCommand
     }
 
     /**
-     * @return a StringTextComponent of toCopy that suggests itself to the chat box when you click it
+     * @return a TextComponent of toCopy that suggests itself to the chat box when you click it
      */
     private static MutableComponent makeSuggestComponent(String toCopy)
     {
@@ -273,7 +273,7 @@ public class SimplyHotSpringsCommand
     private static final HoverEvent clickForSuggest = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_LOCATIONINFO + "click"));
 
     /**
-     * @return a StringTextComponent of location that runs /simplyhotsprings locationinfo [location] when clicked
+     * @return a TextComponent of location that runs /simplyhotsprings locationinfo [location] when clicked
      */
     private static MutableComponent makeLocationInfoComponent(String location)
     {
@@ -285,7 +285,7 @@ public class SimplyHotSpringsCommand
     private static final HoverEvent clickForInfo = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_BIOMESLIST + "click"));
 
     /**
-     * @return a StringTextComponent of name that runs /simplyhotsprings biometypes [name] when clicked
+     * @return a TextComponent of name that runs /simplyhotsprings biometypes [name] when clicked
      */
     private static MutableComponent makeBiomeTypeComponent(String name)
     {
@@ -297,7 +297,7 @@ public class SimplyHotSpringsCommand
     private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_BIOMETYPES + "click"));
 
     /**
-     * @return a TranslationTextComponent that teleports you to the pos when clicked
+     * @return a TranslatableComponent that teleports you to the pos when clicked
      */
     private static MutableComponent makeTeleportComponent(String key, BlockPos pos)
     {
@@ -309,7 +309,7 @@ public class SimplyHotSpringsCommand
     private static final HoverEvent clickForTeleport = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_PLACESPRING + "click"));
 
     /**
-     * @return a StringTextComponent of /simplyhotsprings help [subcommand] that runs itself when clicked
+     * @return a TextComponent of /simplyhotsprings help [subcommand] that runs itself when clicked
      */
     private static MutableComponent makeHelpComponent(String subcommand)
     {
