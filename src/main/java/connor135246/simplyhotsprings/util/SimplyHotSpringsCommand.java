@@ -151,7 +151,7 @@ public class SimplyHotSpringsCommand
 
         if (!BiomeDictionary.hasAnyType(biomeKey))
             source.sendFeedback(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
-                    .appendSibling(new TranslationTextComponent(LANG_COMMAND + "none").mergeStyle(TextFormatting.WHITE)), true);
+                    .appendSibling(noneComponent().mergeStyle(TextFormatting.WHITE)), true);
         else
             source.sendFeedback(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
                     BiomeDictionary.getTypes(biomeKey), type -> type.getName(), string -> makeSuggestComponent(string)), true);
@@ -169,8 +169,11 @@ public class SimplyHotSpringsCommand
     {
         source.sendFeedback(makeAquaTranslatable(LANG_BIOMESLIST + "all"), true);
 
-        source.sendFeedback(makeMultiComponent(SimplyHotSpringsConfig.biomeReasons.keySet(),
-                key -> key.getLocation(), id -> makeLocationInfoComponent(id.toString())), true);
+        if (SimplyHotSpringsConfig.biomeReasons.isEmpty())
+            source.sendFeedback(noneComponent(), true);
+        else
+            source.sendFeedback(makeMultiComponent(SimplyHotSpringsConfig.biomeReasons.keySet(),
+                    key -> key.getLocation(), id -> makeLocationInfoComponent(id.toString())), true);
 
         return SimplyHotSpringsConfig.biomeReasons.size();
     }
@@ -183,8 +186,8 @@ public class SimplyHotSpringsCommand
         Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                 .filter(entry -> with == entry.getValue().allowsGeneration())
                 .map(entry -> entry.getKey().getLocation()).collect(Collectors.toSet());
-        if (filteredIds.size() == 0)
-            source.sendFeedback(new TranslationTextComponent(LANG_COMMAND + "none"), true);
+        if (filteredIds.isEmpty())
+            source.sendFeedback(noneComponent(), true);
         else
             source.sendFeedback(TextComponentUtils.makeSortedList(filteredIds, id -> makeLocationInfoComponent(id.toString())), true);
 
@@ -197,7 +200,10 @@ public class SimplyHotSpringsCommand
     {
         source.sendFeedback(makeAquaTranslatable(LANG_BIOMETYPES + "all"), true);
 
-        source.sendFeedback(makeMultiComponent(BiomeDictionary.Type.getAll(), type -> type.getName(), string -> makeBiomeTypeComponent(string)), true);
+        if (BiomeDictionary.Type.getAll().isEmpty())
+            source.sendFeedback(noneComponent(), true);
+        else
+            source.sendFeedback(makeMultiComponent(BiomeDictionary.Type.getAll(), type -> type.getName(), string -> makeBiomeTypeComponent(string)), true);
 
         return BiomeDictionary.Type.getAll().size();
     }
@@ -207,8 +213,8 @@ public class SimplyHotSpringsCommand
         source.sendFeedback(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()), true);
 
         Set<RegistryKey<Biome>> biomeIds = BiomeDictionary.getBiomes(type);
-        if (biomeIds.size() == 0)
-            source.sendFeedback(new TranslationTextComponent(LANG_COMMAND + "none"), true);
+        if (biomeIds.isEmpty())
+            source.sendFeedback(noneComponent(), true);
         else
             source.sendFeedback(makeMultiComponent(biomeIds, key -> key.getLocation(), id -> makeLocationInfoComponent(id.toString())), true);
 
@@ -334,6 +340,11 @@ public class SimplyHotSpringsCommand
     }
 
     private static final HoverEvent clickForHelp = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslationTextComponent(LANG_HELP + "click"));
+
+    private static IFormattableTextComponent noneComponent()
+    {
+        return new TranslationTextComponent(LANG_COMMAND + "none");
+    }
 
     /**
      * turns the collection of things into a list of comparable things, sorts them, turns them into text components, and then puts them all into one text component separated by
