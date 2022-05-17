@@ -16,7 +16,6 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.ISeedReader;
-import net.minecraft.world.LightType;
 import net.minecraft.world.gen.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 import net.minecraft.world.gen.feature.NoFeatureConfig;
@@ -169,18 +168,18 @@ public class HotSpringsFeature extends Feature<NoFeatureConfig>
                                             reader.setBlockState(belowPos, Blocks.RED_SANDSTONE.getDefaultState(), 2);
                                     }
                                 }
-                                else if (y >= 4)
+                                else if (y >= 4 && reader.isAirBlock(belowPos.up()))
                                 {
                                     BlockState topBlock = reader.getBiome(belowPos).getGenerationSettings().getSurfaceBuilderConfig().getTop();
 
                                     if (isDirt)
                                     {
-                                        if (reader.getLightFor(LightType.SKY, belowPos.up()) > 0 && isDirt(topBlock.getBlock()))
+                                        if (isDirt(topBlock.getBlock())) // can't do reader.getLightFor - lighting manager sometimes isn't ready in adjacent chunks
                                             reader.setBlockState(belowPos, topBlock, 2);
                                     }
                                     else if (Tags.Blocks.NETHERRACK.contains(belowState.getBlock()))
                                     {
-                                        if (reader.isAirBlock(belowPos.up()) && BlockTags.NYLIUM.contains(topBlock.getBlock()))
+                                        if (BlockTags.NYLIUM.contains(topBlock.getBlock()))
                                             reader.setBlockState(belowPos, topBlock, 2);
                                     }
                                 }
