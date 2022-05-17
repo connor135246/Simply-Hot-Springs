@@ -12,6 +12,7 @@
 	"commands.simplyhotsprings.locationinfo.yes": "Yes",
 	"commands.simplyhotsprings.locationinfo.no": "No",
 	"commands.simplyhotsprings.locationinfo.no_biome_key": "The biome at this location is unknown/unregistered!",
+	"commands.simplyhotsprings.locationinfo.biome_not_found": "Biome '%s' cannot be found",
 	"commands.simplyhotsprings.biomeslist.all": "All biomes known by Simply Hot Springs: ",
 	"commands.simplyhotsprings.biomeslist.with": "Hot Springs CAN generate in the following biomes: ",
 	"commands.simplyhotsprings.biomeslist.without": "Hot Springs CANNOT generate in the following biomes: ",
@@ -46,6 +47,7 @@
 	"commands.simplyhotsprings.help.biometypes.3": "   Lists all biomes that are in the given Biome Dictionary Type.",
 	"commands.simplyhotsprings.help.placespring.0": "/simplyhotsprings placespring <x> <y> <z>",
 	"commands.simplyhotsprings.help.placespring.1": "   Attempts to generate a Hot Spring centered at the position. If the north-west corner is air, moves down to the next solid block.",
+	"commands.simplyhotsprings.none": "None!",
 	
 	"simplyhotsprings.gen.reason.no_world_gen": "The \"World Generation\" config option is false.",
 	"simplyhotsprings.gen.reason.in_name_whitelist": "This biome is in the \"Biome Name Whitelist\".",
