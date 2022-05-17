@@ -10,9 +10,12 @@ import connor135246.simplyhotsprings.common.fluids.HotSpringWaterFluid;
 import connor135246.simplyhotsprings.common.world.gen.feature.HotSpringsFeature;
 import connor135246.simplyhotsprings.common.world.gen.placement.CeilingAwareHeightmapPlacement;
 import connor135246.simplyhotsprings.common.world.gen.placement.ConfigChancePlacement;
+import connor135246.simplyhotsprings.util.BiomeTypeArgument;
 import net.minecraft.block.Block;
 import net.minecraft.block.DispenserBlock;
 import net.minecraft.block.FlowingFluidBlock;
+import net.minecraft.command.arguments.ArgumentSerializer;
+import net.minecraft.command.arguments.ArgumentTypes;
 import net.minecraft.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.dispenser.IBlockSource;
 import net.minecraft.dispenser.IDispenseItemBehavior;
@@ -137,6 +140,8 @@ public class SimplyHotSpringsCommon
             }
 
             HOT_SPRING_WATER_BUCKET.ifPresent(bucket -> DispenserBlock.registerDispenseBehavior(bucket, dispenseHotSpringWaterBehaviour));
+
+            ArgumentTypes.register("simplyhotsprings.biome_type", BiomeTypeArgument.class, new ArgumentSerializer<>(BiomeTypeArgument::biomeTypeArgument));
         });
     }
 
