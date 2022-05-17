@@ -135,7 +135,13 @@ public class SimplyHotSpringsCommand
 
     private static int sendLocationInfo(CommandSourceStack source, ResourceLocation biomeId)
     {
-        return sendLocationInfo(source, ResourceKey.create(ForgeRegistries.Keys.BIOMES, biomeId));
+        if (ForgeRegistries.BIOMES.containsKey(biomeId))
+            return sendLocationInfo(source, ResourceKey.create(ForgeRegistries.Keys.BIOMES, biomeId));
+        else
+        {
+            source.sendFailure(new TranslatableComponent(LANG_LOCATIONINFO + "biome_not_found", biomeId));
+            return 0;
+        }
     }
 
     private static int sendLocationInfo(CommandSourceStack source, ResourceKey<Biome> biomeKey)
@@ -143,8 +149,12 @@ public class SimplyHotSpringsCommand
         source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_name")
                 .append(makeSuggestComponent(biomeKey.location().toString())), true);
 
-        source.sendSuccess(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
-                BiomeDictionary.getTypes(biomeKey), type -> type.getName(), string -> makeSuggestComponent(string)), true);
+        if (!BiomeDictionary.hasAnyType(biomeKey))
+            source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
+                    .append(new TranslatableComponent(LANG_COMMAND + "none").withStyle(ChatFormatting.WHITE)), true);
+        else
+            source.sendSuccess(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
+                    BiomeDictionary.getTypes(biomeKey), type -> type.getName(), string -> makeSuggestComponent(string)), true);
 
         GenerationReason reason = SimplyHotSpringsConfig.biomeReasons.get(biomeKey);
         source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "hot_springs")
@@ -173,7 +183,10 @@ public class SimplyHotSpringsCommand
         Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                 .filter(entry -> with == entry.getValue().allowsGeneration())
                 .map(entry -> entry.getKey().location()).collect(Collectors.toSet());
-        source.sendSuccess(ComponentUtils.formatAndSortList(filteredIds, id -> makeLocationInfoComponent(id.toString())), true);
+        if (filteredIds.size() == 0)
+            source.sendSuccess(new TranslatableComponent(LANG_COMMAND + "none"), true);
+        else
+            source.sendSuccess(ComponentUtils.formatAndSortList(filteredIds, id -> makeLocationInfoComponent(id.toString())), true);
 
         return filteredIds.size();
     }
@@ -194,7 +207,10 @@ public class SimplyHotSpringsCommand
         source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()), true);
 
         Set<ResourceKey<Biome>> biomeIds = BiomeDictionary.getBiomes(type);
-        source.sendSuccess(makeMultiComponent(biomeIds, key -> key.location(), id -> makeLocationInfoComponent(id.toString())), true);
+        if (biomeIds.size() == 0)
+            source.sendSuccess(new TranslatableComponent(LANG_COMMAND + "none"), true);
+        else
+            source.sendSuccess(makeMultiComponent(biomeIds, key -> key.location(), id -> makeLocationInfoComponent(id.toString())), true);
 
         return biomeIds.size();
     }
