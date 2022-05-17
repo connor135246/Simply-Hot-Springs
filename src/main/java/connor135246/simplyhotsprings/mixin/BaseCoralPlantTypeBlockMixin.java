@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
-import net.minecraft.tags.TagKey;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.level.block.BaseCoralPlantTypeBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.material.Fluid;
@@ -23,8 +23,8 @@ public abstract class BaseCoralPlantTypeBlockMixin extends Block
         super(properties);
     }
 
-    @Redirect(method = "getStateForPlacement", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z"))
-    public boolean redirectWaterTag(FluidState fluidstate, TagKey<Fluid> waterTag)
+    @Redirect(method = "getStateForPlacement", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/Tag;)Z"))
+    public boolean redirectWaterTag(FluidState fluidstate, Tag<Fluid> waterTag)
     {
         return SimplyHotSprings.redirectWaterTag(fluidstate, waterTag);
     }

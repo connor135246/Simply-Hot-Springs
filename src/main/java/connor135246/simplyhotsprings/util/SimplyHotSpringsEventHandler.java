@@ -43,7 +43,6 @@ public class SimplyHotSpringsEventHandler
         SimplyHotSpringsConfig.resetSpringsGeneration(event);
     }
 
-    @SuppressWarnings({ "deprecation", "removal" })
     @SubscribeEvent
     public static void onSetFogDensity(EntityViewRenderEvent.FogDensity event)
     {

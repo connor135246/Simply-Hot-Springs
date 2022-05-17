@@ -1,6 +1,7 @@
 package connor135246.simplyhotsprings.util;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
@@ -13,12 +14,11 @@ import connor135246.simplyhotsprings.common.world.gen.feature.HotSpringsFeature;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -73,9 +73,7 @@ public class SimplyHotSpringsCommand
             return sendLocationInfo(context.getSource(), EntityArgument.getEntity(context, "target").blockPosition());
         })).then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
             return sendLocationInfo(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
-        })).then(Commands.argument("biome", ResourceLocationArgument.id()).suggests((context, builder) -> {
-            return SharedSuggestionProvider.suggestResource(context.getSource().getServer().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).keySet(), builder);
-        }).executes((context) -> {
+        })).then(Commands.argument("biome", ResourceLocationArgument.id()).suggests(SuggestionProviders.AVAILABLE_BIOMES).executes((context) -> {
             return sendLocationInfo(context.getSource(), context.getArgument("biome", ResourceLocation.class));
         }))).then(Commands.literal(BIOMESLIST)
                 .then(Commands.literal(ALL).executes((context) -> {
@@ -124,10 +122,10 @@ public class SimplyHotSpringsCommand
 
     private static int sendLocationInfo(CommandSourceStack source, BlockPos pos)
     {
-        ResourceLocation biomeId = source.getLevel().getBiome(pos).value().getRegistryName();
+        Optional<ResourceKey<Biome>> optionalBiomeKey = source.getLevel().getBiomeName(pos);
 
-        if (biomeId != null)
-            return sendLocationInfo(source, biomeId);
+        if (optionalBiomeKey.isPresent())
+            return sendLocationInfo(source, optionalBiomeKey.get());
         else
         {
             source.sendFailure(new TranslatableComponent(LANG_LOCATIONINFO + "no_biome_key"));

@@ -419,13 +419,13 @@ public class SimplyHotSpringsConfig
         if (event.getName() != null)
         {
             ResourceKey<Biome> biomeLoading = ResourceKey.create(ForgeRegistries.Keys.BIOMES, event.getName());
-            if (!SimplyHotSpringsCommon.PLACED_HOT_SPRINGS_FEATURE.isPresent())
+            if (SimplyHotSpringsCommon.PLACED_HOT_SPRINGS_FEATURE == null)
                 biomeReasons.put(biomeLoading, GenerationReason.REGISTER_ERROR);
             else
             {
                 GenerationReason reason = SimplyHotSpringsConfig.getGenerationReason(biomeLoading);
                 if (reason.allowsGeneration())
-                    event.getGeneration().addFeature(GenerationStep.Decoration.LAKES, SimplyHotSpringsCommon.PLACED_HOT_SPRINGS_FEATURE.getHolder().get());
+                    event.getGeneration().addFeature(GenerationStep.Decoration.LAKES, SimplyHotSpringsCommon.PLACED_HOT_SPRINGS_FEATURE);
                 biomeReasons.put(biomeLoading, reason);
             }
         }
