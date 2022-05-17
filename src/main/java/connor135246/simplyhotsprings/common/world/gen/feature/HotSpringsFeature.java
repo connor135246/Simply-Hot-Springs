@@ -53,10 +53,10 @@ public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
 
         pos = pos.below(rand.nextInt(3));
 
-        return doPlace(glevel, rand, pos);
+        return doPlace(glevel, rand, pos, true);
     }
 
-    public static boolean doPlace(WorldGenLevel glevel, Random rand, BlockPos pos)
+    public static boolean doPlace(WorldGenLevel glevel, Random rand, BlockPos pos, boolean postProcess)
     {
         if (!HOT_SPRING_WATER_BLOCK.isPresent())
             return false;
@@ -143,7 +143,7 @@ public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
                         {
                             boolean air = y >= 4 || glevel.dimensionType().ultraWarm();
                             glevel.setBlock(setPos, air ? Blocks.AIR.defaultBlockState() : HOT_SPRING_WATER_BLOCK.get().defaultBlockState(), 2);
-                            if (air)
+                            if (postProcess && air)
                             {
                                 glevel.scheduleTick(setPos, Blocks.AIR, 0);
                                 markAboveForPostProcessingStatic(glevel, setPos);
