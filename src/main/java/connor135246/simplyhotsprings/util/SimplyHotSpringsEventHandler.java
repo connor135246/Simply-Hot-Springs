@@ -3,6 +3,8 @@ package connor135246.simplyhotsprings.util;
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.server.ServerAboutToStartEvent;
@@ -43,6 +45,7 @@ public class SimplyHotSpringsEventHandler
         SimplyHotSpringsConfig.resetSpringsGeneration(event);
     }
 
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onSetFogDensity(EntityViewRenderEvent.FogDensity event)
     {
@@ -61,6 +64,7 @@ public class SimplyHotSpringsEventHandler
         }
     }
 
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onSetFogColors(EntityViewRenderEvent.FogColors event)
     {
