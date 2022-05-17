@@ -153,7 +153,7 @@ public class SimplyHotSpringsCommand
 
         if (!BiomeDictionary.hasAnyType(biomeKey))
             source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
-                    .append(new TranslatableComponent(LANG_COMMAND + "none").withStyle(ChatFormatting.WHITE)), true);
+                    .append(noneComponent().withStyle(ChatFormatting.WHITE)), true);
         else
             source.sendSuccess(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
                     BiomeDictionary.getTypes(biomeKey), type -> type.getName(), string -> makeSuggestComponent(string)), true);
@@ -171,8 +171,11 @@ public class SimplyHotSpringsCommand
     {
         source.sendSuccess(makeAquaTranslatable(LANG_BIOMESLIST + "all"), true);
 
-        source.sendSuccess(makeMultiComponent(SimplyHotSpringsConfig.biomeReasons.keySet(),
-                key -> key.location(), id -> makeLocationInfoComponent(id.toString())), true);
+        if (SimplyHotSpringsConfig.biomeReasons.isEmpty())
+            source.sendSuccess(noneComponent(), true);
+        else
+            source.sendSuccess(makeMultiComponent(SimplyHotSpringsConfig.biomeReasons.keySet(),
+                    key -> key.location(), id -> makeLocationInfoComponent(id.toString())), true);
 
         return SimplyHotSpringsConfig.biomeReasons.size();
     }
@@ -185,8 +188,8 @@ public class SimplyHotSpringsCommand
         Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                 .filter(entry -> with == entry.getValue().allowsGeneration())
                 .map(entry -> entry.getKey().location()).collect(Collectors.toSet());
-        if (filteredIds.size() == 0)
-            source.sendSuccess(new TranslatableComponent(LANG_COMMAND + "none"), true);
+        if (filteredIds.isEmpty())
+            source.sendSuccess(noneComponent(), true);
         else
             source.sendSuccess(ComponentUtils.formatAndSortList(filteredIds, id -> makeLocationInfoComponent(id.toString())), true);
 
@@ -199,7 +202,10 @@ public class SimplyHotSpringsCommand
     {
         source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "all"), true);
 
-        source.sendSuccess(makeMultiComponent(BiomeDictionary.Type.getAll(), type -> type.getName(), string -> makeBiomeTypeComponent(string)), true);
+        if (BiomeDictionary.Type.getAll().isEmpty())
+            source.sendSuccess(noneComponent(), true);
+        else
+            source.sendSuccess(makeMultiComponent(BiomeDictionary.Type.getAll(), type -> type.getName(), string -> makeBiomeTypeComponent(string)), true);
 
         return BiomeDictionary.Type.getAll().size();
     }
@@ -209,8 +215,8 @@ public class SimplyHotSpringsCommand
         source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()), true);
 
         Set<ResourceKey<Biome>> biomeIds = BiomeDictionary.getBiomes(type);
-        if (biomeIds.size() == 0)
-            source.sendSuccess(new TranslatableComponent(LANG_COMMAND + "none"), true);
+        if (biomeIds.isEmpty())
+            source.sendSuccess(noneComponent(), true);
         else
             source.sendSuccess(makeMultiComponent(biomeIds, key -> key.location(), id -> makeLocationInfoComponent(id.toString())), true);
 
@@ -235,7 +241,7 @@ public class SimplyHotSpringsCommand
         String reasonKey = "";
         if (pos.getY() > level.getMinBuildHeight() + 4)
         {
-            if (!HotSpringsFeature.doPlace(level, rand, pos))
+            if (!HotSpringsFeature.doPlace(level, rand, pos, false))
             {
                 success = false;
                 reasonKey = "failed";
@@ -336,6 +342,11 @@ public class SimplyHotSpringsCommand
     }
 
     private static final HoverEvent clickForHelp = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_HELP + "click"));
+    
+    private static MutableComponent noneComponent()
+    {
+        return new TranslatableComponent(LANG_COMMAND + "none");
+    }
 
     /**
      * turns the collection of things into a list of comparable things, sorts them, turns them into text components, and then puts them all into one text component separated by
