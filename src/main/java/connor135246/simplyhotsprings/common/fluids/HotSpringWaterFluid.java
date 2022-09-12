@@ -50,10 +50,11 @@ public abstract class HotSpringWaterFluid extends ForgeFlowingFluid
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected boolean canBeReplacedWith(FluidState state, BlockGetter level, BlockPos pos, Fluid fluid, Direction direction)
     {
-        return direction == Direction.DOWN && !state.is(FluidTags.WATER);
+        return direction == Direction.DOWN && !fluid.is(FluidTags.WATER);
     }
 
     @Override
