@@ -9,6 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.material.MaterialColor;
 
@@ -28,7 +29,11 @@ public class HotSpringWaterBlock extends LiquidBlock
         super.entityInside(state, level, pos, entity);
 
         if (!level.isClientSide && entity instanceof LivingEntity)
-            SimplyHotSpringsConfig.addHotSpringsEffect((LivingEntity) entity);
+        {
+            FluidState fluidstate = level.getFluidState(pos);
+            if (fluidstate.is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER) && entity.getY() < (double)(pos.getY() + fluidstate.getHeight(level, pos)))
+                SimplyHotSpringsConfig.addHotSpringsEffect((LivingEntity) entity);
+        }
     }
 
 }
