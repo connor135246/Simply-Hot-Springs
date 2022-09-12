@@ -3,6 +3,7 @@ package connor135246.simplyhotsprings.util;
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.SimplyHotSpringsCommon;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.level.material.FogType;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.EntityViewRenderEvent;
@@ -50,9 +51,9 @@ public class SimplyHotSpringsEventHandler
     @SubscribeEvent
     public static void onSetFogDensity(EntityViewRenderEvent.FogDensity event)
     {
-        if (event.getCamera().getBlockAtCamera().getFluidState().is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER))
+        if (event.getCamera().getBlockAtCamera().getFluidState().is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER)
+                && event.getCamera().getFluidInCamera() == FogType.WATER)
         {
-
             float fogDensity = 192.0F;
             if (event.getCamera().getEntity() instanceof LocalPlayer)
             {
@@ -69,7 +70,8 @@ public class SimplyHotSpringsEventHandler
     @SubscribeEvent
     public static void onSetFogColors(EntityViewRenderEvent.FogColors event)
     {
-        if (event.getCamera().getBlockAtCamera().getFluidState().is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER))
+        if (event.getCamera().getBlockAtCamera().getFluidState().is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER)
+                && event.getCamera().getFluidInCamera() == FogType.WATER)
         {
             event.setGreen(event.getBlue());
             event.setRed(event.getRed() * 0.01F);
