@@ -32,7 +32,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class SimplyHotSpringsCommand
 {
@@ -137,8 +136,8 @@ public class SimplyHotSpringsCommand
 
     private static int sendLocationInfo(CommandSourceStack source, ResourceLocation biomeId)
     {
-        if (ForgeRegistries.BIOMES.containsKey(biomeId))
-            return sendLocationInfo(source, ResourceKey.create(ForgeRegistries.Keys.BIOMES, biomeId));
+        if (source.getServer().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).containsKey(biomeId))
+            return sendLocationInfo(source, ResourceKey.create(Registry.BIOME_REGISTRY, biomeId));
         else
         {
             source.sendFailure(new TranslatableComponent(LANG_LOCATIONINFO + "biome_not_found", biomeId));

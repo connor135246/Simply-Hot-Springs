@@ -1,5 +1,6 @@
 package connor135246.simplyhotsprings.util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import connor135246.simplyhotsprings.common.world.gen.placement.ConfigChanceFilt
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.Util;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
@@ -215,7 +217,7 @@ public class SimplyHotSpringsConfig
 
     private static void warnInvalidEntry(String config, String input)
     {
-        SimplyHotSprings.log.warn("\"" + config + "\" config entry \"" + input + "\" was not found");
+        SimplyHotSprings.log.warn("Config: \"" + config + "\" entry with \"" + input + "\" is invalid");
     }
 
     //
@@ -325,13 +327,8 @@ public class SimplyHotSpringsConfig
                 if (!input.equals(NO_WARN_DUMMY_ENTRY))
                 {
                     ResourceLocation name = new ResourceLocation(input);
-                    if (ForgeRegistries.BIOMES.containsKey(name))
-                        biomeNameWhitelist.add(ResourceKey.create(ForgeRegistries.Keys.BIOMES, name));
-                    else
-                    {
-                        warnInvalidEntry("Biome Name Whitelist", name.toString());
-                        invalidEntries = true;
-                    }
+                    biomeNameWhitelist.add(ResourceKey.create(Registry.BIOME_REGISTRY, name));
+                    mentionedBiomes.add(name);
                 }
                 else
                     invalidEntries = true; // see above.
@@ -348,10 +345,8 @@ public class SimplyHotSpringsConfig
             if (!StringUtils.isEmpty(input))
             {
                 ResourceLocation name = new ResourceLocation(input);
-                if (ForgeRegistries.BIOMES.containsKey(name))
-                    biomeNameBlacklist.add(ResourceKey.create(ForgeRegistries.Keys.BIOMES, name));
-                else
-                    warnInvalidEntry("Biome Name Blacklist", name.toString());
+                biomeNameBlacklist.add(ResourceKey.create(Registry.BIOME_REGISTRY, name));
+                mentionedBiomes.add(name);
             }
         }
     }
@@ -379,26 +374,22 @@ public class SimplyHotSpringsConfig
 
             ResourceLocation name = new ResourceLocation(parts[0]);
 
-            if (ForgeRegistries.BIOMES.containsKey(name))
+            try
             {
-                try
-                {
-                    ResourceKey<Biome> biomeKey = ResourceKey.create(ForgeRegistries.Keys.BIOMES, name);
+                ResourceKey<Biome> biomeKey = ResourceKey.create(Registry.BIOME_REGISTRY, name);
 
-                    BlockStateParser stateParser = new BlockStateParser(new StringReader(parts[1]), false).parse(false);
-                    BlockState state = stateParser.getState();
-                    if (state == null)
-                        throw BlockStateParser.ERROR_UNKNOWN_BLOCK.create(parts[1]);
+                BlockStateParser stateParser = new BlockStateParser(new StringReader(parts[1]), false).parse(false);
+                BlockState state = stateParser.getState();
+                if (state == null)
+                    throw BlockStateParser.ERROR_UNKNOWN_BLOCK.create(parts[1]);
 
-                    biomeGrasses.put(biomeKey, state);
-                }
-                catch (CommandSyntaxException excep)
-                {
-                    warnInvalidEntry("Biome Grasses", parts[1]);
-                }
+                biomeGrasses.put(biomeKey, state);
+                mentionedBiomes.add(name);
             }
-            else
-                warnInvalidEntry("Biome Grasses", name.toString());
+            catch (CommandSyntaxException excep)
+            {
+                warnInvalidEntry("Biome Grasses", parts[1]);
+            }
         }
 
         biomeGrasses.trim();
@@ -421,7 +412,7 @@ public class SimplyHotSpringsConfig
     {
         if (event.getName() != null)
         {
-            ResourceKey<Biome> biomeLoading = ResourceKey.create(ForgeRegistries.Keys.BIOMES, event.getName());
+            ResourceKey<Biome> biomeLoading = ResourceKey.create(Registry.BIOME_REGISTRY, event.getName());
             if (!SimplyHotSpringsCommon.PLACED_HOT_SPRINGS_FEATURE.isPresent())
                 biomeReasons.put(biomeLoading, GenerationReason.REGISTER_ERROR);
             else
@@ -435,10 +426,23 @@ public class SimplyHotSpringsConfig
     }
 
     /**
+     * the list of biomes that are in the config. after biomes are loaded, the player is notified of any invalid ones.
+     */
+    private static final List<ResourceLocation> mentionedBiomes = new ArrayList<ResourceLocation>();
+
+    /**
      * Called from {@link SimplyHotSpringsEventHandler#onServerAboutToStart}
      */
     public static void finalizeSpringsGeneration(ServerAboutToStartEvent event)
     {
+        event.getServer().registryAccess().registry(Registry.BIOME_REGISTRY).ifPresent(biomeReg -> {
+            for (ResourceLocation biome : mentionedBiomes)
+            {
+                if (!biomeReg.getOptional(biome).isPresent())
+                    SimplyHotSprings.log.warn("Config: Biome \"" + biome + "\" is invalid");
+            }
+        });
+
         biomeReasons.trim();
         ConfigChanceFilter.updateChance(COMMON.chance.get());
         HotSpringsFeature.updateBiomeGrasses(biomeGrasses);
@@ -531,6 +535,7 @@ public class SimplyHotSpringsConfig
         if (event.getConfig().getType() == ModConfig.Type.COMMON)
         {
             updateEffect();
+            mentionedBiomes.clear();
             fillBiomeSets();
             fillBiomeGrasses();
         }
