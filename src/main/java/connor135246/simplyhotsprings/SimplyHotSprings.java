@@ -27,6 +27,7 @@ public class SimplyHotSprings
         SimplyHotSpringsCommon.register(FMLJavaModLoadingContext.get().getModEventBus());
 
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, SimplyHotSpringsConfig.commonSpec);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, SimplyHotSpringsConfig.clientSpec);
     }
 
     /**

@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -60,11 +61,20 @@ public abstract class HotSpringWaterFluid extends ForgeFlowingFluid
     {
         // steam particles
         BlockPos posAbove = pos.above();
-        if (HOT_SPRING_WATER_STEAM.isPresent() && level.getBlockState(posAbove).propagatesSkylightDown(level, posAbove) && rand.nextInt(24) == 0
-                && rand.nextInt(Minecraft.getInstance().options.particles.getId() + 1) == 0)
+        if (level.getBlockState(posAbove).propagatesSkylightDown(level, posAbove))
         {
-            level.addParticle(HOT_SPRING_WATER_STEAM.get(), posAbove.getX() + 0.1F + rand.nextFloat() * 0.8F, posAbove.getY() + 0.5F,
-                    posAbove.getZ() + 0.1F + rand.nextFloat() * 0.8F, 0.0D, 0.0D, 0.0D);
+            if (SimplyHotSpringsConfig.CLIENT.alternateParticles.get())
+            {
+                if (rand.nextInt(12) == 0)
+                    level.addParticle(ParticleTypes.CLOUD, posAbove.getX() + 0.1F + rand.nextFloat() * 0.8F, posAbove.getY() + 0.5F,
+                            posAbove.getZ() + 0.1F + rand.nextFloat() * 0.8F, 0.0D, 0.025 + rand.nextFloat() / 250.0F, 0.0D);
+            }
+            else if (HOT_SPRING_WATER_STEAM.isPresent())
+            {
+                if (rand.nextInt(24) == 0)
+                    level.addParticle(HOT_SPRING_WATER_STEAM.get(), posAbove.getX() + 0.1F + rand.nextFloat() * 0.8F, posAbove.getY() + 0.7F,
+                            posAbove.getZ() + 0.1F + rand.nextFloat() * 0.8F, 0.0D, 0.0D, 0.0D);
+            }
         }
 
         // flowing sound

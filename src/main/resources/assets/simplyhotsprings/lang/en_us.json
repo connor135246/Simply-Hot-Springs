@@ -87,5 +87,7 @@
 	"simplyhotsprings.config.worldgen.biomeNameBlacklist": "Biome Name Blacklist",
 	"simplyhotsprings.config.worldgen.biomeNameBlacklist.tooltip": "The individual biomes where Hot Springs are NOT allowed to generate. \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect.",
 	"simplyhotsprings.config.worldgen.biomeGrasses": "Biome Grasses",
-	"simplyhotsprings.config.worldgen.biomeGrasses.tooltip": "A list of biomes and their specific types of grass. \nBy default, dirt around Hot Springs will be turned into grass. But some biomes have their own specific grass type which you need to tell Simply Hot Springs about. \nThe format is \"modid:biome;modid:block[states]\". \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect."
+	"simplyhotsprings.config.worldgen.biomeGrasses.tooltip": "A list of biomes and their specific types of grass. \nBy default, dirt around Hot Springs will be turned into grass. But some biomes have their own specific grass type which you need to tell Simply Hot Springs about. \nThe format is \"modid:biome;modid:block[states]\". \nIf you change this setting with a world open, it must be closed and reopened for the changes to take effect.",
+	"simplyhotsprings.config.client.alternateParticles": "Alternate Particles",
+	"simplyhotsprings.config.client.alternateParticles.tooltip": "If true, Hot Spring Water makes small smoke particles instead. \nNote: these particles are affected by your particle video setting, and won't appear at all if it's set to Minimal."
 }
