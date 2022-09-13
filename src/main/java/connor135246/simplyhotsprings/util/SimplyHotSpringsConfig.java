@@ -181,7 +181,7 @@ public class SimplyHotSpringsConfig
                             "If you change this setting with a world open, it must be closed and reopened for the changes to take effect.")
                     .worldRestart()
                     .defineListAllowEmpty(Arrays.asList("Biome Name Blacklist"),
-                            () -> Arrays.asList("biomesoplenty:origin_valley"),
+                            () -> Arrays.asList("biomesoplenty:origin_valley", "terralith:alpha_islands", "terralith:alpha_islands_winter"),
                             Common::isString);
 
             biomeGrasses = builder

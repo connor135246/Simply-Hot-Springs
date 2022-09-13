@@ -1,10 +1,12 @@
 package connor135246.simplyhotsprings.common;
 
 import static connor135246.simplyhotsprings.SimplyHotSprings.MODID;
+import static net.minecraftforge.common.BiomeDictionary.Type.*;
 
 import java.util.List;
 import java.util.function.Supplier;
 
+import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.blocks.HotSpringWaterBlock;
 import connor135246.simplyhotsprings.common.fluids.HotSpringWaterFluid;
 import connor135246.simplyhotsprings.common.world.gen.feature.HotSpringsFeature;
@@ -20,6 +22,7 @@ import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
@@ -44,8 +47,10 @@ import net.minecraft.world.level.levelgen.placement.PlacementModifierType;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -141,6 +146,109 @@ public class SimplyHotSpringsCommon
             HOT_SPRING_WATER_BUCKET.ifPresent(bucket -> DispenserBlock.registerBehavior(bucket, dispenseHotSpringWaterBehaviour));
 
             ArgumentTypes.register("simplyhotsprings.biome_type", BiomeTypeArgument.class, new EmptyArgumentSerializer<>(BiomeTypeArgument::biomeTypeArgument));
+
+            if (ModList.get().isLoaded("terralith"))
+            {
+                // Terralith, why don't you do this yourself???
+                SimplyHotSprings.log.info("Terralith is installed. Adding some Biome Dictionary Types to Terralith biomes.");
+
+                addTypes("terralith:cave/andesite_caves", UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/crystal_caves", MAGICAL, UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/deep_caves", UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/desert_caves", SANDY, UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/diorite_caves", UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/frostfire_caves", MAGICAL, SPOOKY, UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/fungal_caves", MUSHROOM, UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/granite_caves", UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/ice_caves", COLD, UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/infested_caves", SPOOKY, UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/mantle_caves", HOT, UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/thermal_caves", HOT, WET, UNDERGROUND, OVERWORLD);
+                addTypes("terralith:cave/tuff_caves", UNDERGROUND, OVERWORLD);
+                addTypes("terralith:alpha_islands_winter", FOREST, COLD, SNOWY, RARE, OVERWORLD);
+                addTypes("terralith:alpha_islands", FOREST, RARE, OVERWORLD);
+                addTypes("terralith:alpine_grove", FOREST, COLD, CONIFEROUS, SNOWY, SLOPE, OVERWORLD);
+                addTypes("terralith:alpine_highlands", PLAINS, CONIFEROUS, PLATEAU, OVERWORLD);
+                addTypes("terralith:amethyst_canyon", JUNGLE, HOT, DENSE, WET, MAGICAL, RARE, OVERWORLD);
+                addTypes("terralith:amethyst_rainforest", JUNGLE, HOT, DENSE, WET, MAGICAL, OVERWORLD);
+                addTypes("terralith:ancient_sands", HOT, DRY, SANDY, RARE, OVERWORLD);
+                addTypes("terralith:arid_highlands", SAVANNA, PLAINS, HOT, SPARSE, DRY, PLATEAU, OVERWORLD);
+                addTypes("terralith:ashen_savanna", SAVANNA, PLAINS, HOT, SPARSE, DRY, DEAD, RARE, OVERWORLD);
+                addTypes("terralith:basalt_cliffs", BEACH, RARE, OVERWORLD);
+                addTypes("terralith:birch_taiga", FOREST, COLD, CONIFEROUS, OVERWORLD);
+                addTypes("terralith:blooming_plateau", PLAINS, PLATEAU, SLOPE, OVERWORLD);
+                addTypes("terralith:blooming_valley", FOREST, LUSH, OVERWORLD);
+                addTypes("terralith:brushland", SAVANNA, PLAINS, HOT, DRY, OVERWORLD);
+                addTypes("terralith:bryce_canyon", MESA, HOT, DRY, CONIFEROUS, SANDY, RARE, OVERWORLD);
+                addTypes("terralith:caldera", RARE, SLOPE, OVERWORLD);
+                addTypes("terralith:cloud_forest", FOREST, HILLS, COLD, CONIFEROUS, RARE, OVERWORLD);
+                addTypes("terralith:cold_shrubland", PLAINS, COLD, CONIFEROUS, OVERWORLD);
+                addTypes("terralith:desert_canyon", HOT, DRY, SANDY, MODIFIED, SLOPE, OVERWORLD);
+                addTypes("terralith:desert_oasis", HOT, SANDY, LUSH, OVERWORLD);
+                addTypes("terralith:desert_spires", HOT, DRY, SANDY, RARE, PEAK, OVERWORLD);
+                addTypes("terralith:emerald_peaks", COLD, SNOWY, RARE, PEAK, OVERWORLD);
+                addTypes("terralith:forested_highlands", FOREST, CONIFEROUS, PLATEAU, OVERWORLD);
+                addTypes("terralith:fractured_savanna", SAVANNA, HILLS, HOT, SPARSE, DRY, RARE, OVERWORLD);
+                addTypes("terralith:frozen_cliffs", BEACH, COLD, SNOWY, RARE, OVERWORLD);
+                addTypes("terralith:glacial_chasm", COLD, SNOWY, RARE, PEAK, OVERWORLD);
+                addTypes("terralith:granite_cliffs", BEACH, RARE, OVERWORLD);
+                addTypes("terralith:gravel_beach", BEACH, OVERWORLD);
+                addTypes("terralith:gravel_desert", PLAINS, COLD, SNOWY, WASTELAND, OVERWORLD);
+                addTypes("terralith:haze_mountain", FOREST, HILLS, OVERWORLD);
+                addTypes("terralith:highlands", PLAINS, SPARSE, PLATEAU, OVERWORLD);
+                addTypes("terralith:hot_shrubland", PLAINS, HOT, OVERWORLD);
+                addTypes("terralith:ice_marsh", SWAMP, COLD, WET, SNOWY, OVERWORLD);
+                addTypes("terralith:jungle_mountains", JUNGLE, HILLS, HOT, WET, RARE, OVERWORLD);
+                addTypes("terralith:lavender_forest", FOREST, RARE, OVERWORLD);
+                addTypes("terralith:lavender_valley", FOREST, PLATEAU, OVERWORLD);
+                addTypes("terralith:lush_valley", FOREST, CONIFEROUS, LUSH, RARE, PLATEAU, OVERWORLD);
+                addTypes("terralith:mirage_isles", FOREST, MUSHROOM, MAGICAL, RARE, OVERWORLD);
+                addTypes("terralith:moonlight_grove", FOREST, MAGICAL, RARE, OVERWORLD);
+                addTypes("terralith:moonlight_valley", FOREST, MAGICAL, PLATEAU, OVERWORLD);
+                addTypes("terralith:mountain_steppe", PLAINS, PLATEAU, OVERWORLD);
+                addTypes("terralith:orchid_swamp", SWAMP, WET, LUSH, OVERWORLD);
+                addTypes("terralith:painted_mountains", MESA, HOT, RARE, PEAK, OVERWORLD);
+                addTypes("terralith:red_oasis", HOT, SANDY, LUSH, RARE, OVERWORLD);
+                addTypes("terralith:rocky_jungle", JUNGLE, HOT, WET, OVERWORLD);
+                addTypes("terralith:rocky_mountains", DRY, PEAK, OVERWORLD);
+                addTypes("terralith:rocky_shrubland", PLAINS, COLD, CONIFEROUS, RARE, OVERWORLD);
+                addTypes("terralith:sakura_grove", FOREST, OVERWORLD);
+                addTypes("terralith:sakura_valley", FOREST, RARE, PLATEAU, OVERWORLD);
+                addTypes("terralith:sandstone_valley", HOT, SANDY, LUSH, RARE, OVERWORLD);
+                addTypes("terralith:savanna_badlands", SAVANNA, PLAINS, MESA, HOT, SPARSE, DRY, OVERWORLD);
+                addTypes("terralith:savanna_slopes", SAVANNA, HOT, SPARSE, DRY, RARE, SLOPE, OVERWORLD);
+                addTypes("terralith:scarlet_mountains", COLD, SNOWY, RARE, PEAK, OVERWORLD);
+                addTypes("terralith:shield_clearing", PLAINS, SPARSE, CONIFEROUS, RARE, OVERWORLD);
+                addTypes("terralith:shield", FOREST, CONIFEROUS, OVERWORLD);
+                addTypes("terralith:shrubland", SAVANNA, PLAINS, HOT, DRY, OVERWORLD);
+                addTypes("terralith:siberian_grove", FOREST, COLD, CONIFEROUS, SNOWY, RARE, SLOPE, OVERWORLD);
+                addTypes("terralith:siberian_taiga", FOREST, WET, CONIFEROUS, OVERWORLD);
+                addTypes("terralith:skylands_autumn", FOREST, MAGICAL, OVERWORLD);
+                addTypes("terralith:skylands_spring", FOREST, MAGICAL, OVERWORLD);
+                addTypes("terralith:skylands_summer", JUNGLE, HOT, LUSH, MAGICAL, RARE, OVERWORLD);
+                addTypes("terralith:skylands_winter", FOREST, COLD, CONIFEROUS, SNOWY, MAGICAL, RARE, OVERWORLD);
+                addTypes("terralith:skylands", FOREST, MAGICAL, OVERWORLD);
+                addTypes("terralith:snowy_badlands", MESA, COLD, DRY, SNOWY, RARE, OVERWORLD);
+                addTypes("terralith:snowy_maple_forest", FOREST, COLD, CONIFEROUS, SNOWY, RARE, SLOPE, OVERWORLD);
+                addTypes("terralith:snowy_shield", FOREST, COLD, CONIFEROUS, SNOWY, RARE, OVERWORLD);
+                addTypes("terralith:steppe", PLAINS, PLATEAU, OVERWORLD);
+                addTypes("terralith:stony_spires", RARE, PEAK, OVERWORLD);
+                addTypes("terralith:temperate_highlands", FOREST, PLATEAU, OVERWORLD);
+                addTypes("terralith:tropical_jungle", JUNGLE, HOT, DENSE, WET, OVERWORLD);
+                addTypes("terralith:valley_clearing", PLAINS, SPARSE, OVERWORLD);
+                addTypes("terralith:volcanic_crater", HOT, RARE, SLOPE, OVERWORLD);
+                addTypes("terralith:volcanic_peaks", HOT, RARE, PEAK, OVERWORLD);
+                addTypes("terralith:warm_river", RIVER, HOT, OVERWORLD);
+                addTypes("terralith:warped_mesa", MESA, HOT, DRY, MAGICAL, RARE, OVERWORLD);
+                addTypes("terralith:white_cliffs", BEACH, LUSH, RARE, OVERWORLD);
+                addTypes("terralith:white_mesa", MESA, HOT, DRY, RARE, OVERWORLD);
+                addTypes("terralith:windswept_spires", HILLS, COLD, RARE, OVERWORLD);
+                addTypes("terralith:wintry_forest", FOREST, COLD, CONIFEROUS, SNOWY, OVERWORLD);
+                addTypes("terralith:wintry_lowlands", FOREST, COLD, CONIFEROUS, SNOWY, MODIFIED, OVERWORLD);
+                addTypes("terralith:yellowstone", FOREST, COLD, CONIFEROUS, OVERWORLD);
+                addTypes("terralith:yosemite_cliffs", FOREST, SPARSE, CONIFEROUS, RARE, SLOPE, OVERWORLD);
+                addTypes("terralith:yosemite_lowlands", FOREST, CONIFEROUS, RARE, PLATEAU, OVERWORLD);
+            }
         });
     }
 
@@ -149,6 +257,11 @@ public class SimplyHotSpringsCommon
     private static Supplier<SimpleParticleType> particleSimple(boolean alwaysShow)
     {
         return () -> new SimpleParticleType(alwaysShow);
+    }
+
+    private static void addTypes(String id, BiomeDictionary.Type... types)
+    {
+        BiomeDictionary.addTypes(ResourceKey.create(Registry.BIOME_REGISTRY, new ResourceLocation(id)), types);
     }
 
 }
