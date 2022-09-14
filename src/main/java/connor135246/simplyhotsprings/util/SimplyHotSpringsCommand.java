@@ -7,6 +7,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.world.gen.feature.HotSpringsFeature;
@@ -67,7 +68,7 @@ public class SimplyHotSpringsCommand
         })).then(Commands.literal(PLACESPRING).executes((context) -> {
             return sendHelpForSubcommand(context.getSource(), PLACESPRING, 1);
         }))).then(Commands.literal(LOCATIONINFO).executes((context) -> {
-            return sendLocationInfo(context.getSource(), new BlockPos(context.getSource().getPosition()));
+            return sendLocationInfo(context.getSource(), getSourcePos(context.getSource()));
         }).then(Commands.argument("target", EntityArgument.entity()).executes((context) -> {
             return sendLocationInfo(context.getSource(), EntityArgument.getEntity(context, "target").blockPosition());
         })).then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
@@ -88,10 +89,25 @@ public class SimplyHotSpringsCommand
                 }).then(Commands.argument("biome_type", BiomeTypeArgument.biomeTypeArgument()).executes((context) -> {
                     return sendBiomesOfType(context.getSource(), context.getArgument("biome_type", BiomeDictionary.Type.class));
                 }))).then(Commands.literal(PLACESPRING).executes((context) -> {
-                    return placeSpring(context.getSource(), new BlockPos(context.getSource().getPosition()));
+                    return placeSpring(context.getSource(), getSourcePos(context.getSource()));
                 }).then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
                     return placeSpring(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
                 }))));
+    }
+
+    /**
+     * From {@link BlockPosArgument#getLoadedBlockPos}, ensures the command position is valid.
+     */
+    @SuppressWarnings("deprecation")
+    private static BlockPos getSourcePos(CommandSourceStack source) throws CommandSyntaxException
+    {
+        BlockPos pos = new BlockPos(source.getPosition());
+        if (!source.getUnsidedLevel().hasChunkAt(pos))
+            throw BlockPosArgument.ERROR_NOT_LOADED.create();
+        else if (!source.getUnsidedLevel().isInWorldBounds(pos))
+            throw BlockPosArgument.ERROR_OUT_OF_WORLD.create();
+        else
+            return pos;
     }
 
     // help
