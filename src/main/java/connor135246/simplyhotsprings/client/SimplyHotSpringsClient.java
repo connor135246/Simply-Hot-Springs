@@ -5,6 +5,7 @@ import static connor135246.simplyhotsprings.common.SimplyHotSpringsCommon.*;
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.client.particles.HotSpringWaterDripParticle;
 import connor135246.simplyhotsprings.client.particles.HotSpringWaterUnderwaterParticle;
+import connor135246.simplyhotsprings.client.particles.SmallSteamParticle;
 import connor135246.simplyhotsprings.client.particles.SteamParticle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
@@ -35,6 +36,7 @@ public class SimplyHotSpringsClient
     {
         Minecraft mc = Minecraft.getInstance();
         HOT_SPRING_WATER_STEAM.ifPresent(type -> mc.particleEngine.register(type, SteamParticle.Provider::new));
+        HOT_SPRING_WATER_STEAM_SMALL.ifPresent(type -> mc.particleEngine.register(type, SmallSteamParticle.Provider::new));
         DRIPPING_HOT_SPRING_WATER.ifPresent(type -> mc.particleEngine.register(type, HotSpringWaterDripParticle.DrippingProvider::new));
         FALLING_HOT_SPRING_WATER.ifPresent(type -> mc.particleEngine.register(type, HotSpringWaterDripParticle.FallingProvider::new));
         SPLASHING_HOT_SPRING_WATER.ifPresent(type -> mc.particleEngine.register(type, HotSpringWaterDripParticle.SplashingProvider::new));

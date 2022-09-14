@@ -495,8 +495,7 @@ public class SimplyHotSpringsConfig
         {
             alternateParticles = builder
                     .translation(LANG_CLIENT + "alternateParticles")
-                    .comment("If true, Hot Spring Water makes small smoke particles instead. ",
-                            "Note: these particles are affected by your particle video setting, and won't appear at all if it's set to Minimal.")
+                    .comment("If true, Hot Spring Water makes smaller, less obtrusive steam particles instead.")
                     .define("Alternate Particles", false);
         }
 
