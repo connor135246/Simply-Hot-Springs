@@ -87,10 +87,11 @@ public class SimplyHotSpringsCommand
                     return sendAllBiomeTypes(context.getSource());
                 }).then(Commands.argument("biome_type", BiomeTypeArgument.biomeTypeArgument()).executes((context) -> {
                     return sendBiomesOfType(context.getSource(), context.getArgument("biome_type", BiomeDictionary.Type.class));
-                }))).then(Commands.literal(PLACESPRING)
-                        .then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
-                            return placeSpring(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
-                        }))));
+                }))).then(Commands.literal(PLACESPRING).executes((context) -> {
+                    return placeSpring(context.getSource(), new BlockPos(context.getSource().getPosition()));
+                }).then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
+                    return placeSpring(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
+                }))));
     }
 
     // help
@@ -341,7 +342,7 @@ public class SimplyHotSpringsCommand
     }
 
     private static final HoverEvent clickForHelp = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_HELP + "click"));
-    
+
     private static MutableComponent noneComponent()
     {
         return new TranslatableComponent(LANG_COMMAND + "none");

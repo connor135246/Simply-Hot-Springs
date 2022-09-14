@@ -31,7 +31,7 @@
 	"commands.simplyhotsprings.help.locationinfo.1": "   Checks your current biome and whether Hot Springs can generate there.",
 	"commands.simplyhotsprings.help.locationinfo.2": "/simplyhotsprings locationinfo <target>",
 	"commands.simplyhotsprings.help.locationinfo.3": "   Checks the entity's current biome and whether Hot Springs can generate there.",
-	"commands.simplyhotsprings.help.locationinfo.4": "/simplyhotpsrings locationinfo <x> <y> <z>",
+	"commands.simplyhotsprings.help.locationinfo.4": "/simplyhotpsrings locationinfo <pos>",
 	"commands.simplyhotsprings.help.locationinfo.5": "   Checks the biome at the position and whether Hot Springs can generate there.",
 	"commands.simplyhotsprings.help.locationinfo.6": "/simplyhotsprings locationinfo <biome>",
 	"commands.simplyhotsprings.help.locationinfo.7": "   Checks the given biome and whether Hot Springs can generate there.",
@@ -45,7 +45,7 @@
 	"commands.simplyhotsprings.help.biometypes.1": "   Lists all Biome Dictionary Types.",
 	"commands.simplyhotsprings.help.biometypes.2": "/simplyhotsprings biometypes <biome_type>",
 	"commands.simplyhotsprings.help.biometypes.3": "   Lists all biomes that are in the given Biome Dictionary Type.",
-	"commands.simplyhotsprings.help.placespring.0": "/simplyhotsprings placespring <x> <y> <z>",
+	"commands.simplyhotsprings.help.placespring.0": "/simplyhotsprings placespring [<pos>]",
 	"commands.simplyhotsprings.help.placespring.1": "   Attempts to generate a Hot Spring centered at the position. If the north-west corner is air, moves down to the next solid block.",
 	"commands.simplyhotsprings.none": "None!",
 	
