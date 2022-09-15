@@ -20,6 +20,7 @@ import net.minecraft.command.arguments.SuggestionProviders;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -32,7 +33,6 @@ import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class SimplyHotSpringsCommand
 {
@@ -135,8 +135,8 @@ public class SimplyHotSpringsCommand
 
     private static int sendLocationInfo(CommandSource source, ResourceLocation biomeId)
     {
-        if (ForgeRegistries.BIOMES.containsKey(biomeId))
-            return sendLocationInfo(source, RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, biomeId));
+        if (source.func_241861_q().getRegistry(Registry.BIOME_KEY).getOptional(biomeId).isPresent())
+            return sendLocationInfo(source, RegistryKey.getOrCreateKey(Registry.BIOME_KEY, biomeId));
         else
         {
             source.sendErrorMessage(new TranslationTextComponent(LANG_LOCATIONINFO + "biome_not_found", biomeId));
