@@ -7,7 +7,6 @@ import net.minecraft.client.particle.IParticleRenderType;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.SpriteTexturedParticle;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.particles.BasicParticleType;
 import net.minecraft.util.math.BlockPos;
@@ -17,8 +16,6 @@ import net.minecraft.util.math.BlockPos;
  */
 public class HotSpringWaterUnderwaterParticle extends SpriteTexturedParticle
 {
-
-    protected static final Fluid FLUID = SimplyHotSpringsCommon.HOT_SPRING_WATER.orElse(null);
 
     public HotSpringWaterUnderwaterParticle(ClientWorld cworld, double x, double y, double z)
     {
@@ -64,7 +61,7 @@ public class HotSpringWaterUnderwaterParticle extends SpriteTexturedParticle
     {
         BlockPos blockpos = new BlockPos(this.posX, this.posY, this.posZ);
         FluidState fluidstate = this.world.getFluidState(blockpos);
-        if (fluidstate.getFluid() != FLUID || this.posY > blockpos.getY() + fluidstate.getActualHeight(this.world, blockpos))
+        if (!fluidstate.isTagged(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER) || this.posY > blockpos.getY() + fluidstate.getActualHeight(this.world, blockpos))
             this.setExpired();
     }
 
