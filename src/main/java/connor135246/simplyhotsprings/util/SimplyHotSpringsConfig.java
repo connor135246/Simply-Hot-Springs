@@ -34,6 +34,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber.Bus;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.config.ModConfig.ModConfigEvent;
 import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
 import net.minecraftforge.fml.event.server.FMLServerStoppedEvent;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -44,6 +45,8 @@ public class SimplyHotSpringsConfig
 
     // i keep having issues where changing the config file while the game is open sometimes makes forge read the entire config as null values and resets the whole thing.
     // am i the only one? at least configured works.
+
+    // COMMON
 
     public static class Common
     {
@@ -398,33 +401,59 @@ public class SimplyHotSpringsConfig
         return GenerationReason.NOT_WHITELISTED;
     }
 
+    // CLIENT
+
+    public static class Client
+    {
+
+        public static final String LANG_CLIENT = Common.LANG_CONFIG + "client.";
+        public final BooleanValue alternateParticles;
+
+        Client(ForgeConfigSpec.Builder builder)
+        {
+            alternateParticles = builder
+                    .translation(LANG_CLIENT + "alternateParticles")
+                    .comment("If true, Hot Spring Water makes smaller, less obtrusive steam particles instead.")
+                    .define("Alternate Particles", false);
+        }
+
+    }
+
     //
 
     public static final ForgeConfigSpec commonSpec;
     public static final Common COMMON;
+    public static final ForgeConfigSpec clientSpec;
+    public static final Client CLIENT;
     static
     {
-        final Pair<Common, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(Common::new);
-        commonSpec = specPair.getRight();
-        COMMON = specPair.getLeft();
+        final Pair<Common, ForgeConfigSpec> commonSpecPair = new ForgeConfigSpec.Builder().configure(Common::new);
+        commonSpec = commonSpecPair.getRight();
+        COMMON = commonSpecPair.getLeft();
+        final Pair<Client, ForgeConfigSpec> clientSpecPair = new ForgeConfigSpec.Builder().configure(Client::new);
+        clientSpec = clientSpecPair.getRight();
+        CLIENT = clientSpecPair.getLeft();
     }
 
     @SubscribeEvent
     public static void onLoad(ModConfig.Loading event)
     {
-        onReOrLoad();
+        onReOrLoad(event);
     }
 
     @SubscribeEvent
     public static void onReload(ModConfig.Reloading event)
     {
-        onReOrLoad();
+        onReOrLoad(event);
     }
 
-    private static void onReOrLoad()
+    private static void onReOrLoad(ModConfigEvent event)
     {
-        updateEffect();
-        fillBiomeSets();
+        if (event.getConfig().getType() == ModConfig.Type.COMMON)
+        {
+            updateEffect();
+            fillBiomeSets();
+        }
     }
 
 }

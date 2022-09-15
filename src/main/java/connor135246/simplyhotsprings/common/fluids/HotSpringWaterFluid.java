@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
-import net.minecraft.client.Minecraft;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.particles.IParticleData;
@@ -63,11 +62,20 @@ public abstract class HotSpringWaterFluid extends ForgeFlowingFluid
     {
         // steam particles
         BlockPos posAbove = pos.up();
-        if (HOT_SPRING_WATER_STEAM.isPresent() && world.getBlockState(posAbove).propagatesSkylightDown(world, posAbove) && rand.nextInt(24) == 0
-                && rand.nextInt(Minecraft.getInstance().gameSettings.particles.getId() + 1) == 0)
+        if (world.getBlockState(posAbove).propagatesSkylightDown(world, posAbove))
         {
-            world.addParticle(HOT_SPRING_WATER_STEAM.get(), posAbove.getX() + 0.1F + rand.nextFloat() * 0.8F, posAbove.getY() + 0.5F,
-                    posAbove.getZ() + 0.1F + rand.nextFloat() * 0.8F, 0.0D, 0.0D, 0.0D);
+            if (SimplyHotSpringsConfig.CLIENT.alternateParticles.get())
+            {
+                if (rand.nextInt(12) == 0)
+                    HOT_SPRING_WATER_STEAM_SMALL.ifPresent(steam -> world.addParticle(steam, posAbove.getX() + 0.1F + rand.nextFloat() * 0.8F,
+                            posAbove.getY() + 0.5F, posAbove.getZ() + 0.1F + rand.nextFloat() * 0.8F, 0.0D, 0.025 + rand.nextFloat() / 250.0F, 0.0D));
+            }
+            else
+            {
+                if (rand.nextInt(24) == 0)
+                    HOT_SPRING_WATER_STEAM.ifPresent(steam -> world.addParticle(steam, posAbove.getX() + 0.1F + rand.nextFloat() * 0.8F,
+                            posAbove.getY() + 0.7F, posAbove.getZ() + 0.1F + rand.nextFloat() * 0.8F, 0.0D, 0.0D, 0.0D));
+            }
         }
 
         // flowing sound

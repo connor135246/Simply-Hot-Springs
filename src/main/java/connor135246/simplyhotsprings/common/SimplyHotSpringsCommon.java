@@ -78,7 +78,8 @@ public class SimplyHotSpringsCommon
     public static final RegistryObject<Item> HOT_SPRING_WATER_BUCKET = ITEMS.register(NAME + "_bucket",
             () -> new BucketItem(HOT_SPRING_WATER, new Item.Properties().maxStackSize(1).containerItem(Items.BUCKET).group(ItemGroup.MISC)));
 
-    public static final RegistryObject<BasicParticleType> HOT_SPRING_WATER_STEAM = PARTICLES.register(NAME + "_steam", particleBasic(false));
+    public static final RegistryObject<BasicParticleType> HOT_SPRING_WATER_STEAM = PARTICLES.register(NAME + "_steam", particleBasic(true));
+    public static final RegistryObject<BasicParticleType> HOT_SPRING_WATER_STEAM_SMALL = PARTICLES.register(NAME + "_steam_small", particleBasic(true));
     public static final RegistryObject<BasicParticleType> DRIPPING_HOT_SPRING_WATER = PARTICLES.register("dripping_" + NAME, particleBasic(false));
     public static final RegistryObject<BasicParticleType> FALLING_HOT_SPRING_WATER = PARTICLES.register("falling_" + NAME, particleBasic(false));
     public static final RegistryObject<BasicParticleType> SPLASHING_HOT_SPRING_WATER = PARTICLES.register("splashing_" + NAME, particleBasic(false));
