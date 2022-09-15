@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.world.gen.feature.HotSpringsFeature;
@@ -68,7 +69,7 @@ public class SimplyHotSpringsCommand
         })).then(Commands.literal(PLACESPRING).executes((context) -> {
             return sendHelpForSubcommand(context.getSource(), PLACESPRING, 1);
         }))).then(Commands.literal(LOCATIONINFO).executes((context) -> {
-            return sendLocationInfo(context.getSource(), new BlockPos(context.getSource().getPos()));
+            return sendLocationInfo(context.getSource(), getSourcePos(context.getSource()));
         }).then(Commands.argument("target", EntityArgument.entity()).executes((context) -> {
             return sendLocationInfo(context.getSource(), EntityArgument.getEntity(context, "target").getPosition());
         })).then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
@@ -86,10 +87,26 @@ public class SimplyHotSpringsCommand
                     return sendAllBiomeTypes(context.getSource());
                 }).then(Commands.argument("biome_type", BiomeTypeArgument.biomeTypeArgument()).executes((context) -> {
                     return sendBiomesOfType(context.getSource(), context.getArgument("biome_type", BiomeDictionary.Type.class));
-                }))).then(Commands.literal(PLACESPRING)
-                        .then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
-                            return placeSpring(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
-                        }))));
+                }))).then(Commands.literal(PLACESPRING).executes((context) -> {
+                    return placeSpring(context.getSource(), getSourcePos(context.getSource()));
+                }).then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
+                    return placeSpring(context.getSource(), BlockPosArgument.getLoadedBlockPos(context, "pos"));
+                }))));
+    }
+
+    /**
+     * From {@link BlockPosArgument#getLoadedBlockPos}, ensures the command position is valid.
+     */
+    @SuppressWarnings("deprecation")
+    private static BlockPos getSourcePos(CommandSource source) throws CommandSyntaxException
+    {
+        BlockPos pos = new BlockPos(source.getPos());
+        if (!source.getWorld().isBlockLoaded(pos))
+            throw BlockPosArgument.POS_UNLOADED.create();
+        else if (!ServerWorld.isValid(pos))
+            throw BlockPosArgument.POS_OUT_OF_WORLD.create();
+        else
+            return pos;
     }
 
     // help
