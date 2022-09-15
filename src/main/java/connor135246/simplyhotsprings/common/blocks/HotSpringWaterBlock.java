@@ -9,6 +9,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.fluid.FluidState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -28,7 +29,11 @@ public class HotSpringWaterBlock extends FlowingFluidBlock
         super.onEntityCollision(state, world, pos, entity);
 
         if (!world.isRemote && entity instanceof LivingEntity)
-            SimplyHotSpringsConfig.addHotSpringsEffect((LivingEntity) entity);
+        {
+            FluidState fluidstate = world.getFluidState(pos);
+            if (fluidstate.isTagged(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER) && entity.getPosY() < (double) (pos.getY() + fluidstate.getActualHeight(world, pos)))
+                SimplyHotSpringsConfig.addHotSpringsEffect((LivingEntity) entity);
+        }
     }
 
 }
