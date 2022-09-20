@@ -87,10 +87,19 @@ public class BlockHotSpringWater extends BlockFluidClassic
         int level = ((Integer) state.getValue(LEVEL)).intValue();
 
         // steam particles
-        if (world.getBlockLightOpacity(pos.up()) == 0 && rand.nextInt(24) == 0 && rand.nextInt(Minecraft.getMinecraft().gameSettings.particleSetting + 1) == 0)
+        if (world.getBlockLightOpacity(pos.up()) == 0)
         {
-            Particle steam = new ParticleSteam(world, x + 0.1F + rand.nextFloat() * 0.8F, y + 1, z + 0.1F + rand.nextFloat() * 0.8F);
-            Minecraft.getMinecraft().effectRenderer.addEffect(steam);
+            if (SimplyHotSpringsConfig.Config.alternateParticles)
+            {
+                if (rand.nextInt(12) == 0)
+                    world.spawnParticle(EnumParticleTypes.CLOUD, x + 0.1F + rand.nextFloat() * 0.8F, y + 1.2F, z + 0.1F + rand.nextFloat() * 0.8F,
+                            0.0D, 0.025 + rand.nextFloat() / 250.0F, 0.0D);
+            }
+            else if (rand.nextInt(24) == 0)
+            {
+                Particle steam = new ParticleSteam(world, x + 0.1F + rand.nextFloat() * 0.8F, y + 1.2F, z + 0.1F + rand.nextFloat() * 0.8F);
+                Minecraft.getMinecraft().effectRenderer.addEffect(steam);
+            }
         }
 
         // vanilla water stuff

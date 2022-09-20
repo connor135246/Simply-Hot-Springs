@@ -48,6 +48,12 @@ public class SimplyHotSpringsConfig
         @Ignore
         public static final String LANG_CONFIG = Reference.MODID + ".config.";
 
+        @Name("Alternate Particles")
+        @Comment({ "Client-side option. If true, Hot Spring Water makes smaller, less obtrusive steam particles instead. ",
+                "Note: these particles are affected by your particle video setting, and won't appear at all if it's set to Minimal." })
+        @LangKey(LANG_CONFIG + "client.alternateParticles")
+        public static boolean alternateParticles = false;
+
         @Name("Creates Source Blocks")
         @Comment({ "If true, Hot Spring Water makes infinite water sources, like vanilla water does." })
         @LangKey(LANG_CONFIG + "createsSources")

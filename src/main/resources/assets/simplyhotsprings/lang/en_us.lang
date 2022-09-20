@@ -96,3 +96,5 @@ simplyhotsprings.config.worldgen.biomeNameWhitelist=Biome Name Whitelist
 simplyhotsprings.config.worldgen.biomeNameWhitelist.tooltip=The individual biomes where hot springs are allowed to generate. If empty, all biomes are allowed. \nThe Biome Type Whitelist and Biome Name Whitelist are not both required to be satisfied. You can use a period as a dummy entry. 
 simplyhotsprings.config.worldgen.biomeNameBlacklist=Biome Name Blacklist
 simplyhotsprings.config.worldgen.biomeNameBlacklist.tooltip=The individual biomes where hot springs are NOT allowed to generate. 
+simplyhotsprings.config.client.alternateParticles=Alternate Particles
+simplyhotsprings.config.client.alternateParticles.tooltip=Client-side option. If true, Hot Spring Water makes smaller, less obtrusive steam particles instead. \nNote: these particles are affected by your particle video setting, and won't appear at all if it's set to Minimal.
