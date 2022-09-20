@@ -15,9 +15,8 @@ import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.common.CommonProxy;
 import connor135246.simplyhotsprings.common.blocks.BlockHotSpringWater;
 import connor135246.simplyhotsprings.common.world.HotSpringsWorldGen;
-import it.unimi.dsi.fastutil.objects.Object2BooleanArrayMap;
-import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DimensionType;
@@ -284,7 +283,7 @@ public class SimplyHotSpringsConfig
      */
     public static void serverAboutToStart(FMLServerAboutToStartEvent event)
     {
-        parsedBOPWorlds.clear();
+        bopSprings = null;
 
         biomeReasons.clear();
         for (Biome biome : ForgeRegistries.BIOMES.getValuesCollection())
@@ -354,36 +353,39 @@ public class SimplyHotSpringsConfig
     /** parser for BOP world generator options */
     private static final JsonParser jsonParser = new JsonParser();
 
-    /** cache the result of parsing a world's generator options so that we don't have to parse json every time a hot spring tries to generate */
-    private static Object2BooleanMap<World> parsedBOPWorlds = new Object2BooleanArrayMap<World>();
+    /** cache the result of parsing the world's generator options so that we don't have to parse json every time a hot spring tries to generate */
+    private static Boolean bopSprings = null;
 
     private static boolean areBOPHotSpringsEnabled(World world)
     {
-        if (world.getWorldType().getName().equals("BIOMESOP"))
+        if (bopSprings != null)
+            return bopSprings;
+
+        // only the overworld's WorldInfo has the world's generatorOptions, so we have to get the overworld. see {@link DerivedWorldInfo}
+        MinecraftServer server = world.getMinecraftServer();
+        if (server != null)
         {
-            String genOptions = world.getWorldInfo().getGeneratorOptions();
-            if (StringUtils.isEmpty(genOptions))
-                return true;
-            else if (parsedBOPWorlds.containsKey(world))
-                return parsedBOPWorlds.getBoolean(world);
-            else
+            World overworld = server.getWorld(0);
+            if (overworld != null)
             {
-                try
+                bopSprings = false;
+                if (overworld.getWorldType().getName().equals("BIOMESOP"))
                 {
-                    JsonElement parsed = jsonParser.parse(genOptions);
-                    if (parsed.isJsonObject())
-                    {
-                        boolean generateHotSprings = JsonUtils.getBoolean(parsed.getAsJsonObject(), "generateHotSprings");
-                        if (parsedBOPWorlds.size() > 50)
-                            parsedBOPWorlds.clear();
-                        parsedBOPWorlds.put(world, generateHotSprings);
-                        return generateHotSprings;
-                    }
+                    bopSprings = true;
+                    String genOptions = overworld.getWorldInfo().getGeneratorOptions();
+                    if (!StringUtils.isBlank(genOptions))
+                        try
+                        {
+                            JsonElement parsed = jsonParser.parse(genOptions);
+                            if (parsed.isJsonObject())
+                                bopSprings = JsonUtils.getBoolean(parsed.getAsJsonObject(), "generateHotSprings");
+                        }
+                        catch (JsonParseException excep)
+                        {
+                            ;
+                        }
                 }
-                catch (JsonParseException excep)
-                {
-                    ;
-                }
+                return bopSprings;
             }
         }
         return false;
