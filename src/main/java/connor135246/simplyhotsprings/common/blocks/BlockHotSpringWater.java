@@ -64,7 +64,8 @@ public class BlockHotSpringWater extends BlockFluidClassic
     {
         super.onEntityCollidedWithBlock(world, pos, state, entity);
 
-        if (!world.isRemote && potionEffect != null && entity instanceof EntityLivingBase && !((EntityLivingBase) entity).isPotionActive(potionEffect))
+        if (!world.isRemote && potionEffect != null && entity instanceof EntityLivingBase && isWithinFluid(world, pos, entity.posY + 1F - quantaFraction)
+                && !((EntityLivingBase) entity).isPotionActive(potionEffect))
             ((EntityLivingBase) entity).addPotionEffect(new PotionEffect(potionEffect, timer, amplifier, true, true));
     }
 
@@ -125,7 +126,7 @@ public class BlockHotSpringWater extends BlockFluidClassic
     @SideOnly(Side.CLIENT)
     public Vec3d getFogColor(World world, BlockPos pos, IBlockState state, Entity entity, Vec3d originalColor, float partialTicks)
     {
-        if (!isWithinFluid(world, pos, ActiveRenderInfo.projectViewFromEntity(entity, partialTicks)))
+        if (!isWithinFluid(world, pos, ActiveRenderInfo.projectViewFromEntity(entity, partialTicks).y))
         {
             BlockPos otherPos = pos.down(densityDir);
             IBlockState otherState = world.getBlockState(otherPos);
@@ -149,10 +150,10 @@ public class BlockHotSpringWater extends BlockFluidClassic
         return super.getFogColor(world, pos, state, entity, originalColor, partialTicks);
     }
 
-    protected boolean isWithinFluid(IBlockAccess world, BlockPos pos, Vec3d vec)
+    protected boolean isWithinFluid(IBlockAccess world, BlockPos pos, double y)
     {
         float filled = getFilledPercentage(world, pos);
-        return filled < 0 ? vec.y > pos.getY() + filled + 1 : vec.y < pos.getY() + filled;
+        return filled < 0 ? y > pos.getY() + filled + 1 : y < pos.getY() + filled;
     }
 
     /**
