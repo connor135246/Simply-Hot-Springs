@@ -20,6 +20,7 @@ import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.Biome;
@@ -111,7 +112,7 @@ public class SimplyHotSpringsConfig
 
             @RequiresWorldRestart
             @Name("Generate in Superflat World Type")
-            @Comment({ "If the world type is Superflat, the hot springs from this mod won't generate. "
+            @Comment({ "If the world type is Superflat, the hot springs from this mod won't generate in the overworld. "
                     + "Set this to true to make them generate anyway." })
             @LangKey(LANG_CONFIG_WORLDGEN + "worldGenIfSuperflat")
             public static boolean worldGenIfSuperflat = false;
@@ -173,7 +174,7 @@ public class SimplyHotSpringsConfig
 
     public static void warnInvalidEntry(String config, String input)
     {
-        SimplyHotSprings.modlog.warn("\"" + config + "\" config entry \"" + input + "\" was not found");
+        SimplyHotSprings.modlog.warn("Config: \"" + config + "\" entry with \"" + input + "\" is invalid");
     }
 
     //
@@ -300,7 +301,7 @@ public class SimplyHotSpringsConfig
             return GenerationReason.NO_WORLD_GEN;
         if (!Config.WorldGen.worldGenIfBOPSprings && areBOPHotSpringsEnabled(world))
             return GenerationReason.BOP_SPRINGS;
-        if (!Config.WorldGen.worldGenIfSuperflat && world.getWorldType() == WorldType.FLAT)
+        if (!Config.WorldGen.worldGenIfSuperflat && world.getWorldType() == WorldType.FLAT && world.provider.getDimensionType() == DimensionType.OVERWORLD)
             return GenerationReason.SUPERFLAT;
 
         if (ArrayUtils.contains(Config.WorldGen.dimWhitelist, world.provider.getDimension()))

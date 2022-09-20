@@ -4,7 +4,7 @@ tile.hot_spring_water.name=Hot Spring Water
 
 simplyhotsprings.gen.reason.no_world_gen="World Generation" is false.
 simplyhotsprings.gen.reason.bop_springs=This world has Biomes O' Plenty hot springs enabled, and "Generate Alongside Biomes O' Plenty Hot Springs" is false.
-simplyhotsprings.gen.reason.superflat=This world type is Superflat, and "Generate in Superflat World Type" is false.
+simplyhotsprings.gen.reason.superflat=This dimension's world type is Superflat, and "Generate in Superflat World Type" is false.
 simplyhotsprings.gen.reason.dim_blacklist=This dimension is in the "Dimension Blacklist".
 simplyhotsprings.gen.reason.dim_whitelist=This dimension isn't in the "Dimension Whitelist".
 simplyhotsprings.gen.reason.in_name_whitelist=This biome is in the "Biome Name Whitelist".
@@ -80,7 +80,7 @@ simplyhotsprings.config.worldgen.worldGen.tooltip=Set to false to stop hot sprin
 simplyhotsprings.config.worldgen.worldGenIfBOPSprings=Generate Alongside Biomes O' Plenty Hot Springs
 simplyhotsprings.config.worldgen.worldGenIfBOPSprings.tooltip=If a world has Biomes O' Plenty hot springs enabled, the hot springs from this mod won't generate. Set this to true to make them generate anyway.
 simplyhotsprings.config.worldgen.worldGenIfSuperflat=Generate in Superflat World Type
-simplyhotsprings.config.worldgen.worldGenIfSuperflat.tooltip=If the world type is Superflat, the hot springs from this mod won't generate. Set this to true to make them generate anyway.
+simplyhotsprings.config.worldgen.worldGenIfSuperflat.tooltip=If the world type is Superflat, the hot springs from this mod won't generate in the overworld. Set this to true to make them generate anyway.
 simplyhotsprings.config.worldgen.chance=Generation Chance
 simplyhotsprings.config.worldgen.chance.tooltip=The chance for a hot spring to generate is 1 over this value. So lower values are more likely.
 simplyhotsprings.config.worldgen.debug=Generation Debug
