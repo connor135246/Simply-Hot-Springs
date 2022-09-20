@@ -19,7 +19,7 @@ simplyhotsprings.gen.reason.allow_world=This dimension passed hot spring checks.
 
 
 simplyhotsprings.command.locationinfo.biome_not_found=Biome '%s' cannot be found
-simplyhotsprings.command.locationinfo.block_out_of_world=Cannot check block outside of world
+simplyhotsprings.command.locationinfo.block_out_of_world=Position is outside of world
 simplyhotsprings.command.locationinfo.click=Click to put in chat box
 simplyhotsprings.command.locationinfo.dim_id=Dimension ID: 
 simplyhotsprings.command.locationinfo.biome_name=Biome Name: 
@@ -60,7 +60,7 @@ simplyhotsprings.command.help.biometypes.0=/simplyhotsprings biometypes
 simplyhotsprings.command.help.biometypes.1=   Lists all Biome Dictionary Types.
 simplyhotsprings.command.help.biometypes.2=/simplyhotsprings biometypes <biome_type>
 simplyhotsprings.command.help.biometypes.3=   Lists all biomes that are in the given Biome Dictionary Type.
-simplyhotsprings.command.help.placespring.0=/simplyhotsprings placespring <x> <y> <z>
+simplyhotsprings.command.help.placespring.0=/simplyhotsprings placespring [<x> <y> <z>]
 simplyhotsprings.command.help.placespring.1=   Attempts to generate a hot spring centered at the position. If the north-west corner is air, moves down to the next solid block.
 
 

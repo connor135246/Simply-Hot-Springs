@@ -289,18 +289,26 @@ public class CommandSimplyHotSprings implements ICommand
 
     public void placeSpring(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        if (args.length < 4)
+        BlockPos pos;
+        if (args.length == 1)
+            pos = sender.getPosition();
+        else if (args.length >= 4)
+            pos = CommandBase.parseBlockPos(sender, args, 1, true);
+        else
             throw new WrongUsageException(getUsage(sender) + " " + PLACESPRING);
 
         World world = sender.getEntityWorld();
-        BlockPos pos = CommandBase.parseBlockPos(sender, args, 1, true);
+
+        if (!world.isBlockLoaded(pos))
+            throw new CommandException(LANG_LOCATIONINFO + "block_out_of_world");
+
         Random rand = new Random();
 
         pos = pos.add(-8, 0, -8);
 
         while (pos.getY() > 5 && world.isAirBlock(pos))
             pos = pos.down();
-        
+
         pos = pos.down(rand.nextInt(3));
 
         boolean success = true;
