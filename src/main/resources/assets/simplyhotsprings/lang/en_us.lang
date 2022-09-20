@@ -62,6 +62,7 @@ simplyhotsprings.command.help.biometypes.2=/simplyhotsprings biometypes <biome_t
 simplyhotsprings.command.help.biometypes.3=   Lists all biomes that are in the given Biome Dictionary Type.
 simplyhotsprings.command.help.placespring.0=/simplyhotsprings placespring [<x> <y> <z>]
 simplyhotsprings.command.help.placespring.1=   Attempts to generate a hot spring centered at the position. If the north-west corner is air, moves down to the next solid block.
+simplyhotsprings.command.none=None!
 
 
 simplyhotsprings.config.createsSources=Creates Source Blocks

@@ -210,8 +210,12 @@ public class CommandSimplyHotSprings implements ICommand
             sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_name")
                     .appendSibling(makeSuggestComponent(biome.getRegistryName().toString())));
 
-            sender.sendMessage(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
-                    BiomeDictionary.getTypes(biome), type -> type.getName(), string -> makeSuggestComponent(string)));
+            if (!BiomeDictionary.hasAnyType(biome))
+                sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
+                        .appendSibling(noneComponent().setStyle(new Style().setColor(TextFormatting.WHITE))));
+            else
+                sender.sendMessage(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
+                        BiomeDictionary.getTypes(biome), type -> type.getName(), string -> makeSuggestComponent(string)));
         }
 
         sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "hot_springs")
@@ -230,7 +234,10 @@ public class CommandSimplyHotSprings implements ICommand
         {
             sender.sendMessage(makeAquaTranslatable(LANG_BIOMESLIST + "all"));
 
-            sender.sendMessage(makeSortedList(SimplyHotSpringsConfig.biomeReasons.keySet(), id -> makeLocationInfoComponent(id.toString())));
+            if (SimplyHotSpringsConfig.biomeReasons.isEmpty())
+                sender.sendMessage(noneComponent());
+            else
+                sender.sendMessage(makeSortedList(SimplyHotSpringsConfig.biomeReasons.keySet(), id -> makeLocationInfoComponent(id.toString())));
 
             sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, SimplyHotSpringsConfig.biomeReasons.size());
         }
@@ -250,7 +257,10 @@ public class CommandSimplyHotSprings implements ICommand
             Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                     .filter(entry -> with == entry.getValue().allowsGeneration())
                     .map(entry -> entry.getKey()).collect(Collectors.toSet());
-            sender.sendMessage(makeSortedList(filteredIds, id -> makeLocationInfoComponent(id.toString())));
+            if (filteredIds.isEmpty())
+                sender.sendMessage(noneComponent());
+            else
+                sender.sendMessage(makeSortedList(filteredIds, id -> makeLocationInfoComponent(id.toString())));
 
             sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, filteredIds.size());
         }
@@ -264,9 +274,13 @@ public class CommandSimplyHotSprings implements ICommand
         {
             sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "all"));
 
-            sender.sendMessage(makeMultiComponent(BiomeDictionary.Type.getAll(), type -> type.getName(), string -> makeBiomeTypeComponent(string)));
+            Collection<BiomeDictionary.Type> types = BiomeDictionary.Type.getAll();
+            if (types.isEmpty())
+                sender.sendMessage(noneComponent());
+            else
+                sender.sendMessage(makeMultiComponent(types, type -> type.getName(), string -> makeBiomeTypeComponent(string)));
 
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, BiomeDictionary.Type.getAll().size());
+            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, types.size());
         }
         else
         {
@@ -276,7 +290,11 @@ public class CommandSimplyHotSprings implements ICommand
                     sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()));
 
                     Set<Biome> biomes = BiomeDictionary.getBiomes(type);
-                    sender.sendMessage(makeMultiComponent(biomes, biome -> biome.getRegistryName(), id -> makeLocationInfoComponent(id.toString())));
+
+                    if (biomes.isEmpty())
+                        sender.sendMessage(noneComponent());
+                    else
+                        sender.sendMessage(makeMultiComponent(biomes, biome -> biome.getRegistryName(), id -> makeLocationInfoComponent(id.toString())));
 
                     sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, biomes.size());
                     return;
@@ -473,6 +491,11 @@ public class CommandSimplyHotSprings implements ICommand
     }
 
     private static final HoverEvent clickForHelp = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_HELP + "click"));
+
+    private static ITextComponent noneComponent()
+    {
+        return new TextComponentTranslation(LANG_COMMAND + "none");
+    }
 
     /**
      * turns the collection of things into a list of comparable things, sorts them, turns them into text components, and then puts them all into one text component separated by
