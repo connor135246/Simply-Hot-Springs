@@ -50,19 +50,20 @@ simplyhotsprings.command.help.locationinfo.4=/simplyhotpsrings locationinfo <x> 
 simplyhotsprings.command.help.locationinfo.5=   Checks your current dimension, the biome at the position, and whether hot springs can generate there.
 simplyhotsprings.command.help.locationinfo.6=/simplyhotsprings locationinfo <biome>
 simplyhotsprings.command.help.locationinfo.7=   Checks your current dimension, the given biome, and whether hot springs can generate there.
-simplyhotsprings.command.help.biomeslist.0=/simplyhotsprings biomeslist all
+simplyhotsprings.command.help.biomeslist.0=/simplyhotsprings biomeslist all [<page>]
 simplyhotsprings.command.help.biomeslist.1=   Lists all biomes known by Simply Hot Springs.
-simplyhotsprings.command.help.biomeslist.2=/simplyhotsprings biomeslist with
+simplyhotsprings.command.help.biomeslist.2=/simplyhotsprings biomeslist with [<page>]
 simplyhotsprings.command.help.biomeslist.3=   Lists all biomes known by Simply Hot Springs that CAN generate hot springs.
-simplyhotsprings.command.help.biomeslist.4=/simplyhotsprings biomeslist without
+simplyhotsprings.command.help.biomeslist.4=/simplyhotsprings biomeslist without [<page>]
 simplyhotsprings.command.help.biomeslist.5=   Lists all biomes known by Simply Hot Springs that CANNOT generate hot springs.
-simplyhotsprings.command.help.biometypes.0=/simplyhotsprings biometypes
+simplyhotsprings.command.help.biometypes.0=/simplyhotsprings biometypes [<page>]
 simplyhotsprings.command.help.biometypes.1=   Lists all Biome Dictionary Types.
-simplyhotsprings.command.help.biometypes.2=/simplyhotsprings biometypes <biome_type>
+simplyhotsprings.command.help.biometypes.2=/simplyhotsprings biometypes <biome_type> [<page>]
 simplyhotsprings.command.help.biometypes.3=   Lists all biomes that are in the given Biome Dictionary Type.
 simplyhotsprings.command.help.placespring.0=/simplyhotsprings placespring [<x> <y> <z>]
 simplyhotsprings.command.help.placespring.1=   Attempts to generate a hot spring centered at the position. If the north-west corner is air, moves down to the next solid block.
 simplyhotsprings.command.none=None!
+simplyhotsprings.command.page_header=--- Page %1$s of %2$s ---
 
 
 simplyhotsprings.config.createsSources=Creates Source Blocks

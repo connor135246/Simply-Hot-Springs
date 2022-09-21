@@ -1,14 +1,16 @@
 package connor135246.simplyhotsprings.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.google.common.collect.Lists;
+import javax.annotation.Nullable;
 
 import connor135246.simplyhotsprings.common.world.HotSpringsWorldGen;
 import net.minecraft.command.CommandBase;
@@ -16,6 +18,7 @@ import net.minecraft.command.CommandException;
 import net.minecraft.command.CommandResultStats;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.command.NumberInvalidException;
 import net.minecraft.command.WrongUsageException;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
@@ -214,8 +217,8 @@ public class CommandSimplyHotSprings implements ICommand
                 sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
                         .appendSibling(noneComponent().setStyle(new Style().setColor(TextFormatting.WHITE))));
             else
-                sender.sendMessage(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
-                        BiomeDictionary.getTypes(biome), type -> type.getName(), string -> makeSuggestComponent(string)));
+                sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
+                        .appendSibling(makeMultiComponent(BiomeDictionary.getTypes(biome), sortType(), type -> makeSuggestComponent(type.getName()))));
         }
 
         sender.sendMessage(makeAquaTranslatable(LANG_LOCATIONINFO + "hot_springs")
@@ -230,39 +233,38 @@ public class CommandSimplyHotSprings implements ICommand
     {
         if (args.length < 2)
             throw new WrongUsageException(getUsage(sender) + " " + BIOMESLIST);
-        else if (args[1].equals(ALL))
-        {
-            sender.sendMessage(makeAquaTranslatable(LANG_BIOMESLIST + "all"));
-
-            if (SimplyHotSpringsConfig.biomeReasons.isEmpty())
-                sender.sendMessage(noneComponent());
-            else
-                sender.sendMessage(makeSortedList(SimplyHotSpringsConfig.biomeReasons.keySet(), id -> makeLocationInfoComponent(id.toString())));
-
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, SimplyHotSpringsConfig.biomeReasons.size());
-        }
         else
         {
-            boolean with;
-            if (args[1].equals(WITH))
-                with = true;
-            else if (args[1].equals(WITHOUT))
-                with = false;
+            int page = args.length >= 3 ? CommandBase.parseInt(args[2], 1) - 1 : 0;
+
+            if (args[1].equals(ALL))
+            {
+                sender.sendMessage(makeAquaTranslatable(LANG_BIOMESLIST + "all"));
+
+                sendPaginatedComponents(sender, SimplyHotSpringsConfig.biomeReasons.keySet(), null, id -> makeLocationInfoComponent(id.toString()), page);
+
+                sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, SimplyHotSpringsConfig.biomeReasons.size());
+            }
             else
-                throw new WrongUsageException(getUsage(sender) + " " + BIOMESLIST);
+            {
+                boolean with;
+                if (args[1].equals(WITH))
+                    with = true;
+                else if (args[1].equals(WITHOUT))
+                    with = false;
+                else
+                    throw new WrongUsageException(getUsage(sender) + " " + BIOMESLIST);
 
-            sender.sendMessage(new TextComponentTranslation(LANG_BIOMESLIST + (with ? "with" : "without"))
-                    .setStyle(new Style().setColor(with ? TextFormatting.GREEN : TextFormatting.DARK_RED)));
+                sender.sendMessage(new TextComponentTranslation(LANG_BIOMESLIST + (with ? "with" : "without"))
+                        .setStyle(new Style().setColor(with ? TextFormatting.GREEN : TextFormatting.DARK_RED)));
 
-            Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
-                    .filter(entry -> with == entry.getValue().allowsGeneration())
-                    .map(entry -> entry.getKey()).collect(Collectors.toSet());
-            if (filteredIds.isEmpty())
-                sender.sendMessage(noneComponent());
-            else
-                sender.sendMessage(makeSortedList(filteredIds, id -> makeLocationInfoComponent(id.toString())));
+                Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
+                        .filter(entry -> with == entry.getValue().allowsGeneration())
+                        .map(entry -> entry.getKey()).collect(Collectors.toSet());
+                sendPaginatedComponents(sender, filteredIds, null, id -> makeLocationInfoComponent(id.toString()), page);
 
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, filteredIds.size());
+                sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, filteredIds.size());
+            }
         }
     }
 
@@ -270,37 +272,35 @@ public class CommandSimplyHotSprings implements ICommand
 
     public void sendBiomeTypes(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException
     {
-        if (args.length <= 1)
+        int page;
+
+        try
         {
-            sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "all"));
-
-            Collection<BiomeDictionary.Type> types = BiomeDictionary.Type.getAll();
-            if (types.isEmpty())
-                sender.sendMessage(noneComponent());
-            else
-                sender.sendMessage(makeMultiComponent(types, type -> type.getName(), string -> makeBiomeTypeComponent(string)));
-
-            sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, types.size());
+            page = args.length >= 2 ? CommandBase.parseInt(args[1], 1) - 1 : 0;
         }
-        else
+        catch (NumberInvalidException excep)
         {
             for (BiomeDictionary.Type type : BiomeDictionary.Type.getAll())
                 if (type.getName().equals(args[1]))
                 {
+                    page = args.length >= 3 ? CommandBase.parseInt(args[2], 1) - 1 : 0;
+
                     sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()));
 
                     Set<Biome> biomes = BiomeDictionary.getBiomes(type);
-
-                    if (biomes.isEmpty())
-                        sender.sendMessage(noneComponent());
-                    else
-                        sender.sendMessage(makeMultiComponent(biomes, biome -> biome.getRegistryName(), id -> makeLocationInfoComponent(id.toString())));
+                    sendPaginatedComponents(sender, biomes, sortBiome(), biome -> makeLocationInfoComponent(biome.getRegistryName().toString()), page);
 
                     sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, biomes.size());
                     return;
                 }
             throw new CommandException(LANG_BIOMETYPES + "type_not_found", args[1]);
         }
+
+        sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "all"));
+
+        sendPaginatedComponents(sender, BiomeDictionary.Type.getAll(), sortType(), type -> makeBiomeTypeComponent(type.getName()), page);
+
+        sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, BiomeDictionary.Type.getAll().size());
     }
 
     // placespring
@@ -456,13 +456,13 @@ public class CommandSimplyHotSprings implements ICommand
     private static final HoverEvent clickForInfo = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_BIOMESLIST + "click"));
 
     /**
-     * @return a TextComponentString of name that runs /simplyhotsprings biometypes [name] when clicked
+     * @return a TextComponentString of name that suggests /simplyhotsprings biometypes [name] 1 when clicked
      */
     private static ITextComponent makeBiomeTypeComponent(String name)
     {
         return new TextComponentString(name)
                 .setStyle(new Style().setHoverEvent(clickForList)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name)));
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name + " 1")));
     }
 
     private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_BIOMETYPES + "click"));
@@ -497,53 +497,64 @@ public class CommandSimplyHotSprings implements ICommand
         return new TextComponentTranslation(LANG_COMMAND + "none");
     }
 
-    /**
-     * turns the collection of things into a list of comparable things, sorts them, turns them into text components, and then puts them all into one text component separated by
-     * commas. see {@link #makeSortedList}
-     * 
-     * @param <T>
-     *            the type of the collection
-     * @param <C>
-     *            the comparable thing
-     * @param collection
-     *            the collection of things
-     * @param toComparable
-     *            turns each thing into something that extends {@link Comparable} so that the things can be sorted
-     * @param toTextComponent
-     *            turns each comparable into an actual text component
-     */
-    private static <T, C extends Comparable<C>> ITextComponent makeMultiComponent(Collection<T> collection,
-            Function<T, C> toComparable,
-            Function<C, ITextComponent> toTextComponent)
+    private static ITextComponent makePageComponent(int current, int max)
     {
-        return makeSortedList(collection.stream().map(toComparable).collect(Collectors.toList()), toTextComponent);
+        return new TextComponentTranslation(LANG_COMMAND + "page_header", current, max);
     }
 
     /**
-     * does {@link #makeMultiComponent(Collection, Function, Function)} and appends it to first
+     * sorts the collection, gets the items that will appear on the given page, turns them into components, and sends them.
      */
-    private static <T, C extends Comparable<C>> ITextComponent makeMultiComponent(ITextComponent first, Collection<T> collection,
-            Function<T, C> toComparable,
-            Function<C, ITextComponent> toTextComponent)
+    private static <T> void sendPaginatedComponents(ICommandSender sender,
+            Collection<T> collection,
+            @Nullable Comparator<T> comparator,
+            Function<T, ITextComponent> toTextComponent,
+            int page)
     {
-        return first.appendSibling(makeMultiComponent(collection, toComparable, toTextComponent));
-    }
+        // recent chat is 10 lines, and there's a title and a page header
+        int itemsPerPage = 8;
 
-    // --- these two methods are copy-pasted from 1.16.5 net.minecraft.util.text.TextComponentUtils ---
+        int maxPage = collection.size() / itemsPerPage + (collection.size() % itemsPerPage == 0 ? 0 : 1) - 1;
+        if (page > maxPage)
+            page = maxPage;
 
-    public static <T extends Comparable<T>> ITextComponent makeSortedList(Collection<T> collection, Function<T, ITextComponent> toTextComponent)
-    {
+        sender.sendMessage(makePageComponent(page + 1, maxPage + 1).setStyle(new Style().setColor(TextFormatting.GRAY)));
+
         if (collection.isEmpty())
-            return new TextComponentString("");
-        else if (collection.size() == 1)
-            return toTextComponent.apply(collection.iterator().next());
+            sender.sendMessage(new TextComponentString(" ").appendSibling(noneComponent()));
         else
         {
-            List<T> list = Lists.newArrayList(collection);
-            list.sort(Comparable::compareTo);
-            return func_240649_b_(list, toTextComponent);
+            List<T> list = new ArrayList<T>(collection);
+            list.sort(comparator);
+
+            for (int i = page * itemsPerPage; i < list.size() && i < (page + 1) * itemsPerPage; i++)
+                sender.sendMessage(new TextComponentString(" ").appendSibling(toTextComponent.apply(list.get(i))));
         }
     }
+
+    /**
+     * sorts the collection, turns them into text components, and then puts them all into one text component separated by commas. see {@link #func_240649_b_}
+     */
+    private static <T> ITextComponent makeMultiComponent(Collection<T> collection,
+            @Nullable Comparator<T> comparator,
+            Function<T, ITextComponent> toTextComponent)
+    {
+        List<T> list = new ArrayList<T>(collection);
+        list.sort(comparator);
+        return func_240649_b_(list, toTextComponent);
+    }
+
+    private static Comparator<BiomeDictionary.Type> sortType()
+    {
+        return (type1, type2) -> type1.getName().compareTo(type2.getName());
+    }
+
+    private static Comparator<Biome> sortBiome()
+    {
+        return (biome1, biome2) -> biome1.getRegistryName().compareTo(biome2.getRegistryName());
+    }
+
+    // --- this method is copy-pasted from 1.16.5 net.minecraft.util.text.TextComponentUtils ---
 
     public static <T> ITextComponent func_240649_b_(Collection<T> collection, Function<T, ITextComponent> toTextComponent)
     {
