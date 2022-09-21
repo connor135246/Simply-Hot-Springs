@@ -1,13 +1,22 @@
 package connor135246.simplyhotsprings.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.ToIntBiFunction;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
@@ -77,16 +86,16 @@ public class SimplyHotSpringsCommand
         })).then(Commands.argument("biome", ResourceLocationArgument.resourceLocation()).suggests(SuggestionProviders.field_239574_d_).executes((context) -> {
             return sendLocationInfo(context.getSource(), context.getArgument("biome", ResourceLocation.class));
         }))).then(Commands.literal(BIOMESLIST)
-                .then(Commands.literal(ALL).executes((context) -> {
-                    return sendAllKnownBiomes(context.getSource());
-                })).then(Commands.literal(WITH).executes((context) -> {
-                    return sendKnownBiomes(context.getSource(), true);
-                })).then(Commands.literal(WITHOUT).executes((context) -> {
-                    return sendKnownBiomes(context.getSource(), false);
-                }))).then(Commands.literal(BIOMETYPES).executes((context) -> {
-                    return sendAllBiomeTypes(context.getSource());
-                }).then(Commands.argument("biome_type", BiomeTypeArgument.biomeTypeArgument()).executes((context) -> {
-                    return sendBiomesOfType(context.getSource(), context.getArgument("biome_type", BiomeDictionary.Type.class));
+                .then(withPageArg(Commands.literal(ALL), (context, page) -> {
+                    return sendAllKnownBiomes(context.getSource(), page);
+                })).then(withPageArg(Commands.literal(WITH), (context, page) -> {
+                    return sendKnownBiomes(context.getSource(), true, page);
+                })).then(withPageArg(Commands.literal(WITHOUT), (context, page) -> {
+                    return sendKnownBiomes(context.getSource(), false, page);
+                }))).then(withPageArg(Commands.literal(BIOMETYPES), (context, page) -> {
+                    return sendAllBiomeTypes(context.getSource(), page);
+                }).then(withPageArg(Commands.argument("biome_type", BiomeTypeArgument.biomeTypeArgument()), (context, page) -> {
+                    return sendBiomesOfType(context.getSource(), context.getArgument("biome_type", BiomeDictionary.Type.class), page);
                 }))).then(Commands.literal(PLACESPRING).executes((context) -> {
                     return placeSpring(context.getSource(), getSourcePos(context.getSource()));
                 }).then(Commands.argument("pos", BlockPosArgument.blockPos()).executes((context) -> {
@@ -107,6 +116,17 @@ public class SimplyHotSpringsCommand
             throw BlockPosArgument.POS_OUT_OF_WORLD.create();
         else
             return pos;
+    }
+
+    /**
+     * Shortcut for adding an optional page argument to the given node
+     */
+    private static ArgumentBuilder<CommandSource, ?> withPageArg(ArgumentBuilder<CommandSource, ?> argument,
+            ToIntBiFunction<CommandContext<CommandSource>, Integer> command)
+    {
+        return argument.executes((context) -> command.applyAsInt(context, 0))
+                .then(Commands.argument("page", IntegerArgumentType.integer(1))
+                        .executes((context) -> command.applyAsInt(context, IntegerArgumentType.getInteger(context, "page") - 1)));
     }
 
     // help
@@ -170,8 +190,8 @@ public class SimplyHotSpringsCommand
             source.sendFeedback(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
                     .appendSibling(noneComponent().mergeStyle(TextFormatting.WHITE)), true);
         else
-            source.sendFeedback(makeMultiComponent(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types"),
-                    BiomeDictionary.getTypes(biomeKey), type -> type.getName(), string -> makeSuggestComponent(string)), true);
+            source.sendFeedback(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
+                    .appendSibling(makeMultiComponent(BiomeDictionary.getTypes(biomeKey), sortType(), type -> makeSuggestComponent(type.getName()))), true);
 
         GenerationReason reason = SimplyHotSpringsConfig.biomeReasons.get(biomeKey);
         source.sendFeedback(makeAquaTranslatable(LANG_LOCATIONINFO + "hot_springs")
@@ -182,20 +202,16 @@ public class SimplyHotSpringsCommand
 
     // biomeslist
 
-    private static int sendAllKnownBiomes(CommandSource source)
+    private static int sendAllKnownBiomes(CommandSource source, int page)
     {
         source.sendFeedback(makeAquaTranslatable(LANG_BIOMESLIST + "all"), true);
 
-        if (SimplyHotSpringsConfig.biomeReasons.isEmpty())
-            source.sendFeedback(noneComponent(), true);
-        else
-            source.sendFeedback(makeMultiComponent(SimplyHotSpringsConfig.biomeReasons.keySet(),
-                    key -> key.getLocation(), id -> makeLocationInfoComponent(id.toString())), true);
+        sendPaginatedComponents(source, SimplyHotSpringsConfig.biomeReasons.keySet(), sortKey(), key -> makeLocationInfoComponent(key.getLocation().toString()), page);
 
         return SimplyHotSpringsConfig.biomeReasons.size();
     }
 
-    private static int sendKnownBiomes(CommandSource source, boolean with)
+    private static int sendKnownBiomes(CommandSource source, boolean with, int page)
     {
         source.sendFeedback(new TranslationTextComponent(LANG_BIOMESLIST + (with ? "with" : "without"))
                 .mergeStyle(with ? TextFormatting.GREEN : TextFormatting.DARK_RED), true);
@@ -203,37 +219,28 @@ public class SimplyHotSpringsCommand
         Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                 .filter(entry -> with == entry.getValue().allowsGeneration())
                 .map(entry -> entry.getKey().getLocation()).collect(Collectors.toSet());
-        if (filteredIds.isEmpty())
-            source.sendFeedback(noneComponent(), true);
-        else
-            source.sendFeedback(TextComponentUtils.makeSortedList(filteredIds, id -> makeLocationInfoComponent(id.toString())), true);
+        sendPaginatedComponents(source, filteredIds, ResourceLocation::compareNamespaced, id -> makeLocationInfoComponent(id.toString()), page);
 
         return filteredIds.size();
     }
 
     // biometypes
 
-    private static int sendAllBiomeTypes(CommandSource source)
+    private static int sendAllBiomeTypes(CommandSource source, int page)
     {
         source.sendFeedback(makeAquaTranslatable(LANG_BIOMETYPES + "all"), true);
 
-        if (BiomeDictionary.Type.getAll().isEmpty())
-            source.sendFeedback(noneComponent(), true);
-        else
-            source.sendFeedback(makeMultiComponent(BiomeDictionary.Type.getAll(), type -> type.getName(), string -> makeBiomeTypeComponent(string)), true);
+        sendPaginatedComponents(source, BiomeDictionary.Type.getAll(), sortType(), type -> makeBiomeTypeComponent(type.getName()), page);
 
         return BiomeDictionary.Type.getAll().size();
     }
 
-    private static int sendBiomesOfType(CommandSource source, BiomeDictionary.Type type)
+    private static int sendBiomesOfType(CommandSource source, BiomeDictionary.Type type, int page)
     {
         source.sendFeedback(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()), true);
 
         Set<RegistryKey<Biome>> biomeIds = BiomeDictionary.getBiomes(type);
-        if (biomeIds.isEmpty())
-            source.sendFeedback(noneComponent(), true);
-        else
-            source.sendFeedback(makeMultiComponent(biomeIds, key -> key.getLocation(), id -> makeLocationInfoComponent(id.toString())), true);
+        sendPaginatedComponents(source, biomeIds, sortKey(), key -> makeLocationInfoComponent(key.getLocation().toString()), page);
 
         return biomeIds.size();
     }
@@ -322,13 +329,13 @@ public class SimplyHotSpringsCommand
     private static final HoverEvent clickForInfo = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslationTextComponent(LANG_BIOMESLIST + "click"));
 
     /**
-     * @return a StringTextComponent of name that runs /simplyhotsprings biometypes [name] when clicked
+     * @return a StringTextComponent of name that suggests /simplyhotsprings biometypes [name] 1 when clicked
      */
     private static IFormattableTextComponent makeBiomeTypeComponent(String name)
     {
         return new StringTextComponent(name)
                 .mergeStyle(Style.EMPTY.setHoverEvent(clickForList)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name)));
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name + " 1")));
     }
 
     private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslationTextComponent(LANG_BIOMETYPES + "click"));
@@ -363,36 +370,62 @@ public class SimplyHotSpringsCommand
         return new TranslationTextComponent(LANG_COMMAND + "none");
     }
 
-    /**
-     * turns the collection of things into a list of comparable things, sorts them, turns them into text components, and then puts them all into one text component separated by
-     * commas. see {@link TextComponentUtils#makeSortedList}
-     * 
-     * @param <T>
-     *            the type of the collection
-     * @param <C>
-     *            the comparable thing
-     * @param collection
-     *            the collection of things
-     * @param toComparable
-     *            turns each thing into something that extends {@link Comparable} so that the things can be sorted
-     * @param toTextComponent
-     *            turns each comparable into an actual text component
-     */
-    private static <T, C extends Comparable<C>> ITextComponent makeMultiComponent(Collection<T> collection,
-            Function<T, C> toComparable,
-            Function<C, ITextComponent> toTextComponent)
+    private static IFormattableTextComponent makePageComponent(int current, int max)
     {
-        return TextComponentUtils.makeSortedList(collection.stream().map(toComparable).collect(Collectors.toList()), toTextComponent);
+        return new TranslationTextComponent(LANG_COMMAND + "page_header", current, max);
     }
 
     /**
-     * does {@link #makeMultiComponent(Collection, Function, Function)} and appends it to first
+     * sorts the collection, gets the items that will appear on the given page, turns them into components, and sends them.
      */
-    private static <T, C extends Comparable<C>> ITextComponent makeMultiComponent(IFormattableTextComponent first, Collection<T> collection,
-            Function<T, C> toComparable,
-            Function<C, ITextComponent> toTextComponent)
+    private static <T> void sendPaginatedComponents(CommandSource source,
+            Collection<T> collection,
+            @Nullable Comparator<T> comparator,
+            Function<T, ITextComponent> toTextComponent,
+            int page)
     {
-        return first.appendSibling(makeMultiComponent(collection, toComparable, toTextComponent));
+        // recent chat is 10 lines, and there's a title and a page header
+        int itemsPerPage = 8;
+
+        int maxPage = collection.size() / itemsPerPage + (collection.size() % itemsPerPage == 0 ? 0 : 1) - 1;
+        if (page > maxPage)
+            page = maxPage;
+
+        source.sendFeedback(makePageComponent(page + 1, maxPage + 1).mergeStyle(TextFormatting.GRAY), true);
+
+        if (collection.isEmpty())
+            source.sendFeedback(new StringTextComponent(" ").appendSibling(noneComponent()), true);
+        else
+        {
+            List<T> list = new ArrayList<T>(collection);
+            list.sort(comparator);
+
+            for (int i = page * itemsPerPage; i < list.size() && i < (page + 1) * itemsPerPage; i++)
+                source.sendFeedback(new StringTextComponent(" ").appendSibling(toTextComponent.apply(list.get(i))), true);
+        }
+    }
+
+    /**
+     * sorts the collection, turns them into text components, and then puts them all into one text component separated by commas. <br>
+     * it's {@link TextComponentUtils#makeSortedList}, but you can specify the comparator.
+     */
+    private static <T> ITextComponent makeMultiComponent(Collection<T> collection,
+            @Nullable Comparator<T> comparator,
+            Function<T, ITextComponent> toTextComponent)
+    {
+        List<T> list = new ArrayList<T>(collection);
+        list.sort(comparator);
+        return TextComponentUtils.func_240649_b_(list, toTextComponent);
+    }
+
+    private static Comparator<BiomeDictionary.Type> sortType()
+    {
+        return (type1, type2) -> type1.getName().compareTo(type2.getName());
+    }
+
+    private static <T> Comparator<RegistryKey<T>> sortKey()
+    {
+        return (key1, key2) -> key1.getLocation().compareNamespaced(key2.getLocation());
     }
 
 }
