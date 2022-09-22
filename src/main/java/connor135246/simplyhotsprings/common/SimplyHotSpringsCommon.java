@@ -154,7 +154,7 @@ public class SimplyHotSpringsCommon
 
             ArgumentTypes.register("simplyhotsprings.biome_type", BiomeTypeArgument.class, new EmptyArgumentSerializer<>(BiomeTypeArgument::biomeTypeArgument));
 
-            if (ModList.get().isLoaded("terralith"))
+            if (ModList.get().isLoaded("terralith") || ModList.get().isLoaded("seedfix_forge") || ModList.get().isLoaded("terralith_forge"))
             {
                 // Terralith, why don't you do this yourself???
                 SimplyHotSprings.log.info("Terralith is installed. Adding some Biome Dictionary Types to Terralith biomes.");
