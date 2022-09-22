@@ -9,7 +9,6 @@ import net.minecraft.client.particle.SpriteSet;
 import net.minecraft.client.particle.TextureSheetParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
 /**
@@ -17,8 +16,6 @@ import net.minecraft.world.level.material.FluidState;
  */
 public class HotSpringWaterUnderwaterParticle extends TextureSheetParticle
 {
-
-    protected static final Fluid FLUID = SimplyHotSpringsCommon.HOT_SPRING_WATER.orElse(null);
 
     public HotSpringWaterUnderwaterParticle(ClientLevel clevel, double x, double y, double z)
     {
@@ -65,7 +62,7 @@ public class HotSpringWaterUnderwaterParticle extends TextureSheetParticle
     {
         BlockPos blockpos = new BlockPos(this.x, this.y, this.z);
         FluidState fluidstate = this.level.getFluidState(blockpos);
-        if (fluidstate.getType() != FLUID || this.y > blockpos.getY() + fluidstate.getHeight(this.level, blockpos))
+        if (!fluidstate.is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER) || this.y > blockpos.getY() + fluidstate.getHeight(this.level, blockpos))
             this.remove();
     }
 

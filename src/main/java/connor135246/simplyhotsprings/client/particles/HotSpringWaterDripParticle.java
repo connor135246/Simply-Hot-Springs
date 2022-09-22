@@ -13,15 +13,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 /**
  * a lot copy-pasted from {@link net.minecraft.client.particle.DripParticle} and {@link net.minecraft.client.particle.SplashParticle}
  */
 public abstract class HotSpringWaterDripParticle extends TextureSheetParticle
 {
-
-    protected static final Fluid FLUID = SimplyHotSpringsCommon.HOT_SPRING_WATER.orElse(null);
 
     protected final @Nullable ParticleOptions nextParticle;
 
@@ -90,7 +87,7 @@ public abstract class HotSpringWaterDripParticle extends TextureSheetParticle
     {
         BlockPos blockpos = new BlockPos(this.x, this.y, this.z);
         FluidState fluidstate = this.level.getFluidState(blockpos);
-        if (fluidstate.getType() == FLUID && this.y < blockpos.getY() + fluidstate.getHeight(this.level, blockpos))
+        if (fluidstate.is(SimplyHotSpringsCommon.TAG_HOT_SPRING_WATER) && this.y < blockpos.getY() + fluidstate.getHeight(this.level, blockpos))
             this.remove();
     }
 
