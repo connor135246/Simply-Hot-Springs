@@ -29,6 +29,7 @@ import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -218,7 +219,6 @@ public class SimplyHotSpringsCommand
         Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                 .filter(entry -> with == entry.getValue().allowsGeneration())
                 .map(entry -> entry.getKey().location()).collect(Collectors.toSet());
-
         sendPaginatedComponents(source, filteredIds, ResourceLocation::compareNamespaced, id -> makeLocationInfoComponent(id.toString()), page);
 
         return filteredIds.size();
