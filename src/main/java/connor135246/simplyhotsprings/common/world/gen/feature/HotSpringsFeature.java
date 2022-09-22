@@ -181,7 +181,7 @@ public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
                             else if (y >= 4)
                             {
                                 ResourceKey<Biome> biome = ResourceKey.create(ForgeRegistries.Keys.BIOMES,
-                                        glevel.getBiome(belowPos).value().getRegistryName());
+                                        glevel.getBiome(belowPos).getRegistryName());
                                 if (biome == Biomes.CRIMSON_FOREST || biome == Biomes.WARPED_FOREST)
                                 {
                                     if (belowState.is(Blocks.NETHERRACK) && glevel.isEmptyBlock(belowPos.above()))

@@ -5,7 +5,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 import connor135246.simplyhotsprings.SimplyHotSprings;
-import net.minecraft.tags.TagKey;
+import net.minecraft.tags.Tag;
 import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
@@ -17,8 +17,8 @@ import net.minecraft.world.level.material.FluidState;
 public abstract class NaturalSpawnerMixin
 {
 
-    @Redirect(method = "canSpawnAtBody", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/TagKey;)Z"))
-    private static boolean redirectWaterTag(FluidState fluidstate, TagKey<Fluid> waterTag)
+    @Redirect(method = "canSpawnAtBody", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/material/FluidState;is(Lnet/minecraft/tags/Tag;)Z"))
+    private static boolean redirectWaterTag(FluidState fluidstate, Tag<Fluid> waterTag)
     {
         return SimplyHotSprings.redirectWaterTag(fluidstate, waterTag);
     }
