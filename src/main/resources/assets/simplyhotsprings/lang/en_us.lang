@@ -63,7 +63,9 @@ simplyhotsprings.command.help.biometypes.3=   Lists all biomes that are in the g
 simplyhotsprings.command.help.placespring.0=/simplyhotsprings placespring [<x> <y> <z>]
 simplyhotsprings.command.help.placespring.1=   Attempts to generate a hot spring centered at the position. If the north-west corner is air, moves down to the next solid block.
 simplyhotsprings.command.none=None!
-simplyhotsprings.command.page_header=--- Page %1$s of %2$s ---
+simplyhotsprings.command.page_header=%1$s Page %3$s of %4$s %2$s
+simplyhotsprings.command.next_page=Next Page
+simplyhotsprings.command.previous_page=Previous Page
 
 
 simplyhotsprings.config.createsSources=Creates Source Blocks

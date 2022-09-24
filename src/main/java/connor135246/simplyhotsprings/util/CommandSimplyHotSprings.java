@@ -241,7 +241,8 @@ public class CommandSimplyHotSprings implements ICommand
             {
                 sender.sendMessage(makeAquaTranslatable(LANG_BIOMESLIST + "all"));
 
-                sendPaginatedComponents(sender, SimplyHotSpringsConfig.biomeReasons.keySet(), null, id -> makeLocationInfoComponent(id.toString()), page);
+                sendPaginatedComponents(sender, SimplyHotSpringsConfig.biomeReasons.keySet(), null, id -> makeLocationInfoComponent(id.toString()),
+                        page, "/" + COMMAND + " " + BIOMESLIST + " " + ALL);
 
                 sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, SimplyHotSpringsConfig.biomeReasons.size());
             }
@@ -261,7 +262,8 @@ public class CommandSimplyHotSprings implements ICommand
                 Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                         .filter(entry -> with == entry.getValue().allowsGeneration())
                         .map(entry -> entry.getKey()).collect(Collectors.toSet());
-                sendPaginatedComponents(sender, filteredIds, null, id -> makeLocationInfoComponent(id.toString()), page);
+                sendPaginatedComponents(sender, filteredIds, null, id -> makeLocationInfoComponent(id.toString()),
+                        page, "/" + COMMAND + " " + BIOMESLIST + " " + (with ? WITH : WITHOUT));
 
                 sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, filteredIds.size());
             }
@@ -288,7 +290,8 @@ public class CommandSimplyHotSprings implements ICommand
                     sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()));
 
                     Set<Biome> biomes = BiomeDictionary.getBiomes(type);
-                    sendPaginatedComponents(sender, biomes, sortBiome(), biome -> makeLocationInfoComponent(biome.getRegistryName().toString()), page);
+                    sendPaginatedComponents(sender, biomes, sortBiome(), biome -> makeLocationInfoComponent(biome.getRegistryName().toString()),
+                            page, "/" + COMMAND + " " + BIOMETYPES + " " + type);
 
                     sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, biomes.size());
                     return;
@@ -298,7 +301,8 @@ public class CommandSimplyHotSprings implements ICommand
 
         sender.sendMessage(makeAquaTranslatable(LANG_BIOMETYPES + "all"));
 
-        sendPaginatedComponents(sender, BiomeDictionary.Type.getAll(), sortType(), type -> makeBiomeTypeComponent(type.getName()), page);
+        sendPaginatedComponents(sender, BiomeDictionary.Type.getAll(), sortType(), type -> makeBiomeTypeComponent(type.getName()),
+                page, "/" + COMMAND + " " + BIOMETYPES);
 
         sender.setCommandStat(CommandResultStats.Type.QUERY_RESULT, BiomeDictionary.Type.getAll().size());
     }
@@ -456,13 +460,13 @@ public class CommandSimplyHotSprings implements ICommand
     private static final HoverEvent clickForInfo = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_BIOMESLIST + "click"));
 
     /**
-     * @return a TextComponentString of name that suggests /simplyhotsprings biometypes [name] 1 when clicked
+     * @return a TextComponentString of name that runs /simplyhotsprings biometypes [name] when clicked
      */
     private static ITextComponent makeBiomeTypeComponent(String name)
     {
         return new TextComponentString(name)
                 .setStyle(new Style().setHoverEvent(clickForList)
-                        .setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name + " 1")));
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name)));
     }
 
     private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_BIOMETYPES + "click"));
@@ -492,14 +496,22 @@ public class CommandSimplyHotSprings implements ICommand
 
     private static final HoverEvent clickForHelp = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_HELP + "click"));
 
+    private static ITextComponent makePageComponent(int current, int max, String pageCommand)
+    {
+        return new TextComponentTranslation(LANG_COMMAND + "page_header",
+                new TextComponentString("<--").setStyle(new Style().setColor(TextFormatting.GRAY).setHoverEvent(clickForPrevious)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, pageCommand + " " + Math.max(1, current - 1 < 1 ? max : current - 1)))),
+                new TextComponentString("-->").setStyle(new Style().setColor(TextFormatting.GRAY).setHoverEvent(clickForNext)
+                        .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, pageCommand + " " + (current + 1 > max ? 1 : current + 1)))),
+                current, max).setStyle(new Style().setColor(TextFormatting.GRAY));
+    }
+
+    private static final HoverEvent clickForNext = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_COMMAND + "next_page"));
+    private static final HoverEvent clickForPrevious = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponentTranslation(LANG_COMMAND + "previous_page"));
+
     private static ITextComponent noneComponent()
     {
         return new TextComponentTranslation(LANG_COMMAND + "none");
-    }
-
-    private static ITextComponent makePageComponent(int current, int max)
-    {
-        return new TextComponentTranslation(LANG_COMMAND + "page_header", current, max);
     }
 
     /**
@@ -509,7 +521,8 @@ public class CommandSimplyHotSprings implements ICommand
             Collection<T> collection,
             @Nullable Comparator<T> comparator,
             Function<T, ITextComponent> toTextComponent,
-            int page)
+            int page,
+            String pageCommand)
     {
         // recent chat is 10 lines, and there's a title and a page header
         int itemsPerPage = 8;
@@ -518,7 +531,7 @@ public class CommandSimplyHotSprings implements ICommand
         if (page > maxPage)
             page = maxPage;
 
-        sender.sendMessage(makePageComponent(page + 1, maxPage + 1).setStyle(new Style().setColor(TextFormatting.GRAY)));
+        sender.sendMessage(makePageComponent(page + 1, maxPage + 1, pageCommand));
 
         if (collection.isEmpty())
             sender.sendMessage(new TextComponentString(" ").appendSibling(noneComponent()));
