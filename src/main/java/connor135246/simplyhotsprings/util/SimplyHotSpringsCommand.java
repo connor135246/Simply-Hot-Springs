@@ -206,7 +206,8 @@ public class SimplyHotSpringsCommand
     {
         source.sendSuccess(makeAquaTranslatable(LANG_BIOMESLIST + "all"), true);
 
-        sendPaginatedComponents(source, SimplyHotSpringsConfig.biomeReasons.keySet(), sortKey(), key -> makeLocationInfoComponent(key.location().toString()), page);
+        sendPaginatedComponents(source, SimplyHotSpringsConfig.biomeReasons.keySet(), sortKey(), key -> makeLocationInfoComponent(key.location().toString()),
+                page, "/" + COMMAND + " " + BIOMESLIST + " " + ALL);
 
         return SimplyHotSpringsConfig.biomeReasons.size();
     }
@@ -219,7 +220,8 @@ public class SimplyHotSpringsCommand
         Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                 .filter(entry -> with == entry.getValue().allowsGeneration())
                 .map(entry -> entry.getKey().location()).collect(Collectors.toSet());
-        sendPaginatedComponents(source, filteredIds, ResourceLocation::compareNamespaced, id -> makeLocationInfoComponent(id.toString()), page);
+        sendPaginatedComponents(source, filteredIds, ResourceLocation::compareNamespaced, id -> makeLocationInfoComponent(id.toString()),
+                page, "/" + COMMAND + " " + BIOMESLIST + " " + (with ? WITH : WITHOUT));
 
         return filteredIds.size();
     }
@@ -230,7 +232,8 @@ public class SimplyHotSpringsCommand
     {
         source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "all"), true);
 
-        sendPaginatedComponents(source, BiomeDictionary.Type.getAll(), sortType(), type -> makeBiomeTypeComponent(type.getName()), page);
+        sendPaginatedComponents(source, BiomeDictionary.Type.getAll(), sortType(), type -> makeBiomeTypeComponent(type.getName()),
+                page, "/" + COMMAND + " " + BIOMETYPES);
 
         return BiomeDictionary.Type.getAll().size();
     }
@@ -240,7 +243,8 @@ public class SimplyHotSpringsCommand
         source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()), true);
 
         Set<ResourceKey<Biome>> biomeIds = BiomeDictionary.getBiomes(type);
-        sendPaginatedComponents(source, biomeIds, sortKey(), key -> makeLocationInfoComponent(key.location().toString()), page);
+        sendPaginatedComponents(source, biomeIds, sortKey(), key -> makeLocationInfoComponent(key.location().toString()),
+                page, "/" + COMMAND + " " + BIOMETYPES + " " + type);
 
         return biomeIds.size();
     }
@@ -329,13 +333,13 @@ public class SimplyHotSpringsCommand
     private static final HoverEvent clickForInfo = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_BIOMESLIST + "click"));
 
     /**
-     * @return a TextComponent of name that suggests /simplyhotsprings biometypes [name] 1 when clicked
+     * @return a TextComponent of name that runs /simplyhotsprings biometypes [name] when clicked
      */
     private static MutableComponent makeBiomeTypeComponent(String name)
     {
         return new TextComponent(name)
                 .setStyle(Style.EMPTY.withHoverEvent(clickForList)
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name + " 1")));
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/" + COMMAND + " " + BIOMETYPES + " " + name)));
     }
 
     private static final HoverEvent clickForList = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_BIOMETYPES + "click"));
@@ -365,14 +369,22 @@ public class SimplyHotSpringsCommand
 
     private static final HoverEvent clickForHelp = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_HELP + "click"));
 
+    private static MutableComponent makePageComponent(int current, int max, String pageCommand)
+    {
+        return new TranslatableComponent(LANG_COMMAND + "page_header",
+                new TextComponent("<--").setStyle(Style.EMPTY.applyFormat(ChatFormatting.GRAY).withHoverEvent(clickForPrevious)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, pageCommand + " " + Math.max(1, current - 1 < 1 ? max : current - 1)))),
+                new TextComponent("-->").setStyle(Style.EMPTY.applyFormat(ChatFormatting.GRAY).withHoverEvent(clickForNext)
+                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, pageCommand + " " + (current + 1 > max ? 1 : current + 1)))),
+                current, max).withStyle(ChatFormatting.GRAY);
+    }
+
+    private static final HoverEvent clickForNext = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_COMMAND + "next_page"));
+    private static final HoverEvent clickForPrevious = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent(LANG_COMMAND + "previous_page"));
+
     private static MutableComponent noneComponent()
     {
         return new TranslatableComponent(LANG_COMMAND + "none");
-    }
-
-    private static MutableComponent makePageComponent(int current, int max)
-    {
-        return new TranslatableComponent(LANG_COMMAND + "page_header", current, max);
     }
 
     /**
@@ -382,7 +394,8 @@ public class SimplyHotSpringsCommand
             Collection<T> collection,
             @Nullable Comparator<T> comparator,
             Function<T, Component> toTextComponent,
-            int page)
+            int page,
+            String pageCommand)
     {
         // recent chat is 10 lines, and there's a title and a page header
         int itemsPerPage = 8;
@@ -391,7 +404,7 @@ public class SimplyHotSpringsCommand
         if (page > maxPage)
             page = maxPage;
 
-        source.sendSuccess(makePageComponent(page + 1, maxPage + 1).withStyle(ChatFormatting.GRAY), true);
+        source.sendSuccess(makePageComponent(page + 1, maxPage + 1, pageCommand), true);
 
         if (collection.isEmpty())
             source.sendSuccess(new TextComponent(" ").append(noneComponent()), true);
