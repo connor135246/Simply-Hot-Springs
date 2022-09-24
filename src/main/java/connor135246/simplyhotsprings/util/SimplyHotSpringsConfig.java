@@ -340,6 +340,12 @@ public class SimplyHotSpringsConfig
         if (event.getName() != null)
         {
             RegistryKey<Biome> biomeLoading = RegistryKey.getOrCreateKey(ForgeRegistries.Keys.BIOMES, event.getName());
+
+            // give most biomes at least one type. particularly important for nether and end biomes!
+            BiomeDictionary.Type type = typeFromCategory(event.getCategory());
+            if (type != null)
+                BiomeDictionary.addTypes(biomeLoading, type);
+
             if (SimplyHotSpringsCommon.CONFIGURED_HOT_SPRINGS_FEATURE == null)
                 biomeReasons.put(biomeLoading, GenerationReason.CONFIGURED_ERROR);
             else
@@ -349,6 +355,51 @@ public class SimplyHotSpringsConfig
                     event.getGeneration().withFeature(GenerationStage.Decoration.LAKES, SimplyHotSpringsCommon.CONFIGURED_HOT_SPRINGS_FEATURE);
                 biomeReasons.put(biomeLoading, reason);
             }
+        }
+    }
+
+    /**
+     * {@link BiomeDictionary.Type#fromVanilla} doesn't really make any sense...
+     */
+    public static @Nullable BiomeDictionary.Type typeFromCategory(Biome.Category category)
+    {
+        switch (category)
+        {
+        case BEACH:
+            return BiomeDictionary.Type.BEACH;
+        case FOREST:
+            return BiomeDictionary.Type.FOREST;
+        case JUNGLE:
+            return BiomeDictionary.Type.JUNGLE;
+        case MESA:
+            return BiomeDictionary.Type.MESA;
+        case MUSHROOM:
+            return BiomeDictionary.Type.MUSHROOM;
+        case NETHER:
+            return BiomeDictionary.Type.NETHER;
+        case OCEAN:
+            return BiomeDictionary.Type.OCEAN;
+        case PLAINS:
+            return BiomeDictionary.Type.PLAINS;
+        case RIVER:
+            return BiomeDictionary.Type.RIVER;
+        case SAVANNA:
+            return BiomeDictionary.Type.SAVANNA;
+        case SWAMP:
+            return BiomeDictionary.Type.SWAMP;
+        case DESERT:
+            return BiomeDictionary.Type.SANDY;
+        case EXTREME_HILLS:
+            return BiomeDictionary.Type.MOUNTAIN;
+        case ICY:
+            return BiomeDictionary.Type.SNOWY;
+        case TAIGA:
+            return BiomeDictionary.Type.CONIFEROUS;
+        case THEEND:
+            return BiomeDictionary.Type.END;
+        case NONE:
+        default:
+            return null;
         }
     }
 
