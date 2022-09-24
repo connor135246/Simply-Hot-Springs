@@ -264,9 +264,9 @@ public class SimplyHotSpringsCommon
                 addTypes("wythers:ancient_oak_swamp", SWAMP, DENSE, WET, SPOOKY, OVERWORLD);
                 addTypes("wythers:ancient_taiga", FOREST, CONIFEROUS, OVERWORLD);
                 addTypes("wythers:andesite_crags", HILLS, SLOPE, OVERWORLD);
-                addTypes("wythers:aspen_crags", HILLS, SLOPE, OVERWORLD);
+                addTypes("wythers:aspen_crags", FOREST, HILLS, CONIFEROUS, SLOPE, OVERWORLD);
                 addTypes("wythers:autumnal_birch_forest", FOREST, OVERWORLD);
-                addTypes("wythers:autumnal_crags", SLOPE, OVERWORLD);
+                addTypes("wythers:autumnal_crags", HOT, SLOPE, OVERWORLD);
                 addTypes("wythers:autumnal_flower_forest", FOREST, OVERWORLD);
                 addTypes("wythers:autumnal_forest", FOREST, OVERWORLD);
                 addTypes("wythers:autumnal_forest_edge", FOREST, SPARSE, OVERWORLD);
@@ -315,8 +315,8 @@ public class SimplyHotSpringsCommon
                 addTypes("wythers:desert_island", HOT, DRY, SANDY, OVERWORLD);
                 addTypes("wythers:desert_lakes", SWAMP, WATER, HOT, WET, SANDY, OVERWORLD);
                 addTypes("wythers:desert_pinnacles", HOT, DRY, SANDY, OVERWORLD);
-                addTypes("wythers:desert_river", RIVER, HOT, SANDY, OVERWORLD);
-                addTypes("wythers:dripleaf_swamp", SWAMP, HOT, WET, OVERWORLD);
+                addTypes("wythers:desert_river", RIVER, HOT, SANDY, LUSH, OVERWORLD);
+                addTypes("wythers:dripleaf_swamp", SWAMP, HOT, WET, LUSH, OVERWORLD);
                 addTypes("wythers:dry_savanna", SAVANNA, HOT, SPARSE, DRY, OVERWORLD);
                 addTypes("wythers:dry_tropical_forest", FOREST, SAVANNA, HOT, DRY, OVERWORLD);
                 addTypes("wythers:dry_tropical_grassland", PLAINS, SAVANNA, HOT, SPARSE, DRY, OVERWORLD);
@@ -431,7 +431,7 @@ public class SimplyHotSpringsCommon
                 addTypes("wythers:tropical_island", PLAINS, HOT, SPARSE, OVERWORLD);
                 addTypes("wythers:tropical_rainforest", JUNGLE, HOT, DENSE, WET, OVERWORLD);
                 addTypes("wythers:tropical_volcano", HOT, DRY, WASTELAND, PEAK, OVERWORLD);
-                addTypes("wythers:tsingy_forest", FOREST, SAVANNA, HOT, OVERWORLD);
+                addTypes("wythers:tsingy_forest", FOREST, HILLS, SAVANNA, HOT, OVERWORLD);
                 addTypes("wythers:tundra", PLAINS, COLD, SPARSE, OVERWORLD);
                 addTypes("wythers:underground", UNDERGROUND, OVERWORLD);
                 addTypes("wythers:volcanic_chamber", HOT, DRY, UNDERGROUND, OVERWORLD);
