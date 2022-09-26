@@ -133,23 +133,23 @@ public class SimplyHotSpringsCommand
 
     private static int sendHelp(CommandSourceStack source)
     {
-        source.sendSuccess(new TextComponent("--- " + "/" + COMMAND + " " + HELP + " ---").withStyle(ChatFormatting.GOLD), true);
+        source.sendSuccess(new TextComponent("--- " + "/" + COMMAND + " " + HELP + " ---").withStyle(ChatFormatting.GOLD), false);
 
-        source.sendSuccess(makeHelpComponent(LOCATIONINFO), true);
-        source.sendSuccess(makeHelpComponent(BIOMESLIST), true);
-        source.sendSuccess(makeHelpComponent(BIOMETYPES), true);
-        source.sendSuccess(makeHelpComponent(PLACESPRING), true);
+        source.sendSuccess(makeHelpComponent(LOCATIONINFO), false);
+        source.sendSuccess(makeHelpComponent(BIOMESLIST), false);
+        source.sendSuccess(makeHelpComponent(BIOMETYPES), false);
+        source.sendSuccess(makeHelpComponent(PLACESPRING), false);
 
         return 4;
     }
 
     private static int sendHelpForSubcommand(CommandSourceStack source, String subcommand, int helps)
     {
-        source.sendSuccess(new TextComponent("--- " + "/" + COMMAND + " " + HELP + " " + subcommand + " ---").withStyle(ChatFormatting.GOLD), true);
+        source.sendSuccess(new TextComponent("--- " + "/" + COMMAND + " " + HELP + " " + subcommand + " ---").withStyle(ChatFormatting.GOLD), false);
 
         for (int i = 0; i <= helps; ++i)
             source.sendSuccess(new TranslatableComponent(LANG_HELP + subcommand + "." + i)
-                    .withStyle(i % 2 == 1 ? ChatFormatting.GRAY : ChatFormatting.WHITE), true);
+                    .withStyle(i % 2 == 1 ? ChatFormatting.GRAY : ChatFormatting.WHITE), false);
 
         return helps + 1;
 
@@ -184,18 +184,18 @@ public class SimplyHotSpringsCommand
     private static int sendLocationInfo(CommandSourceStack source, ResourceKey<Biome> biomeKey)
     {
         source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_name")
-                .append(makeSuggestComponent(biomeKey.location().toString())), true);
+                .append(makeSuggestComponent(biomeKey.location().toString())), false);
 
         if (!BiomeDictionary.hasAnyType(biomeKey))
             source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
-                    .append(noneComponent().withStyle(ChatFormatting.WHITE)), true);
+                    .append(noneComponent().withStyle(ChatFormatting.WHITE)), false);
         else
             source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "biome_types")
-                    .append(makeMultiComponent(BiomeDictionary.getTypes(biomeKey), sortType(), type -> makeSuggestComponent(type.getName()))), true);
+                    .append(makeMultiComponent(BiomeDictionary.getTypes(biomeKey), sortType(), type -> makeSuggestComponent(type.getName()))), false);
 
         GenerationReason reason = SimplyHotSpringsConfig.biomeReasons.get(biomeKey);
         source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "hot_springs")
-                .append(makeHotSpringsReasonComponent(reason)), true);
+                .append(makeHotSpringsReasonComponent(reason)), false);
 
         return reason.allowsGeneration() ? 1 : 0;
     }
@@ -204,7 +204,7 @@ public class SimplyHotSpringsCommand
 
     private static int sendAllKnownBiomes(CommandSourceStack source, int page)
     {
-        source.sendSuccess(makeAquaTranslatable(LANG_BIOMESLIST + "all"), true);
+        source.sendSuccess(makeAquaTranslatable(LANG_BIOMESLIST + "all"), false);
 
         sendPaginatedComponents(source, SimplyHotSpringsConfig.biomeReasons.keySet(), sortKey(), key -> makeLocationInfoComponent(key.location().toString()),
                 page, "/" + COMMAND + " " + BIOMESLIST + " " + ALL);
@@ -215,7 +215,7 @@ public class SimplyHotSpringsCommand
     private static int sendKnownBiomes(CommandSourceStack source, boolean with, int page)
     {
         source.sendSuccess(new TranslatableComponent(LANG_BIOMESLIST + (with ? "with" : "without"))
-                .withStyle(with ? ChatFormatting.GREEN : ChatFormatting.DARK_RED), true);
+                .withStyle(with ? ChatFormatting.GREEN : ChatFormatting.DARK_RED), false);
 
         Set<ResourceLocation> filteredIds = SimplyHotSpringsConfig.biomeReasons.object2ObjectEntrySet().stream()
                 .filter(entry -> with == entry.getValue().allowsGeneration())
@@ -230,7 +230,7 @@ public class SimplyHotSpringsCommand
 
     private static int sendAllBiomeTypes(CommandSourceStack source, int page)
     {
-        source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "all"), true);
+        source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "all"), false);
 
         sendPaginatedComponents(source, BiomeDictionary.Type.getAll(), sortType(), type -> makeBiomeTypeComponent(type.getName()),
                 page, "/" + COMMAND + " " + BIOMETYPES);
@@ -240,7 +240,7 @@ public class SimplyHotSpringsCommand
 
     private static int sendBiomesOfType(CommandSourceStack source, BiomeDictionary.Type type, int page)
     {
-        source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()), true);
+        source.sendSuccess(makeAquaTranslatable(LANG_BIOMETYPES + "biomes", type.getName()), false);
 
         Set<ResourceKey<Biome>> biomeIds = BiomeDictionary.getBiomes(type);
         sendPaginatedComponents(source, biomeIds, sortKey(), key -> makeLocationInfoComponent(key.location().toString()),
@@ -404,17 +404,17 @@ public class SimplyHotSpringsCommand
         if (page > maxPage)
             page = maxPage;
 
-        source.sendSuccess(makePageComponent(page + 1, maxPage + 1, pageCommand), true);
+        source.sendSuccess(makePageComponent(page + 1, maxPage + 1, pageCommand), false);
 
         if (collection.isEmpty())
-            source.sendSuccess(new TextComponent(" ").append(noneComponent()), true);
+            source.sendSuccess(new TextComponent(" ").append(noneComponent()), false);
         else
         {
             List<T> list = new ArrayList<T>(collection);
             list.sort(comparator);
 
             for (int i = page * itemsPerPage; i < list.size() && i < (page + 1) * itemsPerPage; i++)
-                source.sendSuccess(new TextComponent(" ").append(toTextComponent.apply(list.get(i))), true);
+                source.sendSuccess(new TextComponent(" ").append(toTextComponent.apply(list.get(i))), false);
         }
     }
 
