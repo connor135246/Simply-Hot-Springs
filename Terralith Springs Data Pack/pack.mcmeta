@@ -1,0 +1,6 @@
+{
+   "pack":{
+      "pack_format":9,
+      "description":"Swaps Water in some Terralith biomes with Hot Spring Water.\nBiomes: Yellowstone, Caldera, Thermal Caves\nVersion: 1.18.1"
+   }
+}
