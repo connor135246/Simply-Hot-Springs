@@ -19,7 +19,7 @@ apply plugin: 'net.minecraftforge.gradle'
 // MixinGradle:
 apply plugin: 'org.spongepowered.mixin'
 
-version = '1.18.2-0.2.4'
+version = '1.18.2-0.2.5'
 group = 'connor135246.simplyhotsprings' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'simplyhotsprings'
 
