@@ -19,7 +19,7 @@ public class HotSpringWaterBlock extends LiquidBlock
     public HotSpringWaterBlock()
     {
         super(SimplyHotSpringsCommon.HOT_SPRING_WATER,
-                BlockBehaviour.Properties.of(Material.WATER, MaterialColor.DIAMOND).noCollission().strength(100.0F).noDrops());
+                BlockBehaviour.Properties.of(Material.WATER, MaterialColor.DIAMOND).noCollission().strength(100.0F).noLootTable());
     }
 
     @SuppressWarnings("deprecation")

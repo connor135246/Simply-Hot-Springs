@@ -1,0 +1,43 @@
+{
+  "type": "simplyhotsprings:hot_springs",
+  "config": {
+    "fluid": {
+      "type": "simple_state_provider",
+      "state": {
+        "Name": "simplyhotsprings:hot_spring_water",
+        "Properties": {
+          "level": "0"
+        }
+      }
+    },
+    "feature_size_xz": 16,
+    "feature_size_y": 53,
+    "fluid_level": 53,
+    "solid_check_below_level": 40,
+    "spheres": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 21,
+          "max_inclusive": 24
+        }
+    },
+    "sphere_diameter_xz": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 1.0,
+          "max_exclusive": 2.0
+        }
+    },
+    "sphere_diameter_y": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 11.0,
+          "max_exclusive": 15.0
+        }
+    },
+    "sphere_padding_xz": 6.0,
+    "sphere_padding_y": 1.0,
+    "sphere_diameter_xz_extra": 8.0,
+    "sphere_diameter_xz_extra_below_level": 15
+  }
+}

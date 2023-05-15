@@ -2,12 +2,14 @@ buildscript {
     repositories {
         // These repositories are only for Gradle plugins, put any other repositories in the repository block further below
         maven { url = 'https://maven.minecraftforge.net' }
+        maven { url = 'https://maven.parchmentmc.org' }
         mavenCentral()
     }
     dependencies {
         classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '5.1.+', changing: true
+        classpath 'org.parchmentmc:librarian:1.+'
         // MixinGradle:
-        classpath 'org.spongepowered:mixingradle:0.7.+'
+        //classpath 'org.spongepowered:mixingradle:0.7.+'
     }
 }
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
@@ -16,10 +18,11 @@ plugins {
     id 'maven-publish'
 }
 apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'org.parchmentmc.librarian.forgegradle'
 // MixinGradle:
-apply plugin: 'org.spongepowered.mixin'
+//apply plugin: 'org.spongepowered.mixin'
 
-version = '1.18.2-0.2.5'
+version = '1.19.2-0.2.6-pre14'
 group = 'connor135246.simplyhotsprings' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'simplyhotsprings'
 
@@ -38,11 +41,11 @@ minecraft {
     //
     // Parchment is an unofficial project maintained by ParchmentMC, separate from MinecraftForge
     // Additional setup is needed to use their mappings: https://github.com/ParchmentMC/Parchment/wiki/Getting-Started
-    //
+    mappings channel: 'parchment', version: '2022.11.27-1.19.2'
     // Use non-default mappings at your own risk. They may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
     // mappings channel: 'snapshot', version: '20210309-1.16.5'
-    mappings channel: 'official', version: '1.18.2'
+    //mappings channel: 'official', version: '1.19.2'
 
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg') // Currently, this location cannot be changed from the default.
 
@@ -155,10 +158,10 @@ dependencies {
     // Specify the version of Minecraft to use. If this is any group other than 'net.minecraft', it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency, and its patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
-    minecraft 'net.minecraftforge:forge:1.18.2-40.1.0'
+    minecraft 'net.minecraftforge:forge:1.19.2-43.2.0'
 
     // Apply Mixin AP
-    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
+    //annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 
     // Real mod deobf dependency examples - these get remapped to your current mappings
     // compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api") // Adds JEI API as a compile dependency
@@ -173,14 +176,14 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 }
 
-mixin {
+//mixin {
     // MixinGradle Settings
-    add sourceSets.main, 'mixins.simplyhotsprings.refmap.json'
-    config 'mixins.simplyhotsprings.json'
+    //add sourceSets.main, 'mixins.simplyhotsprings.refmap.json'
+    //config 'mixins.simplyhotsprings.json'
     
     //debug.verbose = true
     //debug.export = true
-}
+//}
 
 // Example for how to get properties into the manifest for reading at runtime.
 jar {

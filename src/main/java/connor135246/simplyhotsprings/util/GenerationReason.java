@@ -9,16 +9,14 @@ import net.minecraft.ChatFormatting;
 public enum GenerationReason
 {
 
-    NO_WORLD_GEN(false, "no_world_gen"),
-    IN_NAME_WHITELIST(true, "in_name_whitelist"),
-    IN_NAME_BLACKLIST(false, "in_name_blacklist"),
-    IN_TYPE_BLACKLIST(false, "in_type_blacklist"),
-    IN_TYPE_WHITELIST(true, "in_type_whitelist"),
-    EMPTY_NAME_WHITELIST(true, "empty_name_whitelist"),
-    EMPTY_TYPE_WHITELIST(true, "empty_type_whitelist"),
+    NO_WORLD_GEN_CONFIG(false, "no_world_gen_config"),
+    WHITELISTED(true, "whitelisted"),
+    BLACKLISTED(false, "blacklisted"),
     NOT_WHITELISTED(false, "not_whitelisted"),
+    NOT_BLACKLISTED(true, "not_blacklisted"),
+    NO_HOT_SPRINGS(false, "no_hot_springs"),
     UNKNOWN_BIOME(false, "unknown_biome"),
-    REGISTER_ERROR(false, "register_error");
+    UNKNOWN_MODIFIER(false, "unknown_modifier");
 
     private final boolean allowsGeneration;
     private final String key;

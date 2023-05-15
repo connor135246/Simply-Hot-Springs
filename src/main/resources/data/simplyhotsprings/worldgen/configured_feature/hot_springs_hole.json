@@ -1,0 +1,64 @@
+{
+  "type": "simplyhotsprings:hot_springs",
+  "config": {
+    "fluid": {
+      "type": "simple_state_provider",
+      "state": {
+        "Name": "simplyhotsprings:hot_spring_water",
+        "Properties": {
+          "level": "0"
+        }
+      }
+    },
+    "feature_size_xz": 16,
+    "feature_size_y": 16,
+    "fluid_level": 9,
+    "solid_check_below_level": 13,
+    "spheres": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 4,
+          "max_inclusive": 5
+        }
+    },
+    "sphere_diameter_xz": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 10.0,
+          "max_exclusive": 14.0
+        }
+    },
+    "sphere_diameter_y": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 17.0,
+          "max_exclusive": 18.0
+        }
+    },
+    "sphere_padding_xz": 2.0,
+    "sphere_padding_y": 2.0,
+    "barrier": {
+      "type": "weighted_state_provider",
+      "entries": [
+        {
+          "weight": 5,
+          "data" : {
+            "Name": "minecraft:cobblestone"
+          }
+        },
+        {
+          "weight": 1,
+          "data" : {
+            "Name": "minecraft:mossy_cobblestone"
+          }
+        },
+        {
+          "weight": 3,
+          "data" : {
+            "Name": "minecraft:stone"
+          }
+        }
+      ]
+    }
+  }
+}

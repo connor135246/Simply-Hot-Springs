@@ -1,0 +1,6 @@
+{
+  "type": "simplyhotsprings:add_hot_springs",
+  "hot_springs": ["simplyhotsprings:hot_springs_big_wellspring", "simplyhotsprings:hot_springs_wellspring"],
+  "biomes": "#simplyhotsprings:hot_springs_blacklist",
+  "is_blacklist": true
+}

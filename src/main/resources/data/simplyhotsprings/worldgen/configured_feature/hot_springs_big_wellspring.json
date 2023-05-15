@@ -1,0 +1,67 @@
+{
+  "type": "simplyhotsprings:hot_springs",
+  "config": {
+    "fluid": {
+      "type": "simple_state_provider",
+      "state": {
+        "Name": "simplyhotsprings:hot_spring_water",
+        "Properties": {
+          "level": "0"
+        }
+      }
+    },
+    "feature_size_xz": 31,
+    "feature_size_y": 63,
+    "fluid_level": 63,
+    "solid_check_below_level": 43,
+    "spheres": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 39,
+          "max_inclusive": 45
+        }
+    },
+    "sphere_diameter_xz": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 1.0,
+          "max_exclusive": 3.0
+        }
+    },
+    "sphere_diameter_y": {
+      "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": 10.0,
+          "max_exclusive": 15.0
+        }
+    },
+    "sphere_padding_xz": 12.0,
+    "sphere_padding_y": 1.0,
+    "sphere_diameter_xz_extra": 18.0,
+    "sphere_diameter_xz_extra_below_level": 14,
+    "additional_placed_features": [
+      {
+        "feature": "minecraft:lake_lava",
+        "placement": [
+          {
+            "type": "minecraft:random_offset",
+            "y_spread": {
+              "type": "minecraft:uniform",
+              "value": {
+                "min_inclusive": -12,
+                "max_inclusive": -8
+              }
+            },
+            "xz_spread": {
+              "type": "minecraft:uniform",
+              "value": {
+                "min_inclusive": 6,
+                "max_inclusive": 10
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

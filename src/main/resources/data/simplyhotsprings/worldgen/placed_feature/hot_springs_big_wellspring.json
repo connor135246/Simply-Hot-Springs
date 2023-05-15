@@ -1,0 +1,33 @@
+{
+  "feature": "simplyhotsprings:hot_springs_big_wellspring",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 575
+    },
+    {
+      "type": "simplyhotsprings:ceiling_aware_heightmap",
+      "heightmap": "WORLD_SURFACE_WG",
+	  "roof_offset": 16
+    },
+    {
+      "type": "minecraft:random_offset",
+      "y_spread": -12,
+      "xz_spread": 0
+    },
+    {
+      "type": "minecraft:random_offset",
+      "y_spread": {
+        "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": -9,
+          "max_inclusive": 0
+        }
+      },
+      "xz_spread": 0
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

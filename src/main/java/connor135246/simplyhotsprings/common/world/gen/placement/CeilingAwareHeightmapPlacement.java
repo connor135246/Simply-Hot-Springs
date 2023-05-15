@@ -1,12 +1,12 @@
 package connor135246.simplyhotsprings.common.world.gen.placement;
 
-import java.util.Random;
 import java.util.stream.Stream;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.block.Blocks;
@@ -59,7 +59,7 @@ public class CeilingAwareHeightmapPlacement extends PlacementModifier
     }
 
     @Override
-    public Stream<BlockPos> getPositions(PlacementContext context, Random rand, BlockPos pos)
+    public Stream<BlockPos> getPositions(PlacementContext context, RandomSource rand, BlockPos pos)
     {
         int x = pos.getX();
         int z = pos.getZ();

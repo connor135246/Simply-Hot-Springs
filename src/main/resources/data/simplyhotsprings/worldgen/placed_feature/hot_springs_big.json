@@ -1,0 +1,28 @@
+{
+  "feature": "simplyhotsprings:hot_springs_big",
+  "placement": [
+    {
+      "type": "minecraft:rarity_filter",
+      "chance": 500
+    },
+    {
+      "type": "simplyhotsprings:ceiling_aware_heightmap",
+      "heightmap": "WORLD_SURFACE_WG",
+	  "roof_offset": 16
+    },
+    {
+      "type": "minecraft:random_offset",
+      "y_spread": {
+        "type": "minecraft:uniform",
+        "value": {
+          "min_inclusive": -4,
+          "max_inclusive": -2
+        }
+      },
+      "xz_spread": 0
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

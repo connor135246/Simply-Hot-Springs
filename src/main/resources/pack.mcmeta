@@ -1,6 +1,8 @@
 {
     "pack": {
-        "description": "Simply Hot Springs data",
-        "pack_format": 9
+        "description": "Simply Hot Springs resources",
+        "pack_format": 9,
+        "forge:resource_pack_format": 9,
+        "forge:data_pack_format": 10
     }
 }

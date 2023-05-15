@@ -2,44 +2,36 @@ package connor135246.simplyhotsprings.common.fluids;
 
 import static connor135246.simplyhotsprings.common.SimplyHotSpringsCommon.*;
 
-import java.util.Random;
-
 import javax.annotation.Nullable;
 
-import connor135246.simplyhotsprings.SimplyHotSprings;
 import connor135246.simplyhotsprings.util.SimplyHotSpringsConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.fluids.FluidAttributes;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 
 public abstract class HotSpringWaterFluid extends ForgeFlowingFluid
 {
 
-    public static final ResourceLocation STILL_TEXTURE = new ResourceLocation(SimplyHotSprings.MODID, "block/still_hot_springs");
-    public static final ResourceLocation FLOWING_TEXTURE = new ResourceLocation(SimplyHotSprings.MODID, "block/flowing_hot_springs");
-
     public HotSpringWaterFluid()
     {
-        super(new ForgeFlowingFluid.Properties(HOT_SPRING_WATER, FLOWING_HOT_SPRING_WATER, FluidAttributes.builder(STILL_TEXTURE, FLOWING_TEXTURE)
-                .color(0xFFFFFFFF).temperature(325).sound(SoundEvents.BUCKET_FILL, SoundEvents.BUCKET_EMPTY))
-                        .block(HOT_SPRING_WATER_BLOCK).bucket(HOT_SPRING_WATER_BUCKET));
+        super(new ForgeFlowingFluid.Properties(HOT_SPRING_WATER_FLUID_TYPE, HOT_SPRING_WATER, FLOWING_HOT_SPRING_WATER)
+                .block(HOT_SPRING_WATER_BLOCK).bucket(HOT_SPRING_WATER_BUCKET));
     }
 
     @Override
     protected boolean canConvertToSource()
     {
-        return SimplyHotSpringsConfig.COMMON.createsSources.get();
+        return SimplyHotSpringsConfig.SERVER.createsSources.get();
     }
 
     @Override
@@ -52,11 +44,11 @@ public abstract class HotSpringWaterFluid extends ForgeFlowingFluid
     @Override
     protected boolean canBeReplacedWith(FluidState state, BlockGetter level, BlockPos pos, Fluid fluid, Direction direction)
     {
-        return direction == Direction.DOWN && !fluid.is(FluidTags.WATER);
+        return super.canBeReplacedWith(state, level, pos, fluid, direction) && !fluid.is(FluidTags.WATER);
     }
 
     @Override
-    public void animateTick(Level level, BlockPos pos, FluidState state, Random rand)
+    public void animateTick(Level level, BlockPos pos, FluidState state, RandomSource rand)
     {
         // steam particles
         BlockPos posAbove = pos.above();

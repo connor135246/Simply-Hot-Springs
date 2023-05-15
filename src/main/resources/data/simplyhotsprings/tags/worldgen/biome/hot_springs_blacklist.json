@@ -1,0 +1,85 @@
+{
+  "replace": false,
+  "values": [
+    {
+      "required": false,
+      "id": "#minecraft:is_savanna"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_savanna"
+    },
+    {
+      "required": false,
+      "id": "#minecraft:is_nether"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_nether"
+    },
+    {
+      "required": false,
+      "id": "#minecraft:is_end"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_end"
+    },
+    {
+      "required": false,
+      "id": "#minecraft:is_ocean"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_ocean"
+    },
+    {
+      "required": false,
+      "id": "#minecraft:is_river"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_river"
+    },
+    {
+      "required": false,
+      "id": "#minecraft:is_beach"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_beach"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_sandy"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_dry"
+    },
+    {
+      "required": false,
+      "id": "#forge:is_void"
+    },
+    {
+      "required": false,
+      "id": "minecraft:deep_dark"
+    },
+    {
+      "required": false,
+      "id": "minecraft:stony_shore"
+    },
+    {
+      "required": false,
+      "id": "biomesoplenty:origin_valley"
+    },
+    {
+      "required": false,
+      "id": "terralith:alpha_islands"
+    },
+    {
+      "required": false,
+      "id": "terralith:alpha_islands_winter"
+    }
+  ]
+}
