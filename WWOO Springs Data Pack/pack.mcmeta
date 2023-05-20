@@ -1,6 +1,6 @@
 {
    "pack":{
-      "pack_format":9,
-      "description":"Swaps Water in some WWOO biomes with Hot Spring Water.\nBiomes: Mediterranean Island Thermal Springs, Snowy Thermal Taiga\nVersion: 1.18.2"
+      "pack_format":10,
+      "description":"Swaps Water in some WWOO biomes with Hot Spring Water.\nBiomes: Mediterranean Island Thermal Springs, Snowy Thermal Taiga\nVersion: 1.19.2"
    }
 }
