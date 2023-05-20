@@ -288,7 +288,7 @@ public class SimplyHotSpringsConfig
         biomeReasons.clear();
         for (Biome biome : ForgeRegistries.BIOMES.getValuesCollection())
             biomeReasons.put(biome.getRegistryName(), getGenerationReasonBiome(biome));
-        biomeReasons.trim();
+        //biomeReasons.trim();
     }
 
     /**
