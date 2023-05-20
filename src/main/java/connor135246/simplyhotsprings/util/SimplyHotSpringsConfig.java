@@ -421,7 +421,7 @@ public class SimplyHotSpringsConfig
             }
         });
 
-        biomeReasons.trim();
+        //biomeReasons.trim();
         ConfigChancePlacement.updateChance(COMMON.chance.get());
     }
 
