@@ -392,7 +392,7 @@ public class SimplyHotSpringsConfig
             }
         }
 
-        biomeGrasses.trim();
+        //biomeGrasses.trim();
     }
 
     //
@@ -498,7 +498,7 @@ public class SimplyHotSpringsConfig
             }
         });
 
-        biomeReasons.trim();
+        //biomeReasons.trim();
         ConfigChanceFilter.updateChance(COMMON.chance.get());
         HotSpringsFeature.updateBiomeGrasses(biomeGrasses);
     }

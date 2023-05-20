@@ -211,7 +211,7 @@ public class HotSpringsFeature extends Feature<NoneFeatureConfiguration>
         biomeGrasses.clear();
         for (Entry<ResourceKey<Biome>, BlockState> entry : newBiomeGrasses.entrySet())
             biomeGrasses.put(entry.getKey(), entry.getValue());
-        biomeGrasses.trim();
+        //biomeGrasses.trim();
     }
 
     public static boolean canReplaceBlock(BlockState state)
