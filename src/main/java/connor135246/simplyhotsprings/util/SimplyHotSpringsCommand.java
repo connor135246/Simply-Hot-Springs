@@ -220,7 +220,7 @@ public class SimplyHotSpringsCommand
             else
                 source.sendSuccess(makeAquaTranslatable(LANG_LOCATIONINFO + "hot_springs")
                         .append(makeMultiComponent(map.keySet(), ResourceLocation::compareNamespaced,
-                                id -> makeHotSpringsReasonComponent(id.toString(), map.containsKey(id) ? map.get(id) : GenerationReason.UNKNOWN_MODIFIER))),
+                                id -> textHotSpringsReasonComponent(id.toString(), map.containsKey(id) ? map.get(id) : GenerationReason.UNKNOWN_MODIFIER))),
                         false);
 
             return Ints.saturatedCast(map.values().stream().filter(reason -> reason.allowsGeneration()).count());
@@ -304,14 +304,22 @@ public class SimplyHotSpringsCommand
     }
 
     /**
-     * @return a text component of name with a hover text encapsulating this {@link GenerationReason}
+     * @return the component with a hover text encapsulating this {@link GenerationReason}
      */
-    private static MutableComponent makeHotSpringsReasonComponent(String name, GenerationReason reason)
+    private static MutableComponent makeHotSpringsReasonComponent(MutableComponent component, GenerationReason reason)
     {
-        return Component.literal(name).setStyle(Style.EMPTY.applyFormat(reason.getTextFormatting())
+        return component.setStyle(Style.EMPTY.applyFormat(reason.getTextFormatting())
                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                         Component.translatable(reason.getYN()).withStyle(reason.getTextFormatting()).append(": \n")
                                 .append(Component.translatable(reason.getKey()).withStyle(reason.getTextFormatting())))));
+    }
+
+    /**
+     * @return a text component of name with a hover text encapsulating this {@link GenerationReason}
+     */
+    private static MutableComponent textHotSpringsReasonComponent(String name, GenerationReason reason)
+    {
+        return makeHotSpringsReasonComponent(Component.literal(name), reason);
     }
 
     /**
@@ -319,9 +327,7 @@ public class SimplyHotSpringsCommand
      */
     private static MutableComponent noneHotSpringsReasonComponent(GenerationReason reason)
     {
-        return noneComponent().setStyle(Style.EMPTY.applyFormat(reason.getTextFormatting())
-                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable(LANG_LOCATIONINFO + "reason").append("\n")
-                        .append(Component.translatable(reason.getKey()).withStyle(reason.getTextFormatting())))));
+        return makeHotSpringsReasonComponent(noneComponent(), reason);
     }
 
     /**
