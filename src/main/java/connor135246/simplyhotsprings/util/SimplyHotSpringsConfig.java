@@ -102,14 +102,13 @@ public class SimplyHotSpringsConfig
 
             info = builder
                     .translation(LANG_CONFIG_WORLDGEN + "info")
-                    .comment("The command \"/simplyhotsprings\" has a few subcommands that will help you test your Hot Springs."
-                            + "For example, \"/simplyhotsprings locationinfo\" will tell you the name and tags of the biome you're currently in "
-                            + "and whether Hot Springs can generate there. "
+                    .comment("By default, Hot Springs only generate in biomes that are not in the \"simplyhotsprings:hot_springs_blacklist\" biome tag.",
+                            "The command \"/simplyhotsprings\" has a few subcommands that will help you test your Hot Springs."
                             + "To see how to use \"/simplyhotsprings\", run the command \"/simplyhotsprings help\".",
-                            "NEW: You can now create custom Hot Springs with datapacks. To see how, visit the wiki at https://github.com/connor135246/Simply-Hot-Springs/wiki",
+                            "For more useful information, visit the wiki at https://github.com/connor135246/Simply-Hot-Springs/wiki",
                             "(Also, this config setting does nothing, so put whatever you want in here.)")
                     .defineListAllowEmpty(Arrays.asList("#HOW TO"),
-                            () -> Arrays.asList("Run \"/simplyhotsprings biometags\" to see a list of all biome tags!"),
+                            () -> Arrays.asList("You can find screenshots of the different types of Hot Springs at https://github.com/connor135246/Simply-Hot-Springs/wiki/Hot-Spring-Types"),
                             input -> true);
 
             worldGenDefault = builder
