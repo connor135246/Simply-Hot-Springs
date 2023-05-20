@@ -22,7 +22,7 @@ apply plugin: 'org.parchmentmc.librarian.forgegradle'
 // MixinGradle:
 //apply plugin: 'org.spongepowered.mixin'
 
-version = '1.19.2-0.2.6-pre14'
+version = '1.19.2-0.3.0'
 group = 'connor135246.simplyhotsprings' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'simplyhotsprings'
 
